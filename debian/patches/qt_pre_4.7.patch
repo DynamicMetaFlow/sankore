@@ -1,0 +1,47 @@
+Index: new/Sankore-3.1/src/adaptors/UBMetadataDcSubsetAdaptor.cpp
+===================================================================
+--- new.orig/Sankore-3.1/src/adaptors/UBMetadataDcSubsetAdaptor.cpp	2012-05-16 15:56:27.000000000 +0200
++++ new/Sankore-3.1/src/adaptors/UBMetadataDcSubsetAdaptor.cpp	2012-05-16 16:30:20.178948436 +0200
+@@ -108,7 +108,7 @@
+     xmlWriter.writeTextElement(UBSettings::uniboardDocumentNamespaceUri, "size", QString("%1x%2").arg(width).arg(height));
+ 
+     // introduced in UB 4.4
+-    xmlWriter.writeTextElement(UBSettings::uniboardDocumentNamespaceUri, "updated-at", UBStringUtils::toUtcIsoDateTime(QDateTime::currentDateTimeUtc()));
++    xmlWriter.writeTextElement(UBSettings::uniboardDocumentNamespaceUri, "updated-at", UBStringUtils::toUtcIsoDateTime(QDateTime::currentDateTime().toUTC()));
+     // introduced in OpenSankore 1.40.00
+     xmlWriter.writeTextElement(UBSettings::uniboardDocumentNamespaceUri,UBSettings::sessionTitle,proxy->metaData(UBSettings::sessionTitle).toString());
+     xmlWriter.writeTextElement(UBSettings::uniboardDocumentNamespaceUri,UBSettings::sessionAuthors,proxy->metaData(UBSettings::sessionAuthors).toString());
+Index: new/Sankore-3.1/src/board/UBFeaturesController.cpp
+===================================================================
+--- new.orig/Sankore-3.1/src/board/UBFeaturesController.cpp	2012-05-16 15:56:27.000000000 +0200
++++ new/Sankore-3.1/src/board/UBFeaturesController.cpp	2012-05-16 16:30:20.214948434 +0200
+@@ -18,6 +18,10 @@
+ #include "domain/UBGraphicsVideoItem.h"
+ #include "domain/UBGraphicsWidgetItem.h"
+ 
++#if QT_VERSION < 0x040700
++inline bool qHash(const QUrl &url) { return qHash(url.toString()); }
++#endif
++
+ UBFeature::UBFeature(const QString &url, const QPixmap &icon, const QString &name, const QUrl &realPath, UBFeatureElementType type)
+ : virtualPath(url), mThumbnail(icon), mName(name), mPath(realPath), elementType(type)
+ {
+Index: new/Sankore-3.1/src/gui/UBTeacherGuideWidgetsTools.cpp
+===================================================================
+--- new.orig/Sankore-3.1/src/gui/UBTeacherGuideWidgetsTools.cpp	2012-05-16 12:44:30.635565467 +0200
++++ new/Sankore-3.1/src/gui/UBTeacherGuideWidgetsTools.cpp	2012-05-16 16:32:04.474943686 +0200
+@@ -528,10 +528,14 @@
+     mpLayout = new QVBoxLayout(this);
+     mpTitle = new QLineEdit(this);
+     mpTitle->setObjectName("UBTGLineEdit");
++#if QT_VERSION >= 0x040700
+     mpTitle->setPlaceholderText(tr("Insert link title here..."));
++#endif
+     mpUrl = new QLineEdit(this);
+     mpUrl->setObjectName("UBTGLineEdit");
++#if QT_VERSION >= 0x040700
+     mpUrl->setPlaceholderText("http://");
++#endif
+     mpLayout->addWidget(mpTitle);
+     mpLayout->addWidget(mpUrl);
+ }

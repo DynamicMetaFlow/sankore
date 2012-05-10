@@ -1,0 +1,12 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Open Sankoré 
+GenericName=Desktop sketchpad
+Comment=Interactive Digital Whiteboard software for teaching
+Comment[es]=software educativo para pizarras digitales
+Exec=Open-Sankore
+Icon=sankore
+Terminal=false
+Categories=Qt;Utility;
+StartupNotify=true

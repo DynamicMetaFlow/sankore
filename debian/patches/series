@@ -1,0 +1,3 @@
+build_opts.patch
+absolute_dirs.patch
+qt_pre_4.7.patch

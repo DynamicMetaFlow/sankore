@@ -1,0 +1,26 @@
+Format: http://dep.debian.net/deps/dep5/
+Upstream-Name: sankore
+Upstream-Contact: Open-Sankoré Developers team <dev@open-sankore.org>
+Source: http://dev.open-sankore.org/
+Debianized-By: Miriam Ruiz <little_miry@yahoo.es>
+Debianized-Date: Thu, 10 May 2012 18:29:03 +0200
+
+Files: *
+Copyright: Copyright (C) 2010  Open-Sankoré
+License: GPL-3+
+
+Files: debian/*
+Copyright: Copyright (C) 2012, Miriam Ruiz <little_miry@yahoo.es>
+License: GPL-3+
+
+License: GPL-3+
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 3 of the License, or
+ (at your option) any later version.
+ .
+ On Debian systems, the complete text of the latest version of the GNU
+ General Public License can be found in `/usr/share/common-licenses/GPL'.
+ .
+ The complete text of version 3 of the GNU General Public License can be
+ found in `/usr/share/common-licenses/GPL-3'.

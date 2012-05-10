@@ -1,0 +1,51 @@
+Source: sankore
+Section: education
+Priority: optional
+Maintainer: Miriam Ruiz <little_miry@yahoo.es>
+Build-Depends: debhelper (>= 7), dh-buildinfo, quilt,
+ qt4-qmake, qt4-dev-tools, libqt4-dev, libphonon-dev,
+ libfreetype6-dev, libpaper-dev, libt1-dev, libssl-dev,
+ libqt4-dev (<< 4:4.7) | libqtwebkit-dev,
+Standards-Version: 3.9.3
+Homepage: http://open-sankore.org/
+
+Package: sankore
+Architecture: any
+Depends: sankore-data (= ${source:Version}), ${shlibs:Depends}, ${misc:Depends}
+Suggests: sankore-dbg (= ${binary:Version})
+Description: interactive digital whiteboard software for teaching
+ Open-Sankoré is a free and open-source interactive whiteboard (IWB)
+ software compatible with any projector and pointing device. It is
+ based on the Uniboard software originally developed at the University
+ of Lausanne, Switzerland.
+ .
+ It's file format is non binarized and is based on the W3C web standard,
+ therefore making it possible to be displayed in a modern web browser.
+ the software can be extended using Apps which are written using the
+ W3C widget standard.
+ .
+ Open-Sankoré is one of the strategies of the Public Interest Grouping
+ for Digital Education in Africa (GIP ENA) in order to try to achieve
+ the Millennium Development Goals for education in Africa (an initiative
+ of the United Nations).
+
+Package: sankore-dbg
+Section: debug
+Priority: extra
+Architecture: any
+Depends: sankore (= ${binary:Version}), ${misc:Depends}
+Description: interactive digital whiteboard software - debug
+ Open-Sankoré is a free and open-source interactive whiteboard (IWB)
+ software compatible with any projector and pointing device. 
+ .
+ This package contains the debugging symbols.
+
+Package: sankore-data
+Architecture: all
+Depends: ${misc:Depends}
+Suggests: sankore (= ${binary:Version}), ${misc:Depends}
+Description: interactive digital whiteboard software - data
+ Open-Sankoré is a free and open-source interactive whiteboard (IWB)
+ software compatible with any projector and pointing device. 
+ .
+ This package contains data files that are needed to run the program..

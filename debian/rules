@@ -1,0 +1,194 @@
+#!/usr/bin/make -f
+
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
+# These are used for cross-compiling and for saving the configure script
+# from having to guess our platform (since we know it already)
+DEB_HOST_GNU_TYPE   ?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
+DEB_BUILD_GNU_TYPE  ?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
+ifneq ($(DEB_HOST_GNU_TYPE),$(DEB_BUILD_GNU_TYPE))
+CROSS= --build $(DEB_BUILD_GNU_TYPE) --host $(DEB_HOST_GNU_TYPE)
+else
+CROSS= --build $(DEB_BUILD_GNU_TYPE)
+endif
+
+MAIN_VERSION = $(shell dpkg-parsechangelog|sed -n '/^Version/{s/Version: \(.*\)/\1/p}')
+BUILD_VERSION = $(shell echo $(MAIN_VERSION)|sed -n 's/\([0-9.]*\)[-+~].*/\1/p')
+
+#LDFLAGS=-Wl,-z,defs -Wl,--as-needed -Wl,--no-undefined
+
+ARCH_ID=$(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
+
+ifeq ($(strip $(ARCH_ID)),)
+ARCH_DIR=
+else
+ARCH_DIR=$(ARCH_ID)/
+endif
+
+config: config-stamp
+config-stamp: 
+	dh_testdir
+	# 
+	# - Applying patches ------------------------------
+	[ ! -d debian/patches ] || $(MAKE) -f /usr/share/quilt/quilt.make patch
+	# 
+	# - Configuring xpdf ------------------------------
+	chmod +x Sankore-ThirdParty/xpdf/xpdf-3.03/configure
+	cd Sankore-ThirdParty/xpdf/xpdf-3.03 && ./configure $(CROSS) \
+		--prefix=/usr \
+		--datarootdir=\$${prefix}/share \
+		--mandir=\$${prefix}/share/man \
+		--infodir=\$${prefix}/share/info \
+		CFLAGS="$(CFLAGS)" \
+		LDFLAGS="$(LDFLAGS)"
+	cd Sankore-ThirdParty/xpdf/ && qmake-qt4
+	# 
+	# - Configuring quazip ----------------------------
+	cd Sankore-ThirdParty/quazip/ && qmake-qt4
+	# 
+	# - Configuring cffadaptor ------------------------
+	cd Sankore-3.1/plugins/cffadaptor/ && qmake-qt4
+	# 
+	# - Configuring sankore ---------------------------
+	cd Sankore-3.1 && qmake-qt4
+	# 
+	# - Finished configuring --------------------------
+	touch $@
+
+build-indep:
+
+build-arch: build-stamp
+
+build: build-stamp
+build-stamp: config
+	dh_testdir
+	# 
+	# - Building xpdf ---------------------------------
+	cd Sankore-ThirdParty/xpdf/ && $(MAKE)
+	# 
+	# - Building quazip -------------------------------
+	cd Sankore-ThirdParty/quazip/ && $(MAKE)
+	# 
+	# - Building cffadaptor ---------------------------
+	cd Sankore-3.1/plugins/cffadaptor/ && $(MAKE)
+	# 
+	# - Building sankore ------------------------------
+	cd Sankore-3.1 && $(MAKE) 	
+	# 
+	# - Finished building -----------------------------
+	touch $@
+
+clean: 
+	dh_testdir
+	dh_testroot
+	rm -fv build-stamp config-stamp
+	[ ! -f Sankore-3.1/Makefile ] || \
+		$(MAKE) -C Sankore-3.1 clean
+	[ ! -f Sankore-3.1/plugins/cffadaptor/Makefile ] || \
+		$(MAKE) -C Sankore-3.1/plugins/cffadaptor clean
+	[ ! -f Sankore-ThirdParty/quazip/Makefile ] || \
+		$(MAKE) -C Sankore-ThirdParty/quazip clean
+	[ ! -f Sankore-ThirdParty/xpdf/Makefile ] || \
+		$(MAKE) -C Sankore-ThirdParty/xpdf clean
+	[ ! -f Sankore-ThirdParty/xpdf/xpdf-3.03/Makefile ] || \
+		$(MAKE) -C Sankore-ThirdParty/xpdf/xpdf-3.03 distclean
+	rm -rfv \
+		Sankore-3.1/Makefile* \
+		Sankore-3.1/build/linux/debug/* \
+		Sankore-3.1/build/linux/release/* \
+		Sankore-3.1/plugins/cffadaptor/build/linux/release/* \
+		Sankore-3.1/plugins/cffadaptor/build/linux/debug/* \
+		Sankore-ThirdParty/xpdf/Makefile \
+		Sankore-ThirdParty/xpdf/lib/linux/libxpdf.prl \
+		Sankore-ThirdParty/xpdf/xpdf-3.03/fofi/Makefile \
+		Sankore-ThirdParty/xpdf/xpdf-3.03/splash/Makefile \
+		Sankore-3.1/plugins/cffadaptor/Makefile \
+		Sankore-ThirdParty/quazip/Makefile \
+		Sankore-ThirdParty/quazip/lib/linux/libquazip.prl \
+		Sankore-ThirdParty/quazip/lib/linux/libquazip.a \
+		Sankore-ThirdParty/xpdf/lib/linux/libxpdf.a
+	[ ! -d debian/patches ] || $(MAKE) -f /usr/share/quilt/quilt.make unpatch
+	dh_clean
+
+install: build
+	dh_testdir
+	dh_testroot
+	dh_prep
+	dh_installdirs
+
+# Build architecture-independent files here.
+binary-indep: install
+	dh_testdir
+	dh_testroot
+	dh_installchangelogs -i
+	dh_installdocs -i
+	dh_installexamples -i
+	dh_install -i
+	dh_installman -i
+	dh_link -i
+	dh_compress -i
+	dh_fixperms -i
+	[ ! -e /usr/bin/dh_buildinfo ] || dh_buildinfo -i
+	dh_installdeb -i
+	dh_gencontrol -i
+	dh_md5sums -i
+	dh_builddeb -i
+
+# Build architecture-dependent files here.
+binary-arch: install
+	dh_testdir
+	dh_testroot
+
+	mkdir -p "$(CURDIR)/debian/sankore/usr/bin/"
+	cp Sankore-3.1/build/linux/*/product/Open-Sankore \
+		"$(CURDIR)/debian/sankore/usr/bin/Open-Sankore.bin"
+	printf '#\!/bin/sh\n\nLD_LIBRARY_PATH="%s" %s\n'  \
+		"/usr/lib/open-sankore/$(ARCH_DIR):$$LD_LIBRARY_PATH" \
+		"Open-Sankore.bin" \
+		> "$(CURDIR)/debian/sankore/usr/bin/Open-Sankore"
+	chmod 755 "$(CURDIR)/debian/sankore/usr/bin/Open-Sankore"
+	mkdir -p "$(CURDIR)/debian/sankore/usr/lib/open-sankore/$(ARCH_DIR)"
+	cp Sankore-3.1/plugins/cffadaptor/build/linux/*/lib/libCFF_Adaptor.so.* \
+		"$(CURDIR)/debian/sankore/usr/lib/open-sankore/$(ARCH_DIR)"
+
+	dh_installchangelogs -a
+	dh_installdocs -a
+	dh_installexamples -a
+	dh_install -a
+#	dh_installmenu -a
+	dh_installman -a
+	dh_link -a
+	dh_strip -a --dbg-package=sankore-dbg
+	dh_compress -a
+	dh_fixperms -a
+#	dh_makeshlibs -a
+	[ ! -e /usr/bin/dh_buildinfo ] || dh_buildinfo -a
+	dh_installdeb -a
+	LD_LIBRARY_PATH="$(CURDIR)/debian/sankore/usr/lib/open-sankore/$(ARCH_DIR):$$LD_LIBRARY_PATH" \
+		dh_shlibdeps -a
+	dh_gencontrol -a
+	dh_md5sums -a
+	dh_builddeb -a
+
+VER = $(BUILD_VERSION)~git$(shell date -u '+%Y%m%d')
+
+get-git-source:
+	dh_testdir
+	rm -rfv sankore ../sankore_$(VER).orig.tar.bz2
+	mkdir sankore
+	cd sankore && git clone git://github.com/Sankore/Sankore-3.1.git --depth 1
+	cd sankore && git clone git://github.com/Sankore/Sankore-ThirdParty.git --depth 1
+	cd sankore/Sankore-ThirdParty && \
+		rm -rfv freetype microsoft openssl refnum unsanity zlib README.txt
+	find sankore -type f | while read F; do chmod -x "$$F"; done
+	find . -type f -name configure | while read F; do chmod +x "$$F"; done
+	chmod +x sankore/Sankore-ThirdParty/xpdf/xpdf-3.03/configure
+	rm -rfv "`find sankore -name \"__MACOSX\"`"
+	rm -rfv `find sankore -name "._*"`
+	tar --exclude .git -jvcf ../sankore_$(VER).orig.tar.bz2 sankore
+	rm -rfv sankore
+	
+binary: binary-indep binary-arch
+
+.PHONY: config build-indep build-arch build clean binary-indep binary-arch binary install 
