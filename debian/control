@@ -1,7 +1,11 @@
 Source: sankore
 Section: education
 Priority: optional
-Maintainer: Miriam Ruiz <little_miry@yahoo.es>
+Maintainer: Debian Edu Packaging Team <pkg-edu-devel@lists.alioth.debian.org>
+Uploaders:
+ Miriam Ruiz <little_miry@yahoo.es>
+ Mike Gabriel <mike.gabriel@das-netzwerkteam.de>
+ José Luis Redrejo Rodríguez <jredrejo@debian.org>
 Build-Depends: debhelper (>= 7), dh-buildinfo, quilt,
  qt4-qmake, qt4-dev-tools, libqt4-dev, libphonon-dev,
  libfreetype6-dev, libpaper-dev, libt1-dev, libssl-dev,
