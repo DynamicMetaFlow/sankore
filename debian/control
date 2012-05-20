@@ -1,7 +1,7 @@
 Source: sankore
 Section: education
 Priority: optional
-Maintainer: Debian Edu Packaging Team <pkg-edu-devel@lists.alioth.debian.org>
+Maintainer: Debian Edu Packaging Team <debian-edu-pkg-team@lists.alioth.debian.org>
 Uploaders:
  Miriam Ruiz <little_miry@yahoo.es>
  Mike Gabriel <mike.gabriel@das-netzwerkteam.de>

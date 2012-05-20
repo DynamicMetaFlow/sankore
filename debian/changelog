@@ -1,5 +1,9 @@
 sankore (3.1~git20120517-0) UNRELEASED; urgency=low
 
+  [ Miriam Ruiz ]
   * Initial release.
+
+  [ Mike Gabriel ]
+  * Maintainer team: Debian Edu Packaging Team.
 
  -- Miriam Ruiz <little_miry@yahoo.es>  Thu, 10 May 2012 18:29:03 +0200
