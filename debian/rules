@@ -45,17 +45,19 @@ config-stamp:
 		--mandir=\$${prefix}/share/man \
 		--infodir=\$${prefix}/share/info \
 		CFLAGS="$(CFLAGS)" \
-		LDFLAGS="$(LDFLAGS)"
-	cd Sankore-ThirdParty/xpdf/ && qmake-qt4
+		LDFLAGS="$(LDFLAGS)" \
+		CXXFLAGS="$(CXXFLAGS)" \
+		CPPFLAGS="$(CPPFLAGS)"
+	cd Sankore-ThirdParty/xpdf/ && qmake-qt4 QMAKE_CFLAGS="$(CFLAGS)" QMAKE_LFLAGS="$(LDFLAGS)" QMAKE_CXXFLAGS="$(CXXFLAGS) $(CPPFLAGS)"
 	# 
 	# - Configuring quazip ----------------------------
-	cd Sankore-ThirdParty/quazip/ && qmake-qt4
+	cd Sankore-ThirdParty/quazip/ && qmake-qt4 QMAKE_CFLAGS="$(CFLAGS)" QMAKE_LFLAGS="$(LDFLAGS)" QMAKE_CXXFLAGS="$(CXXFLAGS) $(CPPFLAGS)"
 	# 
 	# - Configuring cffadaptor ------------------------
-	cd Sankore-3.1/plugins/cffadaptor/ && qmake-qt4
+	cd Sankore-3.1/plugins/cffadaptor/ && qmake-qt4 QMAKE_CFLAGS="$(CFLAGS)" QMAKE_LFLAGS="$(LDFLAGS)" QMAKE_CXXFLAGS="$(CXXFLAGS) $(CPPFLAGS)"
 	# 
 	# - Configuring sankore ---------------------------
-	cd Sankore-3.1 && qmake-qt4
+	cd Sankore-3.1 && qmake-qt4 QMAKE_CFLAGS="$(CFLAGS)" QMAKE_LFLAGS="$(LDFLAGS)" QMAKE_CXXFLAGS="$(CXXFLAGS) $(CPPFLAGS)"
 	# 
 	# - Finished configuring --------------------------
 	touch $@

@@ -36,5 +36,7 @@ sankore (3.1~git20120517-1) UNRELEASED; urgency=low
   * /debian/rules:
     + Create Open-Sankore.bin in /usr/lib/open-sankore and only keep its
       wrapper in /usr/bin -> saves us writing/symlinking a second man page.
+    + Make sure that the hardening compiler/linker flags are handled correctly
+      by qmake-qt4.
 
  -- Miriam Ruiz <little_miry@yahoo.es>  Thu, 10 May 2012 18:29:03 +0200
