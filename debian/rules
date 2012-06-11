@@ -151,7 +151,7 @@ binary-arch: install
 		"$(CURDIR)/debian/sankore/usr/lib/open-sankore/Open-Sankore.bin"
 
 	mkdir -p "$(CURDIR)/debian/sankore/usr/bin/"
-	printf '#\!/bin/sh\n\nLD_LIBRARY_PATH="%s" %s\n'  \
+	printf '#!/bin/sh\n\nLD_LIBRARY_PATH="%s" %s\n'  \
 		"/usr/lib/open-sankore/$(ARCH_DIR):$$LD_LIBRARY_PATH" \
 		"/usr/lib/open-sankore/Open-Sankore.bin" \
 		> "$(CURDIR)/debian/sankore/usr/bin/Open-Sankore"

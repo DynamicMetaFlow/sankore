@@ -25,6 +25,7 @@ sankore (3.1~git20120517-1) UNRELEASED; urgency=low
       usr/lib/open-sankore/x86_64-linux-gnu/libCFF_Adaptor.so.1.0
     + W: sankore: hardening-no-relro
       usr/lib/open-sankore/x86_64-linux-gnu/libCFF_Adaptor.so.1.0.0
+    + W: sankore: executable-not-elf-or-script usr/bin/Open-Sankore
   * Lintian overrides:
     + W: sankore-data: script-not-executable
       usr/share/open-sankore/linux/run.sh.
