@@ -142,10 +142,10 @@ binary-arch: install
 
 	mkdir -p "$(CURDIR)/debian/sankore/usr/bin/"
 	cp Sankore-3.1/build/linux/*/product/Open-Sankore \
-		"$(CURDIR)/debian/sankore/usr/bin/Open-Sankore.bin"
+		"$(CURDIR)/debian/sankore/usr/lib/open-sankore/Open-Sankore.bin"
 	printf '#\!/bin/sh\n\nLD_LIBRARY_PATH="%s" %s\n'  \
 		"/usr/lib/open-sankore/$(ARCH_DIR):$$LD_LIBRARY_PATH" \
-		"Open-Sankore.bin" \
+		"/usr/lib/open-sankore/Open-Sankore.bin" \
 		> "$(CURDIR)/debian/sankore/usr/bin/Open-Sankore"
 	chmod 755 "$(CURDIR)/debian/sankore/usr/bin/Open-Sankore"
 	mkdir -p "$(CURDIR)/debian/sankore/usr/lib/open-sankore/$(ARCH_DIR)"

@@ -14,5 +14,8 @@ sankore (3.1~git20120517-1) UNRELEASED; urgency=low
   * Lintian overrides:
     + W: sankore-data: script-not-executable
       usr/share/open-sankore/linux/run.sh.
+  * /debian/rules:
+    + Create Open-Sankore.bin in /usr/lib/open-sankore and only keep its
+      wrapper in /usr/bin -> saves us writing/symlinking a second man page.
 
  -- Miriam Ruiz <little_miry@yahoo.es>  Thu, 10 May 2012 18:29:03 +0200
