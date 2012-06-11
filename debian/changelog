@@ -29,6 +29,12 @@ sankore (3.1~git20120517-1) UNRELEASED; urgency=low
     + W: sankore: new-package-should-close-itp-bug
     + W: sankore-data: new-package-should-close-itp-bug
     + W: sankore-dbg: new-package-should-close-itp-bug
+    + P: sankore: copyright-refers-to-symlink-license
+      usr/share/common-licenses/GPL
+    + P: sankore-data: copyright-refers-to-symlink-license
+      usr/share/common-licenses/GPL
+    + P: sankore-dbg: copyright-refers-to-symlink-license
+      usr/share/common-licenses/GPL
   * Lintian overrides:
     + Enable dh_lintian.
     + W: sankore-data: script-not-executable
@@ -43,5 +49,6 @@ sankore (3.1~git20120517-1) UNRELEASED; urgency=low
     + Add patch descriptions and authors.
     + Add patch: enable_i18n.patch -> build .qm files on the fly during
       qmake-qt4 run.
+  * 
 
  -- Miriam Ruiz <little_miry@yahoo.es>  Thu, 10 May 2012 18:29:03 +0200

@@ -1,4 +1,4 @@
-Format: http://dep.debian.net/deps/dep5/
+Format: http://svn.debian.org/wsvn/dep/web/deps/dep5.mdwn?op=file&rev=166
 Upstream-Name: sankore
 Upstream-Contact: Open-Sankoré Developers team <dev@open-sankore.org>
 Source: http://dev.open-sankore.org/
@@ -20,7 +20,7 @@ License: GPL-3+
  (at your option) any later version.
  .
  On Debian systems, the complete text of the latest version of the GNU
- General Public License can be found in `/usr/share/common-licenses/GPL'.
+ General Public License can be found in `/usr/share/common-licenses/GPL-3'.
  .
  The complete text of version 3 of the GNU General Public License can be
  found in `/usr/share/common-licenses/GPL-3'.
