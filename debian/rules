@@ -16,7 +16,11 @@ endif
 MAIN_VERSION = $(shell dpkg-parsechangelog|sed -n '/^Version/{s/Version: \(.*\)/\1/p}')
 BUILD_VERSION = $(shell echo $(MAIN_VERSION)|sed -n 's/\([0-9.]*\)[-+~].*/\1/p')
 
-#LDFLAGS=-Wl,-z,defs -Wl,--as-needed -Wl,--no-undefined
+# hardening the package with dpkg-buildflags
+export CPPFLAGS:=$(shell dpkg-buildflags --get CPPFLAGS)
+export CFLAGS:=$(shell dpkg-buildflags --get CFLAGS)
+export CXXFLAGS:=$(shell dpkg-buildflags --get CXXFLAGS)
+export LDFLAGS:=$(shell dpkg-buildflags --get LDFLAGS)
 
 ARCH_ID=$(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
 

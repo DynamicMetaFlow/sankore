@@ -11,6 +11,20 @@ sankore (3.1~git20120517-1) UNRELEASED; urgency=low
     + W: sankore source: stronger-dependency-implies-weaker sankore-data
       depends -> suggests ${misc:Depends}.
     + E: sankore source: debian-revision-should-not-be-zero 3.1~git20120517-0.
+    + W: sankore: hardening-no-fortify-functions usr/bin/Open-Sankore.bin
+    + W: sankore: hardening-no-fortify-functions
+      usr/lib/open-sankore/x86_64-linux-gnu/libCFF_Adaptor.so.1
+    + W: sankore: hardening-no-fortify-functions
+      usr/lib/open-sankore/x86_64-linux-gnu/libCFF_Adaptor.so.1.0
+    + W: sankore: hardening-no-fortify-functions
+      usr/lib/open-sankore/x86_64-linux-gnu/libCFF_Adaptor.so.1.0.0
+    + W: sankore: hardening-no-relro usr/lib/open-sankore/Open-Sankore.bin
+    + W: sankore: hardening-no-relro
+      usr/lib/open-sankore/x86_64-linux-gnu/libCFF_Adaptor.so.1
+    + W: sankore: hardening-no-relro
+      usr/lib/open-sankore/x86_64-linux-gnu/libCFF_Adaptor.so.1.0
+    + W: sankore: hardening-no-relro
+      usr/lib/open-sankore/x86_64-linux-gnu/libCFF_Adaptor.so.1.0.0
   * Lintian overrides:
     + W: sankore-data: script-not-executable
       usr/share/open-sankore/linux/run.sh.
