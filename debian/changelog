@@ -1,7 +1,7 @@
 sankore (3.1~git20120517-1) UNRELEASED; urgency=low
 
   [ Miriam Ruiz ]
-  * Initial release.
+  * Initial release (closes: #673322).
 
   [ Mike Gabriel ]
   * Maintainer team: Debian Edu Packaging Team.
@@ -26,6 +26,9 @@ sankore (3.1~git20120517-1) UNRELEASED; urgency=low
     + W: sankore: hardening-no-relro
       usr/lib/open-sankore/x86_64-linux-gnu/libCFF_Adaptor.so.1.0.0
     + W: sankore: executable-not-elf-or-script usr/bin/Open-Sankore
+    + W: sankore: new-package-should-close-itp-bug
+    + W: sankore-data: new-package-should-close-itp-bug
+    + W: sankore-dbg: new-package-should-close-itp-bug
   * Lintian overrides:
     + W: sankore-data: script-not-executable
       usr/share/open-sankore/linux/run.sh.
