@@ -30,7 +30,7 @@ sankore (3.1~git20120517-1) UNRELEASED; urgency=low
     + W: sankore-data: new-package-should-close-itp-bug
     + W: sankore-dbg: new-package-should-close-itp-bug
   * Lintian overrides:
-    + Enabled dh_lintian.
+    + Enable dh_lintian.
     + W: sankore-data: script-not-executable
       usr/share/open-sankore/linux/run.sh.
   * /debian/rules:
