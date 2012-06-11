@@ -1,0 +1,49 @@
+--- a/Sankore-3.1/Sankore_3.1.pro
++++ b/Sankore-3.1/Sankore_3.1.pro
+@@ -110,6 +110,46 @@
+ 
+ LIBS += "-Lplugins/cffadaptor/$$BUILD_DIR/lib" "-lCFF_Adaptor"
+ 
++TRANSLATIONS += resources/i18n/sankore_es.ts \
++                resources/i18n/sankore_ko.ts \
++                resources/i18n/sankore_ro.ts \
++                resources/i18n/sankore_ar.ts \
++                resources/i18n/sankore_fr_CH.ts \
++                resources/i18n/sankore_nb.ts \
++                resources/i18n/sankore_ru.ts \
++                resources/i18n/sankore_da.ts \
++                resources/i18n/sankore_fr.ts \
++                resources/i18n/sankore_nl.ts \
++                resources/i18n/sankore_sk.ts \
++                resources/i18n/sankore_de.ts \
++                resources/i18n/sankore_it.ts \
++                resources/i18n/sankore_pl.ts \
++                resources/i18n/sankore_sv.ts \
++                resources/i18n/sankore_en.ts \
++                resources/i18n/sankore_iw.ts \
++                resources/i18n/sankore_pt.ts \
++                resources/i18n/sankore_zh.ts \
++                resources/i18n/sankore_en_UK.ts \
++                resources/i18n/sankore_ja.ts \
++                resources/i18n/sankore_rm.ts
++
++!isEmpty(TRANSLATIONS) {
++  isEmpty(QMAKE_LRELEASE) {
++    win32:QMAKE_LRELEASE = $$[QT_INSTALL_BINS]\lrelease.exe
++    else:QMAKE_LRELEASE = $$[QT_INSTALL_BINS]/lrelease
++  }
++  isEmpty(TS_DIR):TS_DIR = resources/i18n
++
++  TSQM.name = lrelease ${QMAKE_FILE_IN}
++  TSQM.input = TRANSLATIONS
++  TSQM.output = $$TS_DIR/${QMAKE_FILE_BASE}.qm
++  TSQM.commands = $$QMAKE_LRELEASE ${QMAKE_FILE_IN}
++  TSQM.CONFIG = no_link
++  QMAKE_EXTRA_COMPILERS += TSQM
++  PRE_TARGETDEPS += compiler_TSQM_make_all
++}
++else:message(No translation files in project)
++
+ win32 {
+    RC_FILE = resources/win/sankore.rc
+    CONFIG += qaxcontainer
