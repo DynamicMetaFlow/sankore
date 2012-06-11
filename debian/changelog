@@ -7,5 +7,8 @@ sankore (3.1~git20120517-0) UNRELEASED; urgency=low
   * Maintainer team: Debian Edu Packaging Team.
   * /debian/control:
     + Fix Uploaders:-field (missing commata).
+  * Lintian issues fixed:
+    + W: sankore source: stronger-dependency-implies-weaker sankore-data
+      depends -> suggests ${misc:Depends}.
 
  -- Miriam Ruiz <little_miry@yahoo.es>  Thu, 10 May 2012 18:29:03 +0200

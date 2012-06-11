@@ -47,7 +47,7 @@ Description: interactive digital whiteboard software - debug
 Package: sankore-data
 Architecture: all
 Depends: ${misc:Depends}
-Suggests: sankore (= ${binary:Version}), ${misc:Depends}
+Suggests: sankore (= ${binary:Version})
 Description: interactive digital whiteboard software - data
  Open-Sankoré is a free and open-source interactive whiteboard (IWB)
  software compatible with any projector and pointing device. 
