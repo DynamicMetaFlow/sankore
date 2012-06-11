@@ -145,6 +145,9 @@ binary-arch: install
 	dh_testroot
 
 	mkdir -p "$(CURDIR)/debian/sankore/usr/bin/"
+	mkdir -p "$(CURDIR)/debian/sankore/usr/lib/open-sankore/$(ARCH_DIR)"
+	cp Sankore-3.1/plugins/cffadaptor/build/linux/*/lib/libCFF_Adaptor.so.* \
+		"$(CURDIR)/debian/sankore/usr/lib/open-sankore/$(ARCH_DIR)"
 	cp Sankore-3.1/build/linux/*/product/Open-Sankore \
 		"$(CURDIR)/debian/sankore/usr/lib/open-sankore/Open-Sankore.bin"
 	printf '#\!/bin/sh\n\nLD_LIBRARY_PATH="%s" %s\n'  \
@@ -152,9 +155,6 @@ binary-arch: install
 		"/usr/lib/open-sankore/Open-Sankore.bin" \
 		> "$(CURDIR)/debian/sankore/usr/bin/Open-Sankore"
 	chmod 755 "$(CURDIR)/debian/sankore/usr/bin/Open-Sankore"
-	mkdir -p "$(CURDIR)/debian/sankore/usr/lib/open-sankore/$(ARCH_DIR)"
-	cp Sankore-3.1/plugins/cffadaptor/build/linux/*/lib/libCFF_Adaptor.so.* \
-		"$(CURDIR)/debian/sankore/usr/lib/open-sankore/$(ARCH_DIR)"
 
 	dh_installchangelogs -a
 	dh_installdocs -a
