@@ -1,0 +1,4 @@
+# the native language of the application is French, not English
+sankore: spelling-error-in-binary usr/lib/open-sankore/Open-Sankore.bin informations information
+# resSource is a Javascript variable, not a string that can have spelling errors
+sankore: spelling-error-in-binary usr/lib/open-sankore/Open-Sankore.bin resSource resource
