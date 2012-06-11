@@ -1,0 +1,2 @@
+# this script is shipped into the package via the upstream installation process and not used on a Debian system
+sankore-data: script-not-executable usr/share/open-sankore/linux/run.sh

@@ -11,5 +11,8 @@ sankore (3.1~git20120517-1) UNRELEASED; urgency=low
     + W: sankore source: stronger-dependency-implies-weaker sankore-data
       depends -> suggests ${misc:Depends}.
     + E: sankore source: debian-revision-should-not-be-zero 3.1~git20120517-0.
+  * Lintian overrides:
+    + W: sankore-data: script-not-executable
+      usr/share/open-sankore/linux/run.sh.
 
  -- Miriam Ruiz <little_miry@yahoo.es>  Thu, 10 May 2012 18:29:03 +0200
