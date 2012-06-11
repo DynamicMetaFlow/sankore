@@ -42,11 +42,6 @@ sankore (3.1~git20120517-1) UNRELEASED; urgency=low
     + W: sankore-data: script-not-executable
       usr/share/open-sankore/linux/run.sh.
     + sankore: spelling-error-in-binary usr/lib/open-sankore/Open-Sankore.bin
-      informations information (the application's native language is French
-      not English)
-    + sankore: spelling-error-in-binary usr/lib/open-sankore/Open-Sankore.bin
-      resSource resource (resSource is a Javascript variable).
-
   * /debian/rules:
     + Create Open-Sankore.bin in /usr/lib/open-sankore and only keep its
       wrapper in /usr/bin -> saves us writing/symlinking a second man page.
