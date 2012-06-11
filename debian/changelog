@@ -29,6 +29,7 @@ sankore (3.1~git20120517-1) UNRELEASED; urgency=low
     + W: sankore: new-package-should-close-itp-bug
     + W: sankore-data: new-package-should-close-itp-bug
     + W: sankore-dbg: new-package-should-close-itp-bug
+    + W: sankore: binary-without-manpage usr/bin/Open-Sankore
     + P: sankore: copyright-refers-to-symlink-license
       usr/share/common-licenses/GPL
     + P: sankore-data: copyright-refers-to-symlink-license
