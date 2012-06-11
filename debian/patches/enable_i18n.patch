@@ -1,3 +1,5 @@
+Description: Patch for the .pro file so that .qm files are built on-the-fly.
+Author: Mike Gabriel <mike.gabriel@das-netzwerkteam.de>
 --- a/Sankore-3.1/Sankore_3.1.pro
 +++ b/Sankore-3.1/Sankore_3.1.pro
 @@ -110,6 +110,46 @@

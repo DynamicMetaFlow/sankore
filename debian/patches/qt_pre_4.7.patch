@@ -1,3 +1,5 @@
+Description: Make the application build against Qt <4.7
+Author: Miriam Ruiz <miriam@debian.org>
 Index: new/Sankore-3.1/src/adaptors/UBMetadataDcSubsetAdaptor.cpp
 ===================================================================
 --- new.orig/Sankore-3.1/src/adaptors/UBMetadataDcSubsetAdaptor.cpp	2012-05-16 15:56:27.000000000 +0200

@@ -1,3 +1,5 @@
+Description: Use absolute FHS-compliant directories.
+Author: Miriam Ruiz <miriam@debian.org>
 Index: new/Sankore-3.1/src/frameworks/UBPlatformUtils_linux.cpp
 ===================================================================
 --- new.orig/Sankore-3.1/src/frameworks/UBPlatformUtils_linux.cpp	2012-05-10 18:26:51.000000000 +0200
