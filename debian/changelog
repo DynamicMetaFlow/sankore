@@ -38,6 +38,7 @@ sankore (3.1~git20120517-1) UNRELEASED; urgency=low
       wrapper in /usr/bin -> saves us writing/symlinking a second man page.
     + Make sure that the hardening compiler/linker flags are handled correctly
       by qmake-qt4.
+    + Enable parallel (make -j4) build.
   * Patches:
     + Add patch: enable_i18n.patch -> build .qm files on the fly during
       qmake-qt4 run.

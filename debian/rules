@@ -71,16 +71,16 @@ build-stamp: config
 	dh_testdir
 	# 
 	# - Building xpdf ---------------------------------
-	cd Sankore-ThirdParty/xpdf/ && $(MAKE)
+	cd Sankore-ThirdParty/xpdf/ && $(MAKE) -j4
 	# 
 	# - Building quazip -------------------------------
-	cd Sankore-ThirdParty/quazip/ && $(MAKE)
+	cd Sankore-ThirdParty/quazip/ && $(MAKE) -j4
 	# 
 	# - Building cffadaptor ---------------------------
-	cd Sankore-3.1/plugins/cffadaptor/ && $(MAKE)
+	cd Sankore-3.1/plugins/cffadaptor/ && $(MAKE) -j4
 	# 
 	# - Building sankore ------------------------------
-	cd Sankore-3.1 && $(MAKE) 	
+	cd Sankore-3.1 && $(MAKE) -j4
 	# 
 	# - Finished building -----------------------------
 	touch $@
