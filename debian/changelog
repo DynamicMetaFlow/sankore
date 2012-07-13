@@ -48,6 +48,7 @@ sankore (3.1~git20120517-1) UNRELEASED; urgency=low
     + Make sure that the hardening compiler/linker flags are handled correctly
       by qmake-qt4.
     + Enable parallel (make -j4) build.
+    + Fix build flags.
   * Patches:
     + Add patch descriptions and authors.
     + Add patch: enable_i18n.patch -> build .qm files on the fly during

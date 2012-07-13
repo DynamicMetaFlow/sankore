@@ -48,16 +48,16 @@ config-stamp:
 		LDFLAGS="$(LDFLAGS)" \
 		CXXFLAGS="$(CXXFLAGS)" \
 		CPPFLAGS="$(CPPFLAGS)"
-	cd Sankore-ThirdParty/xpdf/ && qmake-qt4 QMAKE_CFLAGS="$(CFLAGS)" QMAKE_LFLAGS="$(LDFLAGS)" QMAKE_CXXFLAGS="$(CXXFLAGS) $(CPPFLAGS)"
+	cd Sankore-ThirdParty/xpdf/ && qmake-qt4 QMAKE_CFLAGS="$(CPPFLAGS) $(CFLAGS)" QMAKE_LFLAGS="$(LDFLAGS)" QMAKE_CXXFLAGS="$(CPPFLAGS) $(CXXFLAGS)"
 	# 
 	# - Configuring quazip ----------------------------
-	cd Sankore-ThirdParty/quazip/ && qmake-qt4 QMAKE_CFLAGS="$(CFLAGS)" QMAKE_LFLAGS="$(LDFLAGS)" QMAKE_CXXFLAGS="$(CXXFLAGS) $(CPPFLAGS)"
+	cd Sankore-ThirdParty/quazip/ && qmake-qt4 QMAKE_CFLAGS="$(CPPFLAGS) $(CFLAGS)" QMAKE_LFLAGS="$(LDFLAGS)" QMAKE_CXXFLAGS="$(CPPFLAGS) $(CXXFLAGS)"
 	# 
 	# - Configuring cffadaptor ------------------------
-	cd Sankore-3.1/plugins/cffadaptor/ && qmake-qt4 QMAKE_CFLAGS="$(CFLAGS)" QMAKE_LFLAGS="$(LDFLAGS)" QMAKE_CXXFLAGS="$(CXXFLAGS) $(CPPFLAGS)"
+	cd Sankore-3.1/plugins/cffadaptor/ && qmake-qt4 QMAKE_CFLAGS="$(CPPFLAGS) $(CFLAGS)" QMAKE_LFLAGS="$(LDFLAGS)" QMAKE_CXXFLAGS="$(CPPFLAGS) $(CXXFLAGS)"
 	# 
 	# - Configuring sankore ---------------------------
-	cd Sankore-3.1 && qmake-qt4 QMAKE_CFLAGS="$(CFLAGS)" QMAKE_LFLAGS="$(LDFLAGS)" QMAKE_CXXFLAGS="$(CXXFLAGS) $(CPPFLAGS)"
+	cd Sankore-3.1 && qmake-qt4 QMAKE_CFLAGS="$(CPPFLAGS) $(CFLAGS)" QMAKE_LFLAGS="$(LDFLAGS)" QMAKE_CXXFLAGS="$(CPPFLAGS) $(CXXFLAGS)"
 	# 
 	# - Finished configuring --------------------------
 	touch $@
