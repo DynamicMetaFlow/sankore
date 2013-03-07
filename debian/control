@@ -3,7 +3,7 @@ Section: education
 Priority: optional
 Maintainer: Debian Edu Packaging Team <debian-edu-pkg-team@lists.alioth.debian.org>
 Uploaders:
- Miriam Ruiz <little_miry@yahoo.es>,
+ Miriam Ruiz <miriam@debian.org>,
  Mike Gabriel <mike.gabriel@das-netzwerkteam.de>,
  José Luis Redrejo Rodríguez <jredrejo@debian.org>
 Build-Depends: debhelper (>= 7), dh-buildinfo,

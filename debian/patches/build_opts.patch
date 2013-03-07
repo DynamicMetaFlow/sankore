@@ -1,22 +1,9 @@
-Description: Fix buildopts on Linux
-Author: Miriam Ruiz <miriam@debian.org>
-Index: new/Sankore-3.1/Sankore_3.1.pro
+Index: sankore/Sankore-3.1/Sankore_3.1.pro
 ===================================================================
---- new.orig/Sankore-3.1/Sankore_3.1.pro	2012-05-16 12:44:30.607565467 +0200
-+++ new/Sankore-3.1/Sankore_3.1.pro	2012-05-16 12:46:42.127559479 +0200
-@@ -351,8 +351,8 @@
- 
- linux-g++-32 {
-    LIBS += -lcrypto
--   QMAKE_CFLAGS += -fopenmp
--   QMAKE_CXXFLAGS += -fopenmp
-+   QMAKE_CFLAGS += -fopenmp -g -Wall
-+   QMAKE_CXXFLAGS += -fopenmp -g -Wall
-    QMAKE_LFLAGS += -fopenmp
-    UB_LIBRARY.path = $$DESTDIR
-    UB_I18N.path = $$DESTDIR/i18n
-@@ -367,8 +367,8 @@
- linux-g++-64 { 
+--- sankore.orig/Sankore-3.1/Sankore_3.1.pro	2013-03-07 20:08:11.515607254 +0100
++++ sankore/Sankore-3.1/Sankore_3.1.pro	2013-03-07 20:08:29.000000000 +0100
+@@ -376,8 +376,8 @@
+     CONFIG += link_prl
      LIBS += -lcrypto
      LIBS += -lX11
 -    QMAKE_CFLAGS += -fopenmp

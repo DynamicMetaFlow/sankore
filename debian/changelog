@@ -1,3 +1,18 @@
+sankore (2.00~git20130131-1) UNRELEASED; urgency=low
+
+  [ Miriam Ruiz ]
+  * New upstream release, obtained from git, corresponding to commits:
+    + Sankore-3.1:        3d5330fb193ff74ff115466e92c9d91122f824a1
+    + Sankore-ThirdParty: 735e68f1b75c5ece90f5c1d50798e1d07eca51a9
+  * Refreshed patches, and added two new:
+    + UBDesktopPropertyPalette.patch
+    + UBGraphicsAristo.patch
+  * Source code has been relicensed by upstream to GPL-3+ with an special
+    exception that allows it to be linked against OpenSSL and its derivatives.
+  * Changed my email address to miriam@debian.org
+
+ -- Miriam Ruiz <miriam@debian.org>  Wed, 06 Mar 2013 13:05:21 +0100
+
 sankore (3.1~git20120517-1) UNRELEASED; urgency=low
 
   [ Miriam Ruiz ]

@@ -1,0 +1,18 @@
+Index: sankore/Sankore-3.1/src/desktop/UBDesktopPropertyPalette.cpp
+===================================================================
+--- sankore.orig/Sankore-3.1/src/desktop/UBDesktopPropertyPalette.cpp	2013-03-07 20:08:11.863607253 +0100
++++ sankore/Sankore-3.1/src/desktop/UBDesktopPropertyPalette.cpp	2013-03-07 20:08:11.855607255 +0100
+@@ -18,7 +18,13 @@
+  * You should have received a copy of the GNU General Public License
+  * along with Open-Sankoré.  If not, see <http://www.gnu.org/licenses/>.
+  */
++
++#include "UBDesktopPropertyPalette.h"
++#include "core/UBApplication.h"
+ #include "gui/UBRightPalette.h"
++#include "gui/UBToolbarButtonGroup.h"
++#include "gui/UBMainWindow.h"
++#include "board/UBDrawingController.h"
+ 
+ #include "core/memcheck.h"
+ 

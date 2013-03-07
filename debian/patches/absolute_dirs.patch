@@ -1,10 +1,8 @@
-Description: Use absolute FHS-compliant directories.
-Author: Miriam Ruiz <miriam@debian.org>
-Index: new/Sankore-3.1/src/frameworks/UBPlatformUtils_linux.cpp
+Index: sankore/Sankore-3.1/src/frameworks/UBPlatformUtils_linux.cpp
 ===================================================================
---- new.orig/Sankore-3.1/src/frameworks/UBPlatformUtils_linux.cpp	2012-05-10 18:26:51.000000000 +0200
-+++ new/Sankore-3.1/src/frameworks/UBPlatformUtils_linux.cpp	2012-05-16 12:46:42.143559477 +0200
-@@ -28,7 +28,7 @@
+--- sankore.orig/Sankore-3.1/src/frameworks/UBPlatformUtils_linux.cpp	2013-03-07 20:08:11.603607252 +0100
++++ sankore/Sankore-3.1/src/frameworks/UBPlatformUtils_linux.cpp	2013-03-07 20:08:31.000000000 +0100
+@@ -38,7 +38,7 @@
  
  QString UBPlatformUtils::applicationResourcesDirectory()
  {
@@ -13,20 +11,18 @@ Index: new/Sankore-3.1/src/frameworks/UBPlatformUtils_linux.cpp
  }
  
  void UBPlatformUtils::hideFile(const QString &filePath)
-Index: new/Sankore-3.1/src/web/UBWebController.cpp
+Index: sankore/Sankore-3.1/src/web/UBWebController.cpp
 ===================================================================
---- new.orig/Sankore-3.1/src/web/UBWebController.cpp	2012-05-10 18:26:51.000000000 +0200
-+++ new/Sankore-3.1/src/web/UBWebController.cpp	2012-05-16 12:46:42.143559477 +0200
-@@ -176,13 +176,8 @@
+--- sankore.orig/Sankore-3.1/src/web/UBWebController.cpp	2013-03-07 20:08:11.603607252 +0100
++++ sankore/Sankore-3.1/src/web/UBWebController.cpp	2013-03-07 20:08:11.595607255 +0100
+@@ -192,11 +192,8 @@
  
      QString tutorialHtmlIndexFile = 0;
      QString tutorialPath = "/etc/Tutorial/tutorial" + language + "/index.html";
 -#if defined(Q_WS_MAC)
 -    tutorialHtmlIndexFile = QApplication::applicationDirPath()+ "/../Resources" + tutorialPath;
--#elif defined(Q_WS_WIN)
--    tutorialHtmlIndexFile = QApplication::applicationDirPath()+ tutorialPath;
 -#else
--    tutorialHtmlIndexFile = QApplication::applicationDirPath()+ tutorialPath;
+-    tutorialHtmlIndexFile = QApplication::applicationDirPath() + tutorialPath;
 -#endif
 +
 +    tutorialHtmlIndexFile = "/usr/share/open-sankore/" + tutorialPath;
