@@ -1,17 +1,25 @@
 /*
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2012 Webdoc SA
  *
- * This program is distributed in the hope that it will be useful,
+ * This file is part of Open-Sankoré.
+ *
+ * Open-Sankoré is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License,
+ * with a specific linking exception for the OpenSSL project's
+ * "OpenSSL" library (or with modified versions of it that use the
+ * same license as the "OpenSSL" library).
+ *
+ * Open-Sankoré is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Open-Sankoré.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+
 #include "core/UBApplication.h"
 #include "globals/UBGlobals.h"
 #include "UBMediaWidget.h"
@@ -114,17 +122,21 @@ eMediaType UBMediaWidget::mediaType()
 
 void UBMediaWidget::showEvent(QShowEvent* event)
 {
-    if(!mpVideoWidget){
-        mpVideoWidget = new Phonon::VideoWidget(this);
-        mMediaLayout->addStretch(1);
-        mMediaLayout->addWidget(mpVideoWidget);
-        mMediaLayout->addStretch(1);
-        Phonon::createPath(mpMediaObject, mpVideoWidget);
-        adaptSizeToVideo();
-        mpMediaObject->play();
-        mpMediaObject->stop();
-    }
-    QWidget::showEvent(event);
+	if(mType == eMediaType_Audio){
+		return;
+	}else{
+		if(!mpVideoWidget){
+			mpVideoWidget = new Phonon::VideoWidget(this);
+			mMediaLayout->addStretch(1);
+			mMediaLayout->addWidget(mpVideoWidget);
+			mMediaLayout->addStretch(1);
+			Phonon::createPath(mpMediaObject, mpVideoWidget);
+			adaptSizeToVideo();
+			mpMediaObject->play();
+			mpMediaObject->stop();
+		}
+		QWidget::showEvent(event);
+	}
 }
 
 void UBMediaWidget::hideEvent(QHideEvent* event)
@@ -159,11 +171,11 @@ void UBMediaWidget::createMediaPlayer()
     }else if(eMediaType_Audio == mType){
         mMediaLayout->setContentsMargins(10, 10, 10, 10);
         mpCover = new QLabel(mpMediaContainer);
-        mpMediaContainer->setStyleSheet(QString("background: none;"));
+        //mpMediaContainer->setStyleSheet(QString("background: none;"));
         setAudioCover(":images/libpalette/soundIcon.svg");
         mpCover->setScaledContents(true);
         mMediaLayout->addStretch(1);
-        mMediaLayout->addWidget(mpCover, 0);
+        mMediaLayout->addWidget(mpCover);
         mMediaLayout->addStretch(1);
         mpAudioOutput = new Phonon::AudioOutput(Phonon::MusicCategory, this);
         Phonon::createPath(mpMediaObject, mpAudioOutput);

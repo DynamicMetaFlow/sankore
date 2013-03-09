@@ -46,6 +46,9 @@ Thumbs.db
 *.ncb
 *.pro.user
 *.idb
+.project
+.settings
+Makefile.Sankore*
 
 # Build files #
 ###############
@@ -67,3 +70,8 @@ plugins/cffadaptor/objects
 #####################
 *.qm
 
+
+# Others #
+##########
+.directory
+.DS_Store

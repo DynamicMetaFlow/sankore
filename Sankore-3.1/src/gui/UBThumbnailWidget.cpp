@@ -1,22 +1,29 @@
 /*
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2012 Webdoc SA
  *
- * This program is distributed in the hope that it will be useful,
+ * This file is part of Open-Sankoré.
+ *
+ * Open-Sankoré is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License,
+ * with a specific linking exception for the OpenSSL project's
+ * "OpenSSL" library (or with modified versions of it that use the
+ * same license as the "OpenSSL" library).
+ *
+ * Open-Sankoré is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Open-Sankoré.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include <QString>
 #include <QCursor>
 
 #include "UBThumbnailWidget.h"
 #include "UBRubberBand.h"
+#include "UBMainWindow.h"
 
 #include "board/UBBoardController.h"
 
@@ -208,9 +215,23 @@ void UBThumbnailWidget::mousePressEvent(QMouseEvent *event)
 {
     mClickTime = QTime::currentTime();
     mMousePressPos = event->pos();
+
+    UBSceneThumbnailPixmap* sceneItem = dynamic_cast<UBSceneThumbnailPixmap*>(itemAt(mMousePressPos));
+    if(sceneItem==NULL)
+    {
+        event->ignore();
+        return;
+    }
+    //if(sceneItem){
+    //	int pageIndex = UBDocumentContainer::pageFromSceneIndex(sceneItem->sceneIndex());
+    //	if(pageIndex == 0){
+    //        event->ignore();
+    //        return;
+    //	}
+    //}
+
     mMousePressScenePos = mapToScene(mMousePressPos);
     QGraphicsItem* underlyingItem = itemAt(mMousePressPos);
-
     UBThumbnail *previousSelectedThumbnail = mLastSelectedThumbnail;
 
     if (!dynamic_cast<UBThumbnail*>(underlyingItem))
@@ -750,8 +771,9 @@ UBSceneThumbnailNavigPixmap::UBSceneThumbnailNavigPixmap(const QPixmap& pix, UBD
     , bCanDelete(false)
     , bCanMoveUp(false)
     , bCanMoveDown(false)
+    , bCanDuplicate(false)
 {
-    if(UBApplication::boardController->pageFromSceneIndex(pSceneIndex)){
+    if(0 <= UBDocumentContainer::pageFromSceneIndex(pSceneIndex)){
         setAcceptsHoverEvents(true);
         setFlag(QGraphicsItem::ItemIsSelectable, true);
     }
@@ -788,14 +810,18 @@ void UBSceneThumbnailNavigPixmap::paint(QPainter *painter, const QStyleOptionGra
             painter->drawPixmap(0, 0, BUTTONSIZE, BUTTONSIZE, QPixmap(":images/close.svg"));
         else
             painter->drawPixmap(0, 0, BUTTONSIZE, BUTTONSIZE, QPixmap(":images/closeDisabled.svg"));
+        if(bCanDuplicate)
+            painter->drawPixmap(BUTTONSIZE + BUTTONSPACING, 0, BUTTONSIZE, BUTTONSIZE, QPixmap(":images/duplicate.svg"));
+        else
+            painter->drawPixmap(BUTTONSIZE + BUTTONSPACING, 0, BUTTONSIZE, BUTTONSIZE, QPixmap(":images/duplicateDisabled.svg"));
         if(bCanMoveUp)
-            painter->drawPixmap(BUTTONSIZE + BUTTONSPACING, 0, BUTTONSIZE, BUTTONSIZE, QPixmap(":images/moveUp.svg"));
+            painter->drawPixmap(2*(BUTTONSIZE + BUTTONSPACING), 0, BUTTONSIZE, BUTTONSIZE, QPixmap(":images/moveUp.svg"));
         else
-            painter->drawPixmap(BUTTONSIZE + BUTTONSPACING, 0, BUTTONSIZE, BUTTONSIZE, QPixmap(":images/moveUpDisabled.svg"));
+            painter->drawPixmap(2*(BUTTONSIZE + BUTTONSPACING), 0, BUTTONSIZE, BUTTONSIZE, QPixmap(":images/moveUpDisabled.svg"));
         if(bCanMoveDown)
-            painter->drawPixmap(2*(BUTTONSIZE + BUTTONSPACING), 0, BUTTONSIZE, BUTTONSIZE, QPixmap(":images/menu.svg"));
+            painter->drawPixmap(3*(BUTTONSIZE + BUTTONSPACING), 0, BUTTONSIZE, BUTTONSIZE, QPixmap(":images/menu.svg"));
         else
-            painter->drawPixmap(2*(BUTTONSIZE + BUTTONSPACING), 0, BUTTONSIZE, BUTTONSIZE, QPixmap(":images/menuDisabled.svg"));
+            painter->drawPixmap(3*(BUTTONSIZE + BUTTONSPACING), 0, BUTTONSIZE, BUTTONSIZE, QPixmap(":images/menuDisabled.svg"));
     }
 }
 
@@ -805,68 +831,60 @@ void UBSceneThumbnailNavigPixmap::mousePressEvent(QGraphicsSceneMouseEvent *even
 
     // Here we check the position of the click and verify if it has to trig an action or not.
     if(bCanDelete && p.x() >= 0 && p.x() <= BUTTONSIZE && p.y() >= 0 && p.y() <= BUTTONSIZE)
-    {
         deletePage();
-    }
-    if(bCanMoveUp && p.x() >= BUTTONSIZE + BUTTONSPACING && p.x() <= 2*BUTTONSIZE + BUTTONSPACING && p.y() >= 0 && p.y() <= BUTTONSIZE)
-    {
+    if(bCanDuplicate && p.x() >= BUTTONSIZE + BUTTONSPACING && p.x() <= 2*BUTTONSIZE + BUTTONSPACING && p.y() >= 0 && p.y() <= BUTTONSIZE)
+        duplicatePage();
+    if(bCanMoveUp && p.x() >= 2*(BUTTONSIZE + BUTTONSPACING) && p.x() <= 3*BUTTONSIZE + 2*BUTTONSPACING && p.y() >= 0 && p.y() <= BUTTONSIZE)
         moveUpPage();
-    }
-    if(bCanMoveDown && p.x() >= 2*(BUTTONSIZE + BUTTONSPACING) && p.x() <= 2*(BUTTONSIZE + BUTTONSPACING) + BUTTONSIZE && p.y() >= 0 && p.y() <= BUTTONSIZE)
-    {
+    if(bCanMoveDown && p.x() >= 3*(BUTTONSIZE + BUTTONSPACING) && p.x() <= 4*BUTTONSIZE + 3*BUTTONSPACING && p.y() >= 0 && p.y() <= BUTTONSIZE)
         moveDownPage();
-    }
+
     event->accept();
 }
 
 void UBSceneThumbnailNavigPixmap::updateButtonsState()
 {
-    bCanDelete = false;
+
+	bCanDelete = false;
     bCanMoveUp = false;
     bCanMoveDown = false;
+    bCanDuplicate = false;
 
-    UBDocumentProxy* p = proxy();
-    if(NULL != p && UBApplication::boardController->pageFromSceneIndex(sceneIndex()))
-    {
-        int iNbPages = p->pageCount();
-        if(1 < iNbPages)
-        {
-            bCanDelete = true;
-            if(sceneIndex() > 0)
-            {
-                bCanMoveUp = true;
-            }
-            if(sceneIndex() != iNbPages - 1)
-            {
-                bCanMoveDown = true;
-            }
-        }
+    if(proxy()){
+    	int pageIndex = UBDocumentContainer::pageFromSceneIndex(sceneIndex());
+    	UBDocumentController* documentController = UBApplication::documentController;
+    	bCanDelete = documentController->pageCanBeDeleted(pageIndex);
+        bCanMoveUp = documentController->pageCanBeMovedUp(pageIndex);
+        bCanMoveDown = documentController->pageCanBeMovedDown(pageIndex);
+        bCanDuplicate = documentController->pageCanBeDuplicated(pageIndex);
     }
-    if(UBSettings::settings()->teacherGuidePageZeroActivated && sceneIndex()<=1)
-        bCanMoveUp = false;
 
-    if(bCanDelete || bCanMoveUp || bCanMoveDown)
-    {
+    if(bCanDelete || bCanMoveUp || bCanMoveDown || bCanDuplicate)
         bButtonsVisible = true;
-    }
 }
 
 void UBSceneThumbnailNavigPixmap::deletePage()
 {
-    QList<QGraphicsItem*> itemsToDelete;
-    itemsToDelete << this;
+	if(UBApplication::mainWindow->yesNoQuestion(QObject::tr("Remove Page"), QObject::tr("Are you sure you want to remove 1 page from the selected document '%0'?").arg(UBApplication::documentController->selectedDocument()->metaData(UBSettings::documentName).toString()))){
+		UBApplication::boardController->deleteScene(sceneIndex());
+	}
+}
 
-    UBApplication::documentController->deletePages(itemsToDelete);
+void UBSceneThumbnailNavigPixmap::duplicatePage()
+{
+	UBApplication::boardController->duplicateScene(sceneIndex());
 }
 
 void UBSceneThumbnailNavigPixmap::moveUpPage()
 {
-    UBApplication::documentController->moveSceneToIndex(proxy(), sceneIndex(), sceneIndex() - 1);
+    if (sceneIndex()!=0)
+        UBApplication::boardController->moveSceneToIndex(sceneIndex(), sceneIndex() - 1);
 }
 
 void UBSceneThumbnailNavigPixmap::moveDownPage()
 {
-    UBApplication::documentController->moveSceneToIndex(proxy(), sceneIndex(), sceneIndex() + 1);
+    if (sceneIndex() < UBApplication::boardController->selectedDocument()->pageCount()-1)
+        UBApplication::boardController->moveSceneToIndex(sceneIndex(), sceneIndex() + 1);
 }
 
 void UBImgTextThumbnailElement::Place(int row, int col, qreal width, qreal height)
@@ -886,11 +904,6 @@ void UBImgTextThumbnailElement::Place(int row, int col, qreal width, qreal heigh
         qreal scaleHeight = height / h;
         qreal scaleFactor = qMin(scaleWidth, scaleHeight);
         UBThumbnail* pix = dynamic_cast<UBThumbnail*>(this->thumbnail);
-
-        if(pix)
-        {
-            scaleFactor = qMin(scaleFactor, 1.0);
-        }
 
         QTransform transform;
         transform.scale(scaleFactor, scaleFactor);

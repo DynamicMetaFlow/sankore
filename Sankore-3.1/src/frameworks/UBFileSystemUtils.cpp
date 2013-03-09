@@ -1,17 +1,24 @@
 /*
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2012 Webdoc SA
  *
- * This program is distributed in the hope that it will be useful,
+ * This file is part of Open-Sankoré.
+ *
+ * Open-Sankoré is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License,
+ * with a specific linking exception for the OpenSSL project's
+ * "OpenSSL" library (or with modified versions of it that use the
+ * same license as the "OpenSSL" library).
+ *
+ * Open-Sankoré is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Open-Sankoré.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 
 #include "UBFileSystemUtils.h"
 
@@ -19,7 +26,7 @@
 
 #include "core/UBApplication.h"
 
-#include "board/UBBoardController.h"
+#include "document/UBDocumentContainer.h"
 
 #include "globals/UBGlobals.h"
 
@@ -44,6 +51,22 @@ UBFileSystemUtils::~UBFileSystemUtils()
     // NOOP
 }
 
+
+QString UBFileSystemUtils::removeLocalFilePrefix(QString input)
+{
+#ifdef Q_WS_WIN
+    if(input.startsWith("file:///"))
+        return input.mid(8);
+    else
+        return input;
+#else
+    if(input.startsWith("file://"))
+        return input.mid(7);
+    else
+        return input;
+#endif
+}
+
 bool UBFileSystemUtils::isAZipFile(QString &filePath)
 {
    if(QFileInfo(filePath).isDir()) return false;
@@ -61,14 +84,14 @@ bool UBFileSystemUtils::isAZipFile(QString &filePath)
    return result;
 }
 
-bool UBFileSystemUtils::copyFile(const QString &source, const QString &Destination, bool overwrite)
+bool UBFileSystemUtils::copyFile(const QString &source, const QString &destination, bool overwrite)
 {
     if (!QFile::exists(source)) {
         qDebug() << "file" << source << "does not present in fs";
         return false;
     }
 
-    QString normalizedDestination = Destination;
+    QString normalizedDestination = destination;
     if (QFile::exists(normalizedDestination)) {
         if  (QFileInfo(normalizedDestination).isFile() && overwrite) {
             QFile::remove(normalizedDestination);
@@ -84,6 +107,15 @@ bool UBFileSystemUtils::copyFile(const QString &source, const QString &Destinati
         }
     }
     return QFile::copy(source, normalizedDestination);
+}
+
+bool UBFileSystemUtils::copy(const QString &source, const QString &destination, bool overwrite)
+{
+    if (QFileInfo(source).isDir()) {
+        return copyDir(source, destination);
+    } else {
+        return copyFile(source, destination, overwrite);
+    }
 }
 
 bool UBFileSystemUtils::deleteFile(const QString &path)
@@ -177,7 +209,7 @@ void UBFileSystemUtils::cleanupGhostTempFolders(const QString& templateString)
 }
 
 
-QStringList UBFileSystemUtils::allFiles(const QString& pDirPath)
+QStringList UBFileSystemUtils::allFiles(const QString& pDirPath, bool isRecursive)
 {
     QStringList result;
     if (pDirPath == "" || pDirPath == "." || pDirPath == "..")
@@ -187,7 +219,7 @@ QStringList UBFileSystemUtils::allFiles(const QString& pDirPath)
 
     foreach(QFileInfo dirContent, dir.entryInfoList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot , QDir::Name))
     {
-        if (dirContent.isDir())
+        if (isRecursive && dirContent.isDir())
         {
             result << allFiles(dirContent.absoluteFilePath());
         }
@@ -247,7 +279,8 @@ bool UBFileSystemUtils::copyDir(const QString& pSourceDirPath, const QString& pT
     QDir dirSource(pSourceDirPath);
     QDir dirTarget(pTargetDirPath);
 
-    dirTarget.mkpath(pTargetDirPath);
+    if (!dirTarget.mkpath(pTargetDirPath))
+        return false;
 
     bool successSoFar = true;
 
@@ -318,7 +351,7 @@ QString UBFileSystemUtils::normalizeFilePath(const QString& pFilePath)
 
 QString UBFileSystemUtils::digitFileFormat(const QString& s, int digit)
 {
-    int pageDigit = UBApplication::boardController->pageFromSceneIndex(digit);
+    int pageDigit = UBDocumentContainer::pageFromSceneIndex(digit);
     return s.arg(pageDigit, 3, 10, QLatin1Char('0'));
 }
 
@@ -333,7 +366,7 @@ QString UBFileSystemUtils::thumbnailPath(const QString& path)
 
 QString UBFileSystemUtils::extension(const QString& fileName)
 {
-    QString extension;
+    QString extension("");
 
     int lastDotIndex = fileName.lastIndexOf(".");
 
@@ -517,6 +550,59 @@ QString UBFileSystemUtils::fileExtensionFromMimeType(const QString& pMimeType)
 
 }
 
+
+UBMimeType::Enum UBFileSystemUtils::mimeTypeFromString(const QString& typeString)
+{
+    UBMimeType::Enum type = UBMimeType::UNKNOWN;
+
+    if (typeString == "image/jpeg"
+        || typeString == "image/png"
+        || typeString == "image/gif"
+        || typeString == "image/tiff"
+        || typeString == "image/bmp")
+    {
+        type = UBMimeType::RasterImage;
+    }
+    else if (typeString == "image/svg+xml")
+    {
+        type = UBMimeType::VectorImage;
+    }
+    else if (typeString == "application/vnd.apple-widget")
+    {
+        type = UBMimeType::AppleWidget;
+    }
+    else if (typeString == "application/widget")
+    {
+        type = UBMimeType::W3CWidget;
+    }
+    else if (typeString.startsWith("video/"))
+    {
+        type = UBMimeType::Video;
+    }
+    else if (typeString.startsWith("audio/"))
+    {
+        type = UBMimeType::Audio;
+    }
+    else if (typeString.startsWith("application/x-shockwave-flash"))
+    {
+        type = UBMimeType::Flash;
+    }
+    else if (typeString.startsWith("application/pdf"))
+    {
+        type = UBMimeType::PDF;
+    }
+    else if (typeString.startsWith("application/vnd.mnemis-uniboard-tool"))
+    {
+        type = UBMimeType::UniboardTool;
+    }
+
+    return type;
+}
+
+UBMimeType::Enum UBFileSystemUtils::mimeTypeFromUrl(const QUrl& url)
+{
+    return mimeTypeFromString(mimeTypeFromFileName(url.toString()));
+}
 
 QString UBFileSystemUtils::getFirstExistingFileFromList(const QString& path, const QStringList& files)
 {
@@ -775,4 +861,3 @@ QString UBFileSystemUtils::readTextFile(QString path)
 
     return "";
 }
-

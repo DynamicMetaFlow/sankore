@@ -1,17 +1,24 @@
 /*
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2012 Webdoc SA
  *
- * This program is distributed in the hope that it will be useful,
+ * This file is part of Open-Sankoré.
+ *
+ * Open-Sankoré is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License,
+ * with a specific linking exception for the OpenSSL project's
+ * "OpenSSL" library (or with modified versions of it that use the
+ * same license as the "OpenSSL" library).
+ *
+ * Open-Sankoré is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Open-Sankoré.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 
 #include "UBGraphicsPixmapItem.h"
 
@@ -28,41 +35,48 @@
 UBGraphicsPixmapItem::UBGraphicsPixmapItem(QGraphicsItem* parent)
     : QGraphicsPixmapItem(parent)
 {
-    mDelegate = new UBGraphicsItemDelegate(this, 0, true, true);
-    mDelegate->init();
-
-    mDelegate->setFlippable(true);
+    setDelegate(new UBGraphicsItemDelegate(this, 0, true, false, true, true));
+    Delegate()->init();
+    Delegate()->setFlippable(true);
+    Delegate()->setRotatable(true);
 
     setData(UBGraphicsItemData::ItemLayerType, UBItemLayerType::Object);
     setTransformationMode(Qt::SmoothTransformation);
 
     setData(UBGraphicsItemData::itemLayerType, QVariant(itemLayerType::ObjectItem)); //Necessary to set if we want z value to be assigned correctly
     setFlag(QGraphicsItem::ItemSendsGeometryChanges, true);
+
+    setUuid(QUuid::createUuid()); //more logical solution is in creating uuid for element in element's constructor
 }
 
 UBGraphicsPixmapItem::~UBGraphicsPixmapItem()
 {
-    if (mDelegate)
-        delete mDelegate;
 }
 
 QVariant UBGraphicsPixmapItem::itemChange(GraphicsItemChange change, const QVariant &value)
 {
-    QVariant newValue = mDelegate->itemChange(change, value);
+    QVariant newValue = Delegate()->itemChange(change, value);
     return QGraphicsPixmapItem::itemChange(change, newValue);
+}
+
+void UBGraphicsPixmapItem::setUuid(const QUuid &pUuid)
+{
+    UBItem::setUuid(pUuid);
+    setData(UBGraphicsItemData::ItemUuid, QVariant(pUuid));
 }
 
 void UBGraphicsPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     QMimeData* pMime = new QMimeData();
     pMime->setImageData(pixmap().toImage());
-    mDelegate->setMimeData(pMime);
-    int k = pixmap().width() / 100;
-    QSize newSize(pixmap().width() / k, pixmap().height() / k);
+    Delegate()->setMimeData(pMime);
+    qreal k = (qreal)pixmap().width() / 100.0;
 
-    mDelegate->setDragPixmap(pixmap().scaled(newSize, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
+    QSize newSize((int)(pixmap().width() / k), (int)(pixmap().height() / k));
 
-    if (mDelegate->mousePressEvent(event))
+    Delegate()->setDragPixmap(pixmap().scaled(newSize, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
+
+    if (Delegate()->mousePressEvent(event))
     {
         //NOOP
     }
@@ -74,7 +88,7 @@ void UBGraphicsPixmapItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
 
 void UBGraphicsPixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
-    if (mDelegate->mouseMoveEvent(event))
+    if (Delegate()->mouseMoveEvent(event))
     {
         // NOOP;
     }
@@ -86,7 +100,7 @@ void UBGraphicsPixmapItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 
 void UBGraphicsPixmapItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
-    mDelegate->mouseReleaseEvent(event);
+    Delegate()->mouseReleaseEvent(event);
     QGraphicsPixmapItem::mouseReleaseEvent(event);
 }
 
@@ -105,33 +119,34 @@ UBItem* UBGraphicsPixmapItem::deepCopy() const
 {
    UBGraphicsPixmapItem* copy = new UBGraphicsPixmapItem();
 
-   copy->setPixmap(this->pixmap());
-   copy->setPos(this->pos());
-   copy->setTransform(this->transform());
-   copy->setFlag(QGraphicsItem::ItemIsMovable, true);
-   copy->setFlag(QGraphicsItem::ItemIsSelectable, true);
-   copy->setData(UBGraphicsItemData::ItemLayerType, this->data(UBGraphicsItemData::ItemLayerType));
-   copy->setData(UBGraphicsItemData::ItemLocked, this->data(UBGraphicsItemData::ItemLocked));
+   copy->setUuid(this->uuid()); // this is OK for now as long as Widgets are imutable
 
-   copy->setUuid(this->uuid()); // This is OK for now, as long as pixmaps are immutable -
-   copy->setSourceUrl(this->sourceUrl());
+   copyItemParameters(copy);
 
    // TODO UB 4.7 ... complete all members ?
 
    return copy;
 }
 
+void UBGraphicsPixmapItem::copyItemParameters(UBItem *copy) const
+{
+    UBGraphicsPixmapItem *cp = dynamic_cast<UBGraphicsPixmapItem*>(copy);
+    if (cp)
+    {
+        cp->setPixmap(this->pixmap());
+        cp->setPos(this->pos());
+        cp->setTransform(this->transform());
+        cp->setFlag(QGraphicsItem::ItemIsMovable, true);
+        cp->setFlag(QGraphicsItem::ItemIsSelectable, true);
+        cp->setData(UBGraphicsItemData::ItemLayerType, this->data(UBGraphicsItemData::ItemLayerType));
+        cp->setData(UBGraphicsItemData::ItemLocked, this->data(UBGraphicsItemData::ItemLocked));
+        cp->setSourceUrl(this->sourceUrl());
+    }
+}
 
 UBGraphicsScene* UBGraphicsPixmapItem::scene()
 {
     return qobject_cast<UBGraphicsScene*>(QGraphicsItem::scene());
-}
-
-
-void UBGraphicsPixmapItem::remove()
-{
-    if (mDelegate)
-        mDelegate->remove(true);
 }
 
 

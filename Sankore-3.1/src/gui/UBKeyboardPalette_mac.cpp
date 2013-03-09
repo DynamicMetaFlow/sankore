@@ -1,17 +1,25 @@
 /*
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2012 Webdoc SA
  *
- * This program is distributed in the hope that it will be useful,
+ * This file is part of Open-Sankoré.
+ *
+ * Open-Sankoré is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License,
+ * with a specific linking exception for the OpenSSL project's
+ * "OpenSSL" library (or with modified versions of it that use the
+ * same license as the "OpenSSL" library).
+ *
+ * Open-Sankoré is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Open-Sankoré.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+
 #include "UBKeyboardPalette.h"
 
 #include <stdio.h>
@@ -22,15 +30,13 @@
 #include <QMap>
 #include <QString>
 
-void UBKeyboardButton::sendUnicodeSymbol(unsigned int nSymbol1, unsigned int nSymbol2, bool shift)
+void UBKeyboardButton::sendUnicodeSymbol(KEYCODE keycode)
 {
-	unsigned int nSymbol = (shift)? nSymbol2 : nSymbol1;
-
-	if (shift)
+    if (keycode.modifier)
 		CGEventPost(kCGSessionEventTap, CGEventCreateKeyboardEvent(NULL, 56, true));
-	CGEventPost(kCGSessionEventTap, CGEventCreateKeyboardEvent(NULL, nSymbol, true));
-	CGEventPost(kCGSessionEventTap, CGEventCreateKeyboardEvent(NULL, nSymbol, false));
-	if (shift)
+    CGEventPost(kCGSessionEventTap, CGEventCreateKeyboardEvent(NULL, keycode.code, true));
+    CGEventPost(kCGSessionEventTap, CGEventCreateKeyboardEvent(NULL, keycode.code, false));
+    if (keycode.modifier)
 		CGEventPost(kCGSessionEventTap, CGEventCreateKeyboardEvent(NULL, 56, false));
 	
 }
@@ -46,68 +52,53 @@ void UBKeyboardButton::sendControlSymbol(int nSymbol)
 
 void UBKeyboardPalette::createCtrlButtons()
 {
-        ctrlButtons = new UBKeyboardButton*[7];
+        ctrlButtons = new UBKeyboardButton*[9];
 
-        ctrlButtons[0] = new UBCntrlButton(this, "<-", 51);
-        ctrlButtons[1] = new UBCntrlButton(this, "<->", 48);
-        ctrlButtons[2] = new UBCntrlButton(this, tr("Enter"), 76);
-        ctrlButtons[3] = new UBCapsLockButton(this, "capslock");
-        ctrlButtons[4] = new UBCapsLockButton(this, "capslock");
-        ctrlButtons[5] = new UBLocaleButton(this);
-        ctrlButtons[6] = new UBCntrlButton(this, "", 49);
-        ctrlButtons[7] = new UBLocaleButton(this);
+        ctrlButtons[0] = new UBCntrlButton(this, 51, "backspace");
+        ctrlButtons[1] = new UBCntrlButton(this, 48, "tab");
+        ctrlButtons[2] = new UBCapsLockButton(this, "capslock");
+        ctrlButtons[3] = new UBCntrlButton(this, tr("Enter"), 76);
+        ctrlButtons[4] = new UBShiftButton(this, "shift");
+        ctrlButtons[5] = new UBShiftButton(this, "shift");
+        ctrlButtons[6] = new UBLocaleButton(this);
+        ctrlButtons[7] = new UBCntrlButton(this, "", 49);
+        ctrlButtons[8] = new UBLocaleButton(this);
 }
 
-void SetMacLocaleByIdentifier(const QString& id)
+
+
+void UBKeyboardPalette::checkLayout()
 {
-	const char * strName = id.toAscii().data();
-	CFStringRef iName = CFStringCreateWithCString(NULL, strName, kCFStringEncodingMacRoman );
+    TISInputSourceRef selectedLocale = TISCopyCurrentKeyboardInputSource();
 
-	CFStringRef keys[] = { kTISPropertyInputSourceCategory, kTISPropertyInputSourceID };          
-	CFStringRef values[] = { kTISCategoryKeyboardInputSource, iName };          
-	CFDictionaryRef dict = CFDictionaryCreate(NULL, (const void **)keys, (const void **)values, 2, NULL, NULL);  
-	CFArrayRef kbds = TISCreateInputSourceList(dict, true);          
-	if (CFArrayGetCount(kbds)!=0)
-	{
-		TISInputSourceRef klRef =  (TISInputSourceRef)CFArrayGetValueAtIndex(kbds, 0);  
-		if (klRef!=NULL)
-			TISSelectInputSource(klRef);
-	}
+    CFStringRef sr = (CFStringRef) TISGetInputSourceProperty(selectedLocale,
+                                                          kTISPropertyInputSourceID);
+
+    if (sr!=NULL)
+    {
+        char clId[1024];
+        CFStringGetCString(sr, clId, 1024, 0);
+
+        for(int i=0; i<nLocalesCount;i++)
+        {
+            if (locales[i]->id == clId)
+            {
+                if (nCurrentLocale!=i)
+                {
+                    setLocale(i);
+                }
+                break;
+            }
+        }
+    }
 }
 
-void UBKeyboardPalette::onActivated(bool activated)
+void UBKeyboardPalette::onActivated(bool)
 {
-	if (activated)
-	{
-		TISInputSourceRef selectedLocale = TISCopyCurrentKeyboardInputSource();
-
-		CFStringRef sr = (CFStringRef) TISGetInputSourceProperty(selectedLocale,
-															  kTISPropertyInputSourceID);  
-
-		if (sr!=NULL)
-		{
-			char tmp[1024];
-			CFStringGetCString(sr, tmp, 1024, 0);
-			activeLocale = tmp;	
-		}
-		else
-			activeLocale = "";
-	
-
-	    onLocaleChanged(locales[nCurrentLocale]);
-	}
-	else
-	{
-		if (activeLocale != "")
-			SetMacLocaleByIdentifier(activeLocale);
-	}
 }
-void UBKeyboardPalette::onDeactivated()
-{
-    SetMacLocaleByIdentifier(activeLocale);
-}
+
 void UBKeyboardPalette::onLocaleChanged(UBKeyboardLocale* locale)
 {
-	SetMacLocaleByIdentifier(locale->id);
+    UBPlatformUtils::SetMacLocaleByIdentifier(locale->id);
 }
 

@@ -1,22 +1,30 @@
 /*
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2012 Webdoc SA
  *
- * This program is distributed in the hope that it will be useful,
+ * This file is part of Open-Sankoré.
+ *
+ * Open-Sankoré is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License,
+ * with a specific linking exception for the OpenSSL project's
+ * "OpenSSL" library (or with modified versions of it that use the
+ * same license as the "OpenSSL" library).
+ *
+ * Open-Sankoré is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Open-Sankoré.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 
 #ifndef UBDOCUMENTCONTROLLER_H_
 #define UBDOCUMENTCONTROLLER_H_
 
 #include <QtGui>
+#include "document/UBDocumentContainer.h"
 
 namespace Ui
 {
@@ -35,7 +43,7 @@ class UBDocumentProxyTreeItem;
 class UBMainWindow;
 class UBDocumentToolsPalette;
 
-class UBDocumentController : public QObject
+class UBDocumentController : public UBDocumentContainer
 {
     Q_OBJECT;
 
@@ -47,14 +55,18 @@ class UBDocumentController : public QObject
         QWidget* controlView();
         UBDocumentProxyTreeItem* findDocument(UBDocumentProxy* proxy);
         bool addFileToDocument(UBDocumentProxy* document);
-        UBDocumentProxy* getCurrentDocument() { return mCurrentDocument; };
         void deletePages(QList<QGraphicsItem*> itemsToDelete);
         int getSelectedItemIndex();
 
+        bool pageCanBeMovedUp(int page);
+        bool pageCanBeMovedDown(int page);
+        bool pageCanBeDuplicated(int page);
+        bool pageCanBeDeleted(int page);
+        QString documentTrashGroupName(){ return mDocumentTrashGroupName;}
+        QString defaultDocumentGroupName(){ return mDefaultDocumentGroupName;}
+
     signals:
-        void refreshThumbnails();
         void exportDone();
-        void movedToIndex(int index);
 
     public slots:
         void createNewDocument();
@@ -68,21 +80,19 @@ class UBDocumentController : public QObject
         void selectDocument(UBDocumentProxy* proxy, bool setAsCurrentDocument = true);
         void show();
         void hide();
-        void showMessage(const QString& message, bool showSpinningWheel);
+        void showMessage(const QString& message, bool showSpinningWheel = false);
         void hideMessage();
         void toggleDocumentToolsPalette();
         void cut();
         void copy();
         void paste();
         void focusChanged(QWidget *old, QWidget *current);
-        void reloadThumbs();
 
     protected:
         virtual void setupViews();
         virtual void setupToolbar();
         void setupPalettes();
         bool isOKToOpenDocument(UBDocumentProxy* proxy);
-        UBGraphicsScene* activeScene();
         UBDocumentProxy* selectedDocumentProxy();
         UBDocumentProxyTreeItem* selectedDocumentProxyTreeItem();
         UBDocumentGroupTreeItem* selectedDocumentGroupTreeItem();
@@ -109,14 +119,16 @@ class UBDocumentController : public QObject
         UBDocumentToolsPalette *mToolsPalette;
         bool mToolsPalettePositionned;
         UBDocumentGroupTreeItem* mTrashTi;
-        UBDocumentProxy* mCurrentDocument;
-        QList<QPixmap> mDocumentThumbs;
+
+        void moveDocumentToTrash(UBDocumentGroupTreeItem* groupTi, UBDocumentProxyTreeItem *proxyTi);
+        void moveFolderToTrash(UBDocumentGroupTreeItem* groupTi);
+        QString mDocumentTrashGroupName;
+        QString mDefaultDocumentGroupName;
 
     private slots:
         void documentZoomSliderValueChanged (int value);
         void loadDocumentProxies();
         void itemSelectionChanged();
-        void refreshDocumentThumbnailsView();
         void exportDocument();
         void itemChanged(QTreeWidgetItem * item, int column);
         void thumbnailViewResized();
@@ -133,6 +145,7 @@ class UBDocumentController : public QObject
         void addFileToDocument();
         void addImages();
 
+        void refreshDocumentThumbnailsView(UBDocumentContainer* source);
 };
 
 

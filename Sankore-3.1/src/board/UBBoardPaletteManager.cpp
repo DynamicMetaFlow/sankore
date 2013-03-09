@@ -1,17 +1,24 @@
 /*
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2012 Webdoc SA
  *
- * This program is distributed in the hope that it will be useful,
+ * This file is part of Open-Sankoré.
+ *
+ * Open-Sankoré is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License,
+ * with a specific linking exception for the OpenSSL project's
+ * "OpenSSL" library (or with modified versions of it that use the
+ * same license as the "OpenSSL" library).
+ *
+ * Open-Sankoré is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Open-Sankoré.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 
 #include "UBBoardPaletteManager.h"
 
@@ -29,6 +36,7 @@
 #include "gui/UBKeyboardPalette.h"
 #include "gui/UBToolWidget.h"
 #include "gui/UBZoomPalette.h"
+#include "gui/UBWebToolsPalette.h"
 #include "gui/UBActionPalette.h"
 #include "gui/UBFavoriteToolPalette.h"
 #include "gui/UBDockTeacherGuideWidget.h"
@@ -47,7 +55,6 @@
 #include "network/UBServerXMLHttpRequest.h"
 
 #include "domain/UBGraphicsScene.h"
-#include "domain/UBAbstractWidget.h"
 #include "domain/UBGraphicsPixmapItem.h"
 
 #include "document/UBDocumentProxy.h"
@@ -65,6 +72,7 @@
 UBBoardPaletteManager::UBBoardPaletteManager(QWidget* container, UBBoardController* pBoardController)
     : QObject(container)
     , mKeyboardPalette(0)
+    , mWebToolsCurrentPalette(0)
     , mContainer(container)
     , mBoardControler(pBoardController)
     , mStylusPalette(0)
@@ -81,12 +89,8 @@ UBBoardPaletteManager::UBBoardPaletteManager(QWidget* container, UBBoardControll
     , mPendingPanButtonPressed(false)
     , mPendingEraseButtonPressed(false)
     , mpPageNavigWidget(NULL)
-#ifdef USE_WEB_WIDGET
-    , mpLibWidget(NULL)
-#endif
     , mpCachePropWidget(NULL)
     , mpDownloadWidget(NULL)
-    , mpDesktopLibWidget(NULL)
     , mpTeacherGuideWidget(NULL)
     , mDownloadInProgress(false)
 {
@@ -97,20 +101,12 @@ UBBoardPaletteManager::UBBoardPaletteManager(QWidget* container, UBBoardControll
 
 UBBoardPaletteManager::~UBBoardPaletteManager()
 {
-    delete mAddItemPalette;
 
+// mAddedItemPalette is delete automatically because of is parent 
+// that changes depending on the mode 
 
-    if(NULL != mStylusPalette)
-    {
-        delete mStylusPalette;
-        mStylusPalette = NULL;
-    }
-
-    if(NULL != mpDesktopLibWidget)
-    {
-        delete mpDesktopLibWidget;
-        mpDesktopLibWidget = NULL;
-    }
+// mMainWindow->centralWidget is the parent of mStylusPalette
+// do not delete this here.
 }
 
 void UBBoardPaletteManager::initPalettesPosAtStartup()
@@ -134,10 +130,6 @@ void UBBoardPaletteManager::setupDockPaletteWidgets()
 
     mpPageNavigWidget = new UBPageNavigationWidget();
 
-#ifdef USE_WEB_WIDGET
-    mpLibWidget = new UBLibWidget();
-#endif
-
     mpCachePropWidget = new UBCachePropertiesWidget();
 
     mpDownloadWidget = new UBDockDownloadWidget();
@@ -150,7 +142,7 @@ void UBBoardPaletteManager::setupDockPaletteWidgets()
     mLeftPalette->registerWidget(mpPageNavigWidget);
     mLeftPalette->addTab(mpPageNavigWidget);
 
-    if(UBSettings::settings()->teacherGuidePageZeroActivated || UBSettings::settings()->teacherGuideLessonPagesActivated){
+    if(UBSettings::settings()->teacherGuidePageZeroActivated->get().toBool() || UBSettings::settings()->teacherGuideLessonPagesActivated->get().toBool()){
         mpTeacherGuideWidget = new UBDockTeacherGuideWidget();
         mLeftPalette->registerWidget(mpTeacherGuideWidget);
         mLeftPalette->addTab(mpTeacherGuideWidget);
@@ -162,8 +154,8 @@ void UBBoardPaletteManager::setupDockPaletteWidgets()
     // RIGHT palette widgets
 #ifndef USE_WEB_WIDGET
     mpFeaturesWidget = new UBFeaturesWidget();
-	mRightPalette->registerWidget(mpFeaturesWidget);
-	mRightPalette->addTab(mpFeaturesWidget);
+    mRightPalette->registerWidget(mpFeaturesWidget);
+    mRightPalette->addTab(mpFeaturesWidget);
 #endif
 
     //Do not show deprecated lib widget to prevent collisions. Uncomment to return lib widget
@@ -268,6 +260,8 @@ void UBBoardPaletteManager::setupPalettes()
 
     mZoomPalette = new UBZoomPalette(mContainer);
 
+    mStylusPalette->stackUnder(mZoomPalette);
+
     QList<QAction*> backgroundsActions;
 
     backgroundsActions << UBApplication::mainWindow->actionPlainLightBackground;
@@ -289,7 +283,7 @@ void UBBoardPaletteManager::setupPalettes()
     addItemActions << UBApplication::mainWindow->actionAddItemToNewPage;
     addItemActions << UBApplication::mainWindow->actionAddItemToLibrary;
 
-    mAddItemPalette = new UBActionPalette(addItemActions, Qt::Horizontal, 0);
+    mAddItemPalette = new UBActionPalette(addItemActions, Qt::Horizontal, mContainer);
     mAddItemPalette->setButtonIconSize(QSize(128, 128));
     mAddItemPalette->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
     mAddItemPalette->groupActions();
@@ -302,6 +296,7 @@ void UBBoardPaletteManager::setupPalettes()
     eraseActions << UBApplication::mainWindow->actionEraseAnnotations;
     eraseActions << UBApplication::mainWindow->actionEraseItems;
     eraseActions << UBApplication::mainWindow->actionClearPage;
+    eraseActions << UBApplication::mainWindow->actionEraseBackground;
 
     mErasePalette = new UBActionPalette(eraseActions, Qt::Horizontal , mContainer);
     mErasePalette->setButtonIconSize(QSize(128, 128));
@@ -343,6 +338,29 @@ void UBBoardPaletteManager::pagePaletteButtonReleased()
     {
         if( mPageButtonPressedTime.msecsTo(QTime::currentTime()) > 900)
         {
+            // The palette is reinstanciated because the duplication depends on the current scene
+            delete(mPagePalette);
+            mPagePalette = 0;
+            QList<QAction*>pageActions;
+            pageActions << UBApplication::mainWindow->actionNewPage;
+            UBBoardController* boardController = UBApplication::boardController;
+            if(UBApplication::documentController->pageCanBeDuplicated(UBDocumentContainer::pageFromSceneIndex(boardController->activeSceneIndex()))){
+                pageActions << UBApplication::mainWindow->actionDuplicatePage;
+            }
+            pageActions << UBApplication::mainWindow->actionImportPage;
+
+            mPagePalette = new UBActionPalette(pageActions, Qt::Horizontal , mContainer);
+            mPagePalette->setButtonIconSize(QSize(128, 128));
+            mPagePalette->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
+            mPagePalette->groupActions();
+            mPagePalette->setClosable(true);
+
+            // As we recreate the pagePalette every time, we must reconnect the slots
+            connect(UBApplication::mainWindow->actionNewPage, SIGNAL(triggered()), mPagePalette, SLOT(close()));
+            connect(UBApplication::mainWindow->actionDuplicatePage, SIGNAL(triggered()), mPagePalette, SLOT(close()));
+            connect(UBApplication::mainWindow->actionImportPage, SIGNAL(triggered()), mPagePalette, SLOT(close()));
+            connect(mPagePalette, SIGNAL(closed()), this, SLOT(pagePaletteClosed()));
+
             togglePagePalette(true);
         }
         else
@@ -445,6 +463,7 @@ void UBBoardPaletteManager::connectPalettes()
     connect(UBApplication::mainWindow->actionEraseItems, SIGNAL(triggered()), mErasePalette, SLOT(close()));
     connect(UBApplication::mainWindow->actionEraseAnnotations, SIGNAL(triggered()), mErasePalette, SLOT(close()));
     connect(UBApplication::mainWindow->actionClearPage, SIGNAL(triggered()), mErasePalette, SLOT(close()));
+    connect(UBApplication::mainWindow->actionEraseBackground,SIGNAL(triggered()),mErasePalette,SLOT(close()));
     connect(mErasePalette, SIGNAL(closed()), this, SLOT(erasePaletteClosed()));
 
     foreach(QWidget *widget, UBApplication::mainWindow->actionErase->associatedWidgets())
@@ -546,7 +565,7 @@ void UBBoardPaletteManager::activeSceneChanged()
 
     if (mpPageNavigWidget)
     {
-        mpPageNavigWidget->setPageNumber(UBApplication::boardController->pageFromSceneIndex(pageIndex), activeScene->document()->pageCount());
+        mpPageNavigWidget->setPageNumber(UBDocumentContainer::pageFromSceneIndex(pageIndex), activeScene->document()->pageCount());
     }
 
     if (mZoomPalette)
@@ -643,11 +662,8 @@ void UBBoardPaletteManager::addItem(const QUrl& pUrl)
     mAddItemPalette->show();
     mAddItemPalette->adjustSizeAndPosition();
 
-    QRect controlGeo = UBApplication::applicationController->displayManager()->controlGeometry();
-
-    mAddItemPalette->move(controlGeo.x() + ((controlGeo.width() - mAddItemPalette->geometry().width()) / 2),
-          (controlGeo.y() + (controlGeo.height() - mAddItemPalette->geometry().height()) / 5));
-
+    mAddItemPalette->move((mContainer->width() - mAddItemPalette->width()) / 2,
+        (mContainer->height() - mAddItemPalette->height()) / 5);
 }
 
 void UBBoardPaletteManager::changeMode(eUBDockPaletteWidgetMode newMode, bool isInit)
@@ -659,8 +675,14 @@ void UBBoardPaletteManager::changeMode(eUBDockPaletteWidgetMode newMode, bool is
     {
         case eUBDockPaletteWidget_BOARD:
             {
-                mLeftPalette->assignParent(UBApplication::boardController->controlContainer());
-                mRightPalette->assignParent(UBApplication::boardController->controlContainer());
+                // On Application start up the mAddItemPalette isn't initialized yet
+                if(mAddItemPalette){
+                    mAddItemPalette->setParent(UBApplication::boardController->controlContainer());
+                }
+                mLeftPalette->assignParent(mContainer);
+                mRightPalette->assignParent(mContainer);
+                mRightPalette->stackUnder(mStylusPalette);
+                mLeftPalette->stackUnder(mStylusPalette);
                 if (UBPlatformUtils::hasVirtualKeyboard() && mKeyboardPalette != NULL)
                 {
 
@@ -683,13 +705,18 @@ void UBBoardPaletteManager::changeMode(eUBDockPaletteWidgetMode newMode, bool is
 
                 if( !isInit )
                     containerResized();
+                if (mWebToolsCurrentPalette)
+                    mWebToolsCurrentPalette->hide();
             }
             break;
 
         case eUBDockPaletteWidget_DESKTOP:
             {
+                mAddItemPalette->setParent((QWidget*)UBApplication::applicationController->uninotesController()->drawingView());
                 mLeftPalette->assignParent((QWidget*)UBApplication::applicationController->uninotesController()->drawingView());
                 mRightPalette->assignParent((QWidget*)UBApplication::applicationController->uninotesController()->drawingView());
+                mStylusPalette->raise();
+
                 if (UBPlatformUtils::hasVirtualKeyboard() && mKeyboardPalette != NULL)
                 {
 
@@ -707,7 +734,12 @@ void UBBoardPaletteManager::changeMode(eUBDockPaletteWidgetMode newMode, bool is
                         mKeyboardPalette->show();
                     }
                     else
+// In linux keyboard in desktop mode have to allways be with null parent
+#ifdef Q_WS_X11
+                        mKeyboardPalette->setParent(0);
+#else
                         mKeyboardPalette->setParent((QWidget*)UBApplication::applicationController->uninotesController()->drawingView());
+#endif //Q_WS_X11
 #ifdef Q_WS_MAC
                         mKeyboardPalette->setWindowFlags(Qt::Dialog | Qt::Popup | Qt::FramelessWindowHint);
 #endif
@@ -717,17 +749,21 @@ void UBBoardPaletteManager::changeMode(eUBDockPaletteWidgetMode newMode, bool is
                 mLeftPalette->setVisible(leftPaletteVisible);
                 mRightPalette->setVisible(rightPaletteVisible);
 #ifdef Q_WS_WIN
-                if (rightPaletteVisible)
+                if (rightPaletteVisible && UBSettings::settings()->appToolBarPositionedAtTop->get().toBool())
                     mRightPalette->setAdditionalVOffset(30);
 #endif
 
-                if( !isInit )
+                if(!isInit)
                     UBApplication::applicationController->uninotesController()->TransparentWidgetResized();
+
+                if (mWebToolsCurrentPalette)
+                    mWebToolsCurrentPalette->hide();
             }
             break;
 
         case eUBDockPaletteWidget_WEB:
             {
+                mAddItemPalette->setParent(UBApplication::mainWindow);
                 if (UBPlatformUtils::hasVirtualKeyboard() && mKeyboardPalette != NULL)
                 {
 //                    tmp variable?
@@ -764,6 +800,8 @@ void UBBoardPaletteManager::changeMode(eUBDockPaletteWidgetMode newMode, bool is
                     else
                         mKeyboardPalette->setParent(UBApplication::documentController->controlView());
                 }
+                if (mWebToolsCurrentPalette)
+                    mWebToolsCurrentPalette->hide();
             }
             break;
 
@@ -802,13 +840,11 @@ void UBBoardPaletteManager::addItem(const QPixmap& pPixmap, const QPointF& pos, 
     mPos = pos;
     mScaleFactor = scaleFactor;
 
-     QRect controlGeo = UBApplication::applicationController->displayManager()->controlGeometry();
-
     mAddItemPalette->show();
     mAddItemPalette->adjustSizeAndPosition();
 
-    mAddItemPalette->move(controlGeo.x() + ((controlGeo.width() - mAddItemPalette->geometry().width()) / 2),
-          (controlGeo.y() + (controlGeo.height() - mAddItemPalette->geometry().height()) / 5));
+    mAddItemPalette->move((mContainer->width() - mAddItemPalette->width()) / 2,
+        (mContainer->height() - mAddItemPalette->height()) / 5);
 }
 
 
@@ -820,7 +856,7 @@ void UBBoardPaletteManager::addItemToCurrentPage()
         UBApplication::boardController->downloadURL(mItemUrl);
     else
     {
-        UBGraphicsPixmapItem* item = UBApplication::boardController->activeScene()->addPixmap(mPixmap, mPos, mScaleFactor);
+        UBGraphicsPixmapItem* item = UBApplication::boardController->activeScene()->addPixmap(mPixmap, NULL, mPos, mScaleFactor);
 
         item->setSourceUrl(mItemUrl);
         item->setSelected(true);
@@ -855,6 +891,10 @@ void UBBoardPaletteManager::addItemToLibrary()
 
 #ifdef USE_WEB_WIDGET
         mpLibWidget->libNavigator()->libraryWidget()->libraryController()->importImageOnLibrary(image);
+#else
+        QDateTime now = QDateTime::currentDateTime();
+        QString capturedName  = tr("CapturedImage") + "-" + now.toString("dd-MM-yyyy hh-mm-ss") + ".png";
+        mpFeaturesWidget->importImage(image, capturedName);
 #endif
 
     }
@@ -921,11 +961,11 @@ void UBBoardPaletteManager::changeStylusPaletteOrientation(QVariant var)
     bool bVertical = var.toBool();
     bool bVisible = mStylusPalette->isVisible();
 
-	// Clean the old palette
+    // Clean the old palette
     if(NULL != mStylusPalette)
     {
-        // TODO : check why this line creates a crash in the application.
         delete mStylusPalette;
+        mStylusPalette = NULL;
     }
 
     // Create the new palette

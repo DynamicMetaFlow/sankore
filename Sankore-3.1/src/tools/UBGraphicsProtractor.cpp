@@ -1,17 +1,24 @@
 /*
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2012 Webdoc SA
  *
- * This program is distributed in the hope that it will be useful,
+ * This file is part of Open-Sankoré.
+ *
+ * Open-Sankoré is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License,
+ * with a specific linking exception for the OpenSSL project's
+ * "OpenSSL" library (or with modified versions of it that use the
+ * same license as the "OpenSSL" library).
+ *
+ * Open-Sankoré is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Open-Sankoré.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 
 #include "UBGraphicsProtractor.h"
 #include "core/UBApplication.h"
@@ -250,13 +257,19 @@ void UBGraphicsProtractor::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     if (scene())
         scene()->setModified(true);
 
+    if (!mShowButtons)
+    {
+        mShowButtons = true;
+        update();
+    }
+
     mCurrentTool = None;
 }
 
 
 void UBGraphicsProtractor::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
 {
-    if (UBDrawingController::drawingController ()->stylusTool() != UBStylusTool::Selector)
+    if (UBDrawingController::drawingController ()->stylusTool() != UBStylusTool::Selector && UBDrawingController::drawingController ()->stylusTool() != UBStylusTool::Play)
         return;
 
     if (!mShowButtons)
@@ -291,12 +304,6 @@ void UBGraphicsProtractor::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
         return;
 
     Tool currentTool = toolFromPos(event->pos());
-
-    if (!mShowButtons)
-    {
-        mShowButtons = true;
-        update();
-    }
 
     if (currentTool == Move)
         setCursor(Qt::SizeAllCursor);
@@ -579,20 +586,27 @@ UBItem* UBGraphicsProtractor::deepCopy() const
 {
     UBGraphicsProtractor* copy = new UBGraphicsProtractor();
 
-    copy->setPos(this->pos());
-    copy->setRect(this->rect());
-    copy->setTransform(this->transform());
-
-    copy->mCurrentAngle = this->mCurrentAngle;
-    copy->mSpan = this->mSpan;
-    copy->mStartAngle = this->mStartAngle;
-    copy->mScaleFactor = this->mScaleFactor;
+    copyItemParameters(copy);
 
     // TODO UB 4.7 ... complete all members ?
 
     return copy;
 }
+void UBGraphicsProtractor::copyItemParameters(UBItem *copy) const
+{
+    UBGraphicsProtractor *cp = dynamic_cast<UBGraphicsProtractor*>(copy);
+    if (cp)
+    {
+        cp->setPos(this->pos());
+        cp->setRect(this->rect());
+        cp->setTransform(this->transform());
 
+        cp->mCurrentAngle = this->mCurrentAngle;
+        cp->mSpan = this->mSpan;
+        cp->mStartAngle = this->mStartAngle;
+        cp->mScaleFactor = this->mScaleFactor;
+    }
+}
 
 void UBGraphicsProtractor::rotateAroundCenter(qreal angle)
 {

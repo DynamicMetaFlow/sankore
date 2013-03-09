@@ -3,17 +3,15 @@ TEMPLATE = app
 
 THIRD_PARTY_PATH=../Sankore-ThirdParty
 
+CONFIG -= flat
 CONFIG += debug_and_release \
           no_include_pwd
 
-linux-g++-64 {
-    CONFIG += link_prl
-}
 
-VERSION_MAJ = 1
-VERSION_MIN = 50 
-VERSION_TYPE = a # a = alpha, b = beta, r = release, other => error
-VERSION_PATCH = 20
+VERSION_MAJ = 2
+VERSION_MIN = 00 
+VERSION_TYPE = r # a = alpha, b = beta, r = release, other => error
+VERSION_PATCH = 00 
 
 VERSION = "$${VERSION_MAJ}.$${VERSION_MIN}.$${VERSION_TYPE}.$${VERSION_PATCH}"
 VERSION = $$replace(VERSION, "\\.r", "")
@@ -35,7 +33,6 @@ QT += script
 QT += xmlpatterns
 
 INCLUDEPATH += src
-INCLUDEPATH += plugins/cffadaptor/src
 
 include($$THIRD_PARTY_PATH/libs.pri)
 include(src/adaptors/adaptors.pri)
@@ -53,12 +50,19 @@ include(src/tools/tools.pri)
 include(src/desktop/desktop.pri)
 include(src/web/web.pri)
 include(src/transition/transition.pri)
-include(src/customWidgets/customWidgets.pri)
 include(src/interfaces/interfaces.pri)
+include(src/customWidgets/customWidgets.pri)
 
 DEPENDPATH += src/pdf-merger
 INCLUDEPATH += src/pdf-merger
 include(src/pdf-merger/pdfMerger.pri)
+
+#plugins
+include(plugins/plugins.pri)
+INCLUDEPATH += plugins/cffadaptor/src
+
+
+#ThirdParty
 DEPENDPATH += $$THIRD_PARTY_PATH/quazip/
 INCLUDEPATH += $$THIRD_PARTY_PATH/quazip/
 include($$THIRD_PARTY_PATH/quazip/quazip.pri)
@@ -92,9 +96,7 @@ BUILD_DIR = build
 
 macx:BUILD_DIR = $$BUILD_DIR/macx
 win32:BUILD_DIR = $$BUILD_DIR/win32
-linux-g++:BUILD_DIR = $$BUILD_DIR/linux
-linux-g++-32:BUILD_DIR = $$BUILD_DIR/linux
-linux-g++-64:BUILD_DIR = $$BUILD_DIR/linux
+linux-g++*:BUILD_DIR = $$BUILD_DIR/linux
 
 CONFIG(debug, debug|release):BUILD_DIR = $$BUILD_DIR/debug
 CONFIG(release, debug|release) {
@@ -108,16 +110,12 @@ MOC_DIR = $$BUILD_DIR/moc
 RCC_DIR = $$BUILD_DIR/rcc
 UI_DIR = $$BUILD_DIR/ui
 
-LIBS += "-Lplugins/cffadaptor/$$BUILD_DIR/lib" "-lCFF_Adaptor"
-
 win32 {
    RC_FILE = resources/win/sankore.rc
    CONFIG += qaxcontainer
    exists(console):CONFIG += console
-   QMAKE_CXXFLAGS += \
-       /MP
-   QMAKE_CXXFLAGS_RELEASE += /Od \
-       /Zi
+   QMAKE_CXXFLAGS += /MP
+   QMAKE_CXXFLAGS_RELEASE += /Od /Zi
    QMAKE_LFLAGS_RELEASE += /DEBUG
    UB_LIBRARY.path = $$DESTDIR
    UB_I18N.path = $$DESTDIR/i18n
@@ -133,8 +131,9 @@ win32 {
 macx {
    LIBS += -framework Foundation 
    LIBS += -lcrypto
-   LIBS += -framework AppKit 
-   LIBS += -framework WebKit
+   #commented because Sankore crashes on Java Script. It seems to backends dependencies.
+   #LIBS += -framework AppKit 
+   #LIBS += -framework WebKit
 
    CONFIG(release, debug|release):CONFIG += x86
 
@@ -143,8 +142,8 @@ macx {
    # are not yet available in 64bits.
    CONFIG(debug, debug|release):CONFIG += x86
 
-   QMAKE_MAC_SDK = "/Developer/SDKs/MacOSX10.5.sdk"
-   QMAKE_MACOSX_DEPLOYMENT_TARGET = "10.4"
+   QMAKE_MAC_SDK = "/Developer/SDKs/MacOSX10.6.sdk"
+   QMAKE_MACOSX_DEPLOYMENT_TARGET = "10.5"
 
    VERSION_RC_PATH = "$$BUILD_DIR/version_rc"
 
@@ -251,12 +250,6 @@ macx {
        TRANSLATION_nb.path = "$$RESOURCES_DIR/nb.lproj"
        QMAKE_BUNDLE_DATA += TRANSLATION_nb
    }
-   exists(resources/i18n/sankore_rm.qm) {
-       TRANSLATION_rm.files = resources/i18n/sankore_rm.qm \
-           resources/i18n/Localizable.strings
-       TRANSLATION_rm.path = "$$RESOURCES_DIR/rm.lproj"
-       QMAKE_BUNDLE_DATA += TRANSLATION_rm
-   }
    exists(resources/i18n/sankore_sv.qm) {
        TRANSLATION_sv.files = resources/i18n/sankore_sv.qm \
            resources/i18n/Localizable.strings
@@ -281,6 +274,18 @@ macx {
        TRANSLATION_zh.path = "$$RESOURCES_DIR/zh.lproj"
        QMAKE_BUNDLE_DATA += TRANSLATION_zh
    }
+   exists(resources/i18n/sankore_zh_CN.qm) {
+       TRANSLATION_zh_CN.files = resources/i18n/sankore_zh_CN.qm \
+           resources/i18n/Localizable.strings
+       TRANSLATION_zh_CN.path = "$$RESOURCES_DIR/zh_CN.lproj"
+       QMAKE_BUNDLE_DATA += TRANSLATION_zh_CN
+   }
+   exists(resources/i18n/sankore_zh_TW.qm) {
+       TRANSLATION_zh_TW.files = resources/i18n/sankore_zh_TW.qm \
+           resources/i18n/Localizable.strings
+       TRANSLATION_zh_TW.path = "$$RESOURCES_DIR/zh_TW.lproj"
+       QMAKE_BUNDLE_DATA += TRANSLATION_zh_TW
+   }
    exists(resources/i18n/sankore_ro.qm) {
        TRANSLATION_ro.files = resources/i18n/sankore_ro.qm \
            resources/i18n/Localizable.strings
@@ -293,26 +298,59 @@ macx {
        TRANSLATION_ar.path = "$$RESOURCES_DIR/ar.lproj"
        QMAKE_BUNDLE_DATA += TRANSLATION_ar
    }
-
    exists(resources/i18n/sankore_iw.qm) {
        TRANSLATION_iw.files = resources/i18n/sankore_iw.qm \
            resources/i18n/Localizable.strings
        TRANSLATION_iw.path = "$$RESOURCES_DIR/iw.lproj"
        QMAKE_BUNDLE_DATA += TRANSLATION_iw
    }
-
    exists(resources/i18n/sankore_pt.qm) {
        TRANSLATION_pt.files = resources/i18n/sankore_pt.qm \
            resources/i18n/Localizable.strings
        TRANSLATION_pt.path = "$$RESOURCES_DIR/pt.lproj"
        QMAKE_BUNDLE_DATA += TRANSLATION_pt
    }
-
    exists(resources/i18n/sankore_sk.qm) {
-       TRANSLATION_pt.files = resources/i18n/sankore_sk.qm \
+       TRANSLATION_sk.files = resources/i18n/sankore_sk.qm \
            resources/i18n/Localizable.strings
-       TRANSLATION_pt.path = "$$RESOURCES_DIR/sk.lproj"
+       TRANSLATION_sk.path = "$$RESOURCES_DIR/sk.lproj"
        QMAKE_BUNDLE_DATA += TRANSLATION_sk
+   }
+   exists(resources/i18n/sankore_bg.qm) {
+       TRANSLATION_bg.files = resources/i18n/sankore_bg.qm \
+           resources/i18n/Localizable.strings
+       TRANSLATION_bg.path = "$$RESOURCES_DIR/bg.lproj"
+       QMAKE_BUNDLE_DATA += TRANSLATION_bg
+   }
+   exists(resources/i18n/sankore_ca.qm) {
+       TRANSLATION_ca.files = resources/i18n/sankore_ca.qm \
+           resources/i18n/Localizable.strings
+       TRANSLATION_ca.path = "$$RESOURCES_DIR/ca.lproj"
+       QMAKE_BUNDLE_DATA += TRANSLATION_ca
+   }
+   exists(resources/i18n/sankore_el.qm) {
+       TRANSLATION_el.files = resources/i18n/sankore_el.qm \
+           resources/i18n/Localizable.strings
+       TRANSLATION_el.path = "$$RESOURCES_DIR/el.lproj"
+       QMAKE_BUNDLE_DATA += TRANSLATION_el
+   }
+   exists(resources/i18n/sankore_tr.qm) {
+       TRANSLATION_tr.files = resources/i18n/sankore_tr.qm \
+           resources/i18n/Localizable.strings
+       TRANSLATION_tr.path = "$$RESOURCES_DIR/tr.lproj"
+       QMAKE_BUNDLE_DATA += TRANSLATION_tr
+   }
+   exists(resources/i18n/sankore_cs.qm) {
+       TRANSLATION_cs.files = resources/i18n/sankore_cs.qm \
+           resources/i18n/localizable.strings
+       TRANSLATION_cs.path = "$$RESOURCES_DIR/cs.lproj"
+       QMAKE_BUNDLE_DATA += TRANSLATION_cs
+   }
+   exists(resources/i18n/sankore_mg.qm) {
+       TRANSLATION_mg.files = resources/i18n/sankore_mg.qm \
+           resources/i18n/localizable.strings
+       TRANSLATION_mg.path = "$$RESOURCES_DIR/mg.lproj"
+       QMAKE_BUNDLE_DATA += TRANSLATION_mg
    }
    
    QMAKE_BUNDLE_DATA += UB_ETC \
@@ -334,37 +372,8 @@ macx {
    system(printf "%02x%02x%02x%02x" `printf $$VERSION_RC | cut -d ',' -f 1` `printf $$VERSION_RC | cut -d ',' -f 2` `printf $$VERSION_RC | cut -d ',' -f 3` `printf $$VERSION_RC | cut -d ',' -f 4` | xxd -r -p > "$$VERSION_RC_PATH")
 }
 
-linux-g++ {
-   LIBS += -lcrypto
-   QMAKE_CFLAGS += -fopenmp
-   QMAKE_CXXFLAGS += -fopenmp
-   QMAKE_LFLAGS += -fopenmp
-   UB_LIBRARY.path = $$DESTDIR
-   UB_I18N.path = $$DESTDIR/i18n
-   UB_ETC.path = $$DESTDIR
-   UB_THIRDPARTY_INTERACTIVE.path = $$DESTDIR/library
-   system(mkdir -p $$BUILD_DIR)
-   system(echo "$$VERSION" > $$BUILD_DIR/version)
-   system(echo "$$LONG_VERSION" > $$BUILD_DIR/longversion)
-   system(echo "$$SVN_VERSION" > $$BUILD_DIR/svnversion)
-}
-
-linux-g++-32 {
-   LIBS += -lcrypto
-   QMAKE_CFLAGS += -fopenmp
-   QMAKE_CXXFLAGS += -fopenmp
-   QMAKE_LFLAGS += -fopenmp
-   UB_LIBRARY.path = $$DESTDIR
-   UB_I18N.path = $$DESTDIR/i18n
-   UB_ETC.path = $$DESTDIR
-   UB_THIRDPARTY_INTERACTIVE.path = $$DESTDIR/library
-   system(mkdir -p $$BUILD_DIR)
-   system(echo "$$VERSION" > $$BUILD_DIR/version)
-   system(echo "$$LONG_VERSION" > $$BUILD_DIR/longversion)
-   system(echo "$$SVN_VERSION" > $$BUILD_DIR/svnversion)
-}
-
-linux-g++-64 { 
+linux-g++* {
+    CONFIG += link_prl
     LIBS += -lcrypto
     LIBS += -lX11
     QMAKE_CFLAGS += -fopenmp
@@ -396,16 +405,23 @@ TRANSLATIONS = resources/i18n/sankore_en.ts \
    resources/i18n/sankore_ru.ts \
    resources/i18n/sankore_da.ts \
    resources/i18n/sankore_nb.ts \
-   resources/i18n/sankore_rm.ts \
    resources/i18n/sankore_sv.ts \
    resources/i18n/sankore_ja.ts \
    resources/i18n/sankore_ko.ts \
    resources/i18n/sankore_zh.ts \
+   resources/i18n/sankore_zh_CN.ts \
+   resources/i18n/sankore_zh_TW.ts \
    resources/i18n/sankore_ro.ts \
    resources/i18n/sankore_ar.ts \
    resources/i18n/sankore_iw.ts \
    resources/i18n/sankore_pt.ts \
-   resources/i18n/sankore_sk.ts
+   resources/i18n/sankore_sk.ts \
+   resources/i18n/sankore_bg.ts \
+   resources/i18n/sankore_ca.ts \
+   resources/i18n/sankore_el.ts \
+   resources/i18n/sankore_tr.ts \
+   resources/i18n/sankore_cs.ts \
+   resources/i18n/sankore_mg.ts
 
 INSTALLS = UB_ETC \
    UB_I18N \

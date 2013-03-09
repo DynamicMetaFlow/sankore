@@ -1,3 +1,25 @@
+/*
+ * Copyright (C) 2012 Webdoc SA
+ *
+ * This file is part of Open-Sankoré.
+ *
+ * Open-Sankoré is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License,
+ * with a specific linking exception for the OpenSSL project's
+ * "OpenSSL" library (or with modified versions of it that use the
+ * same license as the "OpenSSL" library).
+ *
+ * Open-Sankoré is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Open-Sankoré.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+
 #ifndef UBKEYBOARDPALETTE_H
 #define UBKEYBOARDPALETTE_H
 
@@ -64,7 +86,9 @@ class UBKeyboardPalette : public UBActionPalette
 
 friend class UBKeyboardButton;
 friend class UBCapsLockButton;
+friend class UBShiftButton;
 friend class UBLocaleButton;
+friend class UBKeyButton;
 
 public:
     UBKeyboardPalette(QWidget *parent);
@@ -97,9 +121,13 @@ private slots:
 
 protected:
     bool capsLock;
+    bool shift;
     int nCurrentLocale;
     int nLocalesCount;
     UBKeyboardLocale** locales;
+
+    int nSpecialModifierIndex;
+    KEYCODE specialModifier;
 
     QString strSize;
     int btnWidth;
@@ -113,7 +141,7 @@ protected:
     virtual void  paintEvent(QPaintEvent *event);
     virtual void  moveEvent ( QMoveEvent * event );
 
-    void sendKeyEvent(const KEYBT& keybt);
+    void sendKeyEvent(KEYCODE keyCode);
 
     void setLocale(int nLocale);
 
@@ -121,12 +149,18 @@ protected:
 
     void init();
 
+
 private:
 
     QRect originalRect;
 
     UBKeyButton** buttons;
     UBKeyboardButton** ctrlButtons;
+
+    /*
+      For MacOS: synchronization with system locale.
+    */
+    void checkLayout();
 
     void createCtrlButtons();
 
@@ -139,10 +173,6 @@ private:
     void* storage;
     // Linux-related parameters
     int min_keycodes, max_keycodes, byte_per_code;
-
-    // Save locale before activation to restore it after (MAC)
-    QString activeLocale;
-
 };
 
 class UBKeyboardButton : public QWidget
@@ -170,11 +200,11 @@ protected:
     virtual void onRelease() = 0;
     virtual void paintContent(QPainter& painter) = 0;
 
-    bool capsLock(){return keyboard->capsLock;}
+    virtual bool isPressed();
 
     UBKeyboardPalette* keyboard;
 
-    void sendUnicodeSymbol(unsigned int nSymbol1, unsigned int nSymbol2, bool shift);
+    void sendUnicodeSymbol(KEYCODE keycode);
     void sendControlSymbol(int nSymbol);
 
 private:
@@ -197,6 +227,7 @@ public:
     virtual void paintContent(QPainter& painter);
 
 private:
+    bool shifted();
     const KEYBT* keybt;
 };
 
@@ -229,7 +260,27 @@ public:
     virtual void onPress();
     virtual void onRelease();
     virtual void paintContent(QPainter& painter);
+
+protected:
+    virtual bool isPressed();
 };
+
+class UBShiftButton : public UBKeyboardButton
+{
+    Q_OBJECT
+
+public:
+    UBShiftButton(UBKeyboardPalette* parent, const QString _contentImagePath);
+    ~UBShiftButton();
+
+    virtual void onPress();
+    virtual void onRelease();
+    virtual void paintContent(QPainter& painter);
+
+protected:
+    virtual bool isPressed();
+};
+
 
 class UBLocaleButton : public UBKeyboardButton
 {

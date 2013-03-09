@@ -1,17 +1,24 @@
 /*
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2012 Webdoc SA
  *
- * This program is distributed in the hope that it will be useful,
+ * This file is part of Open-Sankoré.
+ *
+ * Open-Sankoré is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License,
+ * with a specific linking exception for the OpenSSL project's
+ * "OpenSSL" library (or with modified versions of it that use the
+ * same license as the "OpenSSL" library).
+ *
+ * Open-Sankoré is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Open-Sankoré.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 
 #ifndef UBGRAPHICSSCENE_H_
 #define UBGRAPHICSSCENE_H_
@@ -29,23 +36,25 @@ class UBGraphicsPixmapItem;
 class UBGraphicsProxyWidget;
 class UBGraphicsSvgItem;
 class UBGraphicsPolygonItem;
+class UBGraphicsMediaItem;
 class UBGraphicsVideoItem;
 class UBGraphicsAudioItem;
 class UBGraphicsWidgetItem;
 class UBGraphicsW3CWidgetItem;
 class UBGraphicsAppleWidgetItem;
+class UBToolWidget;
 class UBGraphicsPDFItem;
 class UBGraphicsTextItem;
 class UBGraphicsRuler;
 class UBGraphicsProtractor;
 class UBGraphicsCompass;
-class UBAbstractWidget;
 class UBDocumentProxy;
 class UBGraphicsCurtainItem;
 class UBGraphicsStroke;
 class UBMagnifierParams;
 class UBMagnifier;
 class UBGraphicsCache;
+class UBGraphicsGroupContainerItem;
 
 const double PI = 4.0 * atan(1.0);
 
@@ -85,6 +94,7 @@ public:
 
     qreal changeZLevelTo(QGraphicsItem *item, moveDestination dest);
     itemLayerType::Enum typeForData(QGraphicsItem *item) const;
+    void setLayerType(QGraphicsItem *pItem, itemLayerType::Enum pNewType);
 
 private:
     ScopeMap scopeMap;
@@ -98,19 +108,28 @@ class UBGraphicsScene: public UBCoreGraphicsScene, public UBItem
 
     public:
 
-    //        tmp stub for divide addings scene objects from undo mechanism implementation
-    void setURStackEnable(bool set = true) {enableUndoRedoStack = set;}
+    enum clearCase {
+        clearItemsAndAnnotations = 0
+        , clearAnnotations
+        , clearItems
+        , clearBackground
+    };
 
-    UBGraphicsScene(UBDocumentProxy *parent);
+    //        tmp stub for divide addings scene objects from undo mechanism implementation
+        void enableUndoRedoStack(){mUndoRedoStackEnabled = true;}
+        void setURStackEnable(bool enable){mUndoRedoStackEnabled = enable;}
+        bool isURStackIsEnabled(){return mUndoRedoStackEnabled;}
+
+        UBGraphicsScene(UBDocumentProxy *parent, bool enableUndoRedoStack = true);
         virtual ~UBGraphicsScene();
 
         virtual UBItem* deepCopy() const;
 
+        virtual void copyItemParameters(UBItem *copy) const {Q_UNUSED(copy);}
+
         UBGraphicsScene* sceneDeepCopy() const;
 
-        void clearItemsAndAnnotations();
-        void clearItems();
-        void clearAnnotations();
+        void clearContent(clearCase pCase = clearItemsAndAnnotations);
 
         bool inputDevicePress(const QPointF& scenePos, const qreal& pressure = 1.0);
         bool inputDeviceMove(const QPointF& scenePos, const qreal& pressure = 1.0);
@@ -126,12 +145,15 @@ class UBGraphicsScene: public UBCoreGraphicsScene, public UBItem
 
         UBGraphicsWidgetItem* addWidget(const QUrl& pWidgetUrl, const QPointF& pPos = QPointF(0, 0));
         UBGraphicsAppleWidgetItem* addAppleWidget(const QUrl& pWidgetUrl, const QPointF& pPos = QPointF(0, 0));
-        UBGraphicsW3CWidgetItem* addW3CWidget(const QUrl& pWidgetUrl, const QPointF& pPos = QPointF(0, 0),int widgetType = UBGraphicsItemType::W3CWidgetItemType);
+        UBGraphicsW3CWidgetItem* addW3CWidget(const QUrl& pWidgetUrl, const QPointF& pPos = QPointF(0, 0));
         void addGraphicsWidget(UBGraphicsWidgetItem* graphicsWidget, const QPointF& pPos = QPointF(0, 0));
 
-        UBGraphicsVideoItem* addVideo(const QUrl& pVideoFileUrl, bool shouldPlayAsap, const QPointF& pPos = QPointF(0, 0));
-        UBGraphicsAudioItem* addAudio(const QUrl& pAudioFileUrl, bool shouldPlayAsap, const QPointF& pPos = QPointF(0, 0));
-        UBGraphicsSvgItem* addSvg(const QUrl& pSvgFileUrl, const QPointF& pPos = QPointF(0, 0));
+        
+
+        UBGraphicsMediaItem* addMedia(const QUrl& pMediaFileUrl, bool shouldPlayAsap, const QPointF& pPos = QPointF(0, 0));
+        UBGraphicsMediaItem* addVideo(const QUrl& pVideoFileUrl, bool shouldPlayAsap, const QPointF& pPos = QPointF(0, 0));
+        UBGraphicsMediaItem* addAudio(const QUrl& pAudioFileUrl, bool shouldPlayAsap, const QPointF& pPos = QPointF(0, 0));
+        UBGraphicsSvgItem* addSvg(const QUrl& pSvgFileUrl, const QPointF& pPos = QPointF(0, 0), const QByteArray pData = QByteArray());
         UBGraphicsTextItem* addText(const QString& pString, const QPointF& pTopLeft = QPointF(0, 0));
         UBGraphicsTextItem* textForObjectName(const QString& pString, const QString &objectName = "UBTGZeroPageSessionTitle");
 
@@ -140,6 +162,9 @@ class UBGraphicsScene: public UBCoreGraphicsScene, public UBItem
         UBGraphicsTextItem* addTextHtml(const QString &pString = QString(), const QPointF& pTopLeft = QPointF(0, 0));
 
         UBGraphicsW3CWidgetItem* addOEmbed(const QUrl& pContentUrl, const QPointF& pPos = QPointF(0, 0));
+
+        UBGraphicsGroupContainerItem *createGroup(QList<QGraphicsItem*> items);
+        void addGroup(UBGraphicsGroupContainerItem *groupItem);
 
         QGraphicsItem* setAsBackgroundObject(QGraphicsItem* item, bool pAdaptTransformation = false, bool expand = false);
 
@@ -157,22 +182,14 @@ class UBGraphicsScene: public UBCoreGraphicsScene, public UBItem
 
         QRectF normalizedSceneRect(qreal ratio = -1.0);
 
+        QGraphicsItem *itemForUuid(QUuid uuid);
+
         void moveTo(const QPointF& pPoint);
         void drawLineTo(const QPointF& pEndPoint, const qreal& pWidth, bool bLineStyle);
         void eraseLineTo(const QPointF& pEndPoint, const qreal& pWidth);
         void drawArcTo(const QPointF& pCenterPoint, qreal pSpanAngle);
 
         bool isEmpty() const;
-
-        bool isModified() const
-        {
-            return mIsModified;
-        }
-
-        void setModified(bool pModified)
-        {
-            mIsModified = pModified;
-        }
 
         void setDocument(UBDocumentProxy* pDocument);
 
@@ -206,6 +223,7 @@ class UBGraphicsScene: public UBCoreGraphicsScene, public UBItem
         void addCompass(QPointF center);
         void addTriangle(QPointF center);
         void addMagnifier(UBMagnifierParams params);
+        void addAristo(QPointF center);
 
         void addMask(const QPointF &center = QPointF());
         void addCache();
@@ -289,9 +307,12 @@ class UBGraphicsScene: public UBCoreGraphicsScene, public UBItem
         void setSelectedZLevel(QGraphicsItem *item);
         void setOwnZlevel(QGraphicsItem *item);
 
-        void groupItems(QList<QGraphicsItem *> &itemList);
-public slots:
+        static QUuid getPersonalUuid(QGraphicsItem *item);
 
+        UBGraphicsPolygonItem* polygonToPolygonItem(const QPolygonF pPolygon);
+
+public slots:
+		void initStroke();
         void hideEraser();
 
         void setBackground(bool pIsDark, bool pIsCrossed);
@@ -299,7 +320,11 @@ public slots:
         void setDrawingMode(bool bModeDesktop);
         void deselectAllItems();
 
-        UBGraphicsPixmapItem* addPixmap(const QPixmap& pPixmap, const QPointF& pPos = QPointF(0,0), qreal scaleFactor = 1.0, bool pUseAnimation = false);
+        UBGraphicsPixmapItem* addPixmap(const QPixmap& pPixmap, 
+            QGraphicsItem* replaceFor,
+            const QPointF& pPos = QPointF(0,0), 
+            qreal scaleFactor = 1.0, 
+            bool pUseAnimation = false);
 
         void textUndoCommandAdded(UBGraphicsTextItem *textItem);
 
@@ -307,9 +332,8 @@ public slots:
 
         void selectionChangedProcessing();
         void updateGroupButtonState();
-        void groupButtonClicked();
-
-        void moveMagnifier(QPoint newPos);
+        void moveMagnifier();
+        void moveMagnifier(QPoint newPos, bool forceGrab = false);
         void closeMagnifier();
         void zoomInMagnifier();
         void zoomOutMagnifier();
@@ -323,7 +347,6 @@ public slots:
 
         UBGraphicsPolygonItem* lineToPolygonItem(const QLineF& pLine, const qreal& pWidth);
         UBGraphicsPolygonItem* arcToPolygonItem(const QLineF& pStartRadius, qreal pSpanAngle, qreal pWidth);
-        UBGraphicsPolygonItem* polygonToPolygonItem(const QPolygonF pPolygon);
 
         void initPolygonItem(UBGraphicsPolygonItem*);
 
@@ -361,8 +384,6 @@ public slots:
         bool mIsDesktopMode;
         qreal mZoomFactor;
 
-        bool mIsModified;
-
         QGraphicsItem* mBackgroundObject;
 
         QPointF mPreviousPoint;
@@ -394,7 +415,7 @@ public slots:
 
         bool mHasCache;
         //        tmp stub for divide addings scene objects from undo mechanism implementation
-        bool enableUndoRedoStack;
+        bool mUndoRedoStackEnabled;
 
         UBMagnifier *magniferControlViewWidget;
         UBMagnifier *magniferDisplayViewWidget;

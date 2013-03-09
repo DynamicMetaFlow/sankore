@@ -1,17 +1,24 @@
 /*
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2012 Webdoc SA
  *
- * This program is distributed in the hope that it will be useful,
+ * This file is part of Open-Sankoré.
+ *
+ * Open-Sankoré is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License,
+ * with a specific linking exception for the OpenSSL project's
+ * "OpenSSL" library (or with modified versions of it that use the
+ * same license as the "OpenSSL" library).
+ *
+ * Open-Sankoré is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Open-Sankoré.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 
 #include "UBAudioQueueRecorder.h"
 
@@ -139,7 +146,7 @@ QString UBAudioQueueRecorder::deviceUIDFromDeviceID(AudioDeviceID id)
     {
         char *cname = new char[1024];
 
-        bool result = CFStringGetCString (name, cname, 1024, kCFStringEncodingASCII);
+        CFStringGetCString (name, cname, 1024, kCFStringEncodingASCII);
         int length = CFStringGetLength (name);
 
         uid = QString::fromAscii(cname, length);
@@ -162,14 +169,10 @@ QString UBAudioQueueRecorder::deviceNameFromDeviceID(AudioDeviceID id)
 
     if (noErr == AudioDeviceGetProperty(id, 0, true, kAudioObjectPropertyName, &size, &name))
     {
-        char *cname = new char[1024];
-
-        bool result = CFStringGetCString (name, cname, 1024, kCFStringEncodingUTF8);
-        int length = CFStringGetLength (name);
-
-        deviceName = QString::fromUtf8(cname, length);
-
-        delete cname;
+        char cname[1024];
+        memset(cname,0,1024);
+        CFStringGetCString (name, cname, 1024, kCFStringEncodingUTF8);
+        deviceName = QString::fromUtf8(cname);
     }
 
     CFRelease(name);

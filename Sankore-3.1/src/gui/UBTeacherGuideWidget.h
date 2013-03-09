@@ -1,17 +1,24 @@
 /*
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2012 Webdoc SA
  *
- * This program is distributed in the hope that it will be useful,
+ * This file is part of Open-Sankoré.
+ *
+ * Open-Sankoré is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License,
+ * with a specific linking exception for the OpenSSL project's
+ * "OpenSSL" library (or with modified versions of it that use the
+ * same license as the "OpenSSL" library).
+ *
+ * Open-Sankoré is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Open-Sankoré.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 
 #ifndef UBTEACHERGUIDEWIDGET_H
 #define UBTEACHERGUIDEWIDGET_H
@@ -23,7 +30,7 @@ class QVBoxLayout;
 class QPushButton;
 class UBDocumentProxy;
 class UBGraphicsTextItem;
-
+class QScrollArea;
 
 #include "UBTeacherGuideWidgetsTools.h"
 
@@ -34,6 +41,8 @@ typedef enum
     tUBTGZeroPageMode_EDITION,
     tUBTGZeroPageMode_PRESENTATION
 }tUBTGZeroPageMode;
+
+#define LOWER_RESIZE_WIDTH 50
 
 /***************************************************************************
  *               class    UBTeacherGuideEditionWidget                      *
@@ -49,6 +58,8 @@ public:
 
     void load(QString element);
     QVector<tIDataStorage*> save(int pageIndex);
+
+    bool isModified();
 
 public slots:
     void onAddItemClicked(QTreeWidgetItem* widget, int column, QDomElement* element = 0);
@@ -73,7 +84,9 @@ private:
 
 private slots:
     void onActiveDocumentChanged();
-
+#ifdef Q_WS_MACX
+    void onSliderMoved(int size);
+#endif
 };
 
 
@@ -110,6 +123,12 @@ private:
     QTreeWidgetItem* mpRootWidgetItem;
     QTreeWidgetItem* mpMediaSwitchItem;
 
+
+#ifdef Q_WS_MACX
+private slots:
+    void onSliderMoved(int size);
+#endif
+
 };
 
 /***************************************************************************
@@ -124,11 +143,17 @@ public:
     ~UBTeacherGuidePageZeroWidget();
 
     QVector<tUBGEElementNode*> getData();
+    bool isModified();
 
+signals:
+	void resized();
 
 public slots:
     void onActiveSceneChanged();
     void switchToMode(tUBTGZeroPageMode mode = tUBTGZeroPageMode_EDITION);
+
+protected:
+    void resizeEvent(QResizeEvent* ev);
 
 private:
     void fillComboBoxes();
@@ -139,8 +164,13 @@ private:
 
     QVBoxLayout* mpLayout;
     QHBoxLayout* mpButtonTitleLayout;
+    QVBoxLayout* mpContainerWidgetLayout;
     QPushButton* mpModePushButton;
     QLabel* mpPageNumberLabel;
+
+    QScrollArea* mpScrollArea;
+    QWidget* mpContainerWidget;
+
     UBTGAdaptableText* mpSessionTitle;
     QFrame* mpSeparatorSessionTitle;
 
@@ -198,6 +228,8 @@ public:
     explicit UBTeacherGuideWidget(QWidget* parent = 0, const char* name="UBTeacherGuideWidget");
     ~UBTeacherGuideWidget();
 
+    bool isModified();
+
 public slots:
     void changeMode();
     void showPresentationMode();
@@ -209,6 +241,11 @@ private:
     UBTeacherGuideEditionWidget* mpEditionWidget;
     UBTeacherGuidePresentationWidget* mpPresentationWidget;
     QVector<tUBGEElementNode*>mCurrentData;
+    bool mKeyboardActionFired;
+
+private slots:
+	void onTriggeredAction(bool checked);
+	void onTriggeredKeyboardAction(bool checked);
 };
 
 #endif // UBTEACHERGUIDEWIDGET_H

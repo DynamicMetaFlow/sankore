@@ -1,17 +1,24 @@
 /*
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2012 Webdoc SA
  *
- * This program is distributed in the hope that it will be useful,
+ * This file is part of Open-Sankoré.
+ *
+ * Open-Sankoré is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License,
+ * with a specific linking exception for the OpenSSL project's
+ * "OpenSSL" library (or with modified versions of it that use the
+ * same license as the "OpenSSL" library).
+ *
+ * Open-Sankoré is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Open-Sankoré.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 
 #include "UBHttpGet.h"
 
@@ -65,26 +72,6 @@ QNetworkReply* UBHttpGet::get(QUrl pUrl, QPointF pPos, QSize pSize, bool isBackg
 
     return mReply;
 }
-//QNetworkReply* UBHttpGet::get(const sDownloadFileDesc &downlinfo)
-//{
-//    mDownloadInfo.size = downlinfo.size;
-//    mDownloadInfo.isBackground = downlinfo.isBackground;
-//    mDownloadInfo.pos = downlinfo.pos;
-
-//    if (mReply)
-//        delete mReply;
-
-//    UBNetworkAccessManager * nam = UBNetworkAccessManager::defaultAccessManager();
-//    mReply = nam->get(QNetworkRequest(QUrl(downlinfo.url))); //mReply deleted by this destructor
-
-//    mDownloadedBytes.clear();
-
-//    connect(mReply, SIGNAL(finished()), this, SLOT(requestFinished()));
-//    connect(mReply, SIGNAL(readyRead()), this, SLOT(readyRead()));
-//    connect(mReply, SIGNAL(downloadProgress(qint64, qint64)), this, SLOT(downloadProgressed(qint64, qint64)));
-
-//    return mReply;
-//}
 
 void UBHttpGet::readyRead()
 {

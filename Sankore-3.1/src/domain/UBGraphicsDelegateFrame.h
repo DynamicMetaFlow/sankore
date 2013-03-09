@@ -1,24 +1,30 @@
 /*
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2012 Webdoc SA
  *
- * This program is distributed in the hope that it will be useful,
+ * This file is part of Open-Sankoré.
+ *
+ * Open-Sankoré is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License,
+ * with a specific linking exception for the OpenSSL project's
+ * "OpenSSL" library (or with modified versions of it that use the
+ * same license as the "OpenSSL" library).
+ *
+ * Open-Sankoré is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Open-Sankoré.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 
 #ifndef UBGRAPHICSDELEGATEFRAME_H_
 #define UBGRAPHICSDELEGATEFRAME_H_
 
 #include <QtGui>
 #include "core/UB.h"
-#include "domain/UBAngleWidget.h"
 
 class QGraphicsSceneMouseEvent;
 class UBGraphicsItemDelegate;
@@ -38,6 +44,9 @@ class UBGraphicsDelegateFrame: public QGraphicsRectItem, public QObject
         QPainterPath shape() const;
 
         virtual void mousePressEvent(QGraphicsSceneMouseEvent *event);
+        QPointF getFixedPointFromPos();
+        QSizeF getResizeVector(qreal moveX, qreal moveY);
+        QSizeF resizeDelegate(qreal moveX, qreal moveY);
         virtual void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
         virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
 
@@ -46,9 +55,13 @@ class UBGraphicsDelegateFrame: public QGraphicsRectItem, public QObject
 
                 virtual void setAntiScale(qreal pAntiScale);
 
-        enum OperationMode {Scaling, Resizing};
+        enum OperationMode {Scaling, Resizing, ResizingHorizontally};
         void setOperationMode(OperationMode pMode) {mOperationMode = pMode;}
         bool isResizing(){return mResizing;}
+        void moveLinkedItems(QLineF movingVector, bool bLinked = false);
+        void prepareFramesToMove(QList<UBGraphicsDelegateFrame *> framesToMove);
+        void prepareLinkedFrameToMove();
+        QList<UBGraphicsDelegateFrame *> getLinkedFrames();
 
     private:
         QRectF bottomRightResizeGripRect() const;
@@ -65,6 +78,7 @@ class UBGraphicsDelegateFrame: public QGraphicsRectItem, public QObject
         inline bool resizingTop () const { return mCurrentTool == ResizeTop; }
         inline bool rotating () const { return mCurrentTool == Rotate; }
         inline bool moving () const { return mCurrentTool == Move; }
+        void setCursorFromAngle(QString angle);
         bool canResizeBottomRight(qreal width, qreal height, qreal scaleFactor);
 
         QTransform buildTransform ();
@@ -98,6 +112,8 @@ class UBGraphicsDelegateFrame: public QGraphicsRectItem, public QObject
 
         QPointF mStartingPoint;
         QTransform mInitialTransform;
+        QSizeF mOriginalSize;
+        QPointF mFixedPoint;
 
         QGraphicsSvgItem* mBottomRightResizeGripSvgItem;
         QGraphicsSvgItem* mBottomResizeGripSvgItem;
@@ -115,13 +131,14 @@ class UBGraphicsDelegateFrame: public QGraphicsRectItem, public QObject
         OperationMode mOperationMode;
 
         QGraphicsItem* delegated();
+        bool mFlippedX;
+        bool mFlippedY;
         bool mMirrorX;
         bool mMirrorY;
         bool mResizing;
         bool mMirroredXAtStart;
         bool mMirroredYAtStart;
 
-        UBAngleWidget *angleWidget;
-
+        QList<UBGraphicsDelegateFrame *> mLinkedFrames;
 };
 #endif /* UBGRAPHICSDELEGATEFRAME_H_ */

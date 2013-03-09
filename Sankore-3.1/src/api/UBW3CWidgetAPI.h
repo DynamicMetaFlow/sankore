@@ -1,17 +1,24 @@
 /*
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2012 Webdoc SA
  *
- * This program is distributed in the hope that it will be useful,
+ * This file is part of Open-Sankoré.
+ *
+ * Open-Sankoré is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License,
+ * with a specific linking exception for the OpenSSL project's
+ * "OpenSSL" library (or with modified versions of it that use the
+ * same license as the "OpenSSL" library).
+ *
+ * Open-Sankoré is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Open-Sankoré.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 
 #ifndef UBW3CWIDGETAPI_H_
 #define UBW3CWIDGETAPI_H_
@@ -47,8 +54,7 @@ class UBW3CWidgetAPI : public QObject
 
     public:
 
-        UBW3CWidgetAPI(UBGraphicsW3CWidgetItem *graphicsWidget);
-        UBW3CWidgetAPI(UBW3CWidget *widget);
+        UBW3CWidgetAPI(UBGraphicsW3CWidgetItem *graphicsWidget, QObject *parent = 0);
 
         virtual ~UBW3CWidgetAPI();
 
@@ -72,7 +78,6 @@ class UBW3CWidgetAPI : public QObject
     private:
 
         UBGraphicsW3CWidgetItem* mGraphicsW3CWidget;
-        UBW3CWidget *mW3CWidget;
 
         UBW3CWidgetPreferenceAPI* mPreferencesAPI;
 
@@ -88,8 +93,8 @@ class UBW3CWebStorage : public QObject
 
     public:
         UBW3CWebStorage(QObject *parent = 0)
-        : QObject(parent){}
-        virtual ~UBW3CWebStorage(){}
+        : QObject(parent){/* NOOP */}
+        virtual ~UBW3CWebStorage(){/* NOOP */}
 
     public slots:
 
@@ -110,8 +115,7 @@ class UBW3CWidgetPreferenceAPI : public UBW3CWebStorage
     Q_OBJECT;
 
     public:
-        UBW3CWidgetPreferenceAPI(UBGraphicsW3CWidgetItem *graphicsWidget);
-        UBW3CWidgetPreferenceAPI(UBW3CWidget *widget);
+        UBW3CWidgetPreferenceAPI(UBGraphicsW3CWidgetItem *graphicsWidget, QObject *parent = 0);
 
         virtual ~UBW3CWidgetPreferenceAPI();
 
@@ -129,7 +133,6 @@ class UBW3CWidgetPreferenceAPI : public UBW3CWebStorage
     private:
 
         UBGraphicsW3CWidgetItem* mGraphicsW3CWidget;
-        UBW3CWidget* mW3CWidget;
 
 };
 

@@ -1,21 +1,30 @@
 /*
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2012 Webdoc SA
  *
- * This program is distributed in the hope that it will be useful,
+ * This file is part of Open-Sankoré.
+ *
+ * Open-Sankoré is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License,
+ * with a specific linking exception for the OpenSSL project's
+ * "OpenSSL" library (or with modified versions of it that use the
+ * same license as the "OpenSSL" library).
+ *
+ * Open-Sankoré is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Open-Sankoré.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 
 #include <QtGui>
 #include <QtSvg>
 
+#include "core/UBApplication.h"
+#include "UBGraphicsGroupContainerItem.h"
 #include "UBGraphicsTextItemDelegate.h"
 #include "UBGraphicsScene.h"
 #include "gui/UBResources.h"
@@ -108,7 +117,7 @@ void UBGraphicsTextItemDelegate::buildButtons()
     QList<QGraphicsItem*> itemsOnToolBar;
     itemsOnToolBar << mFontButton << mColorButton << mDecreaseSizeButton << mIncreaseSizeButton;
     mToolBarItem->setItemsOnToolBar(itemsOnToolBar);
-
+    mToolBarItem->setShifting(true);
     mToolBarItem->setVisibleOnBoard(true);
 }
 
@@ -235,12 +244,12 @@ void UBGraphicsTextItemDelegate::pickColor()
 
 void UBGraphicsTextItemDelegate::decreaseSize()
 {
-    ChangeTextSize(-delta);
+    ChangeTextSize(-delta, changeSize);
 }
 
 void UBGraphicsTextItemDelegate::increaseSize()
 {
-   ChangeTextSize(delta);
+   ChangeTextSize(delta, changeSize);
 }
 
 UBGraphicsTextItem* UBGraphicsTextItemDelegate::delegated()
@@ -261,6 +270,11 @@ void UBGraphicsTextItemDelegate::setEditable(bool editable)
         mDelegated->setData(UBGraphicsItemData::ItemEditable, QVariant(false));
     }
 }
+void UBGraphicsTextItemDelegate::remove(bool canUndo)
+{
+    UBGraphicsItemDelegate::remove(canUndo);
+}
+
 bool UBGraphicsTextItemDelegate::isEditable()
 {
     return mDelegated->data(UBGraphicsItemData::ItemEditable).toBool();
@@ -281,12 +295,57 @@ void UBGraphicsTextItemDelegate::updateMenuActionState()
 void UBGraphicsTextItemDelegate::positionHandles()
 {
     UBGraphicsItemDelegate::positionHandles();
-    setEditable(isEditable());
+
+    if (mDelegated->isSelected() || (mDelegated->parentItem() && UBGraphicsGroupContainerItem::Type == mDelegated->parentItem()->type())) 
+    {
+        if (mToolBarItem->isVisibleOnBoard())
+        {
+            qreal AntiScaleRatio = 1 / (UBApplication::boardController->systemScaleFactor() * UBApplication::boardController->currentZoom());    
+            mToolBarItem->setScale(AntiScaleRatio);
+            QRectF toolBarRect = mToolBarItem->rect();
+            toolBarRect.setWidth(delegated()->boundingRect().width()/AntiScaleRatio);
+            mToolBarItem->setRect(toolBarRect);           
+            mToolBarItem->positionHandles();
+            mToolBarItem->update();
+            if (mToolBarItem->isShifting())
+                mToolBarItem->setPos(0,-mToolBarItem->boundingRect().height()*AntiScaleRatio);
+            else
+                mToolBarItem->setPos(0, 0);
+
+            UBGraphicsGroupContainerItem *group = qgraphicsitem_cast<UBGraphicsGroupContainerItem*>(mDelegated->parentItem());
+
+            mToolBarItem->hide();
+            if (mToolBarItem->parentItem())
+            {
+                if (group && group->getCurrentItem() == mDelegated && group->isSelected())
+                    mToolBarItem->show();
+
+                if (!group)
+                     mToolBarItem->show();
+            }
+
+        }
+    }
+    else
+    {
+        mToolBarItem->hide();
+    }
 }
 
-void UBGraphicsTextItemDelegate::ChangeTextSize(int delta)
+void UBGraphicsTextItemDelegate::ChangeTextSize(qreal factor, textChangeMode changeMode)
 {
-    if (0 == delta)
+    if (scaleSize == changeMode)
+    {
+        if (1 == factor)
+            return;
+    }
+    else
+    if (0 == factor)
+        return;
+
+    UBGraphicsTextItem *item = dynamic_cast<UBGraphicsTextItem*>(delegated());
+
+    if (item && (QString() == item->toPlainText()))
         return;
 
     QTextCursor cursor = delegated()->textCursor();
@@ -340,7 +399,7 @@ void UBGraphicsTextItemDelegate::ChangeTextSize(int delta)
 
 
         //setting new parameners
-        int iNewPointSize = iPointSize + delta;
+        int iNewPointSize = (changeSize == changeMode) ? (iPointSize + factor) : (iPointSize * factor);
         curFont.setPointSize( (iNewPointSize > 0)?iNewPointSize:1);
         textFormat.setFont(curFont);
         cursor.mergeCharFormat(textFormat);
@@ -349,7 +408,6 @@ void UBGraphicsTextItemDelegate::ChangeTextSize(int delta)
         cursor.setPosition (iCursorPos, QTextCursor::MoveAnchor);
     }
 
-    delegated()->document()->adjustSize();
     delegated()->setFont(curFont);
     UBSettings::settings()->setFontPointSize(iPointSize);
     //returning initial selection
@@ -357,4 +415,26 @@ void UBGraphicsTextItemDelegate::ChangeTextSize(int delta)
     cursor.setPosition (cursorPos, QTextCursor::KeepAnchor);
 
     delegated()->setTextCursor(cursor);
+}
+
+void UBGraphicsTextItemDelegate::scaleTextSize(qreal multiplyer)
+{
+    ChangeTextSize(multiplyer, scaleSize);
+}
+
+QVariant UBGraphicsTextItemDelegate::itemChange(QGraphicsItem::GraphicsItemChange change, const QVariant &value)
+{
+    if (change == QGraphicsItem::ItemSelectedChange)
+    {
+        if (delegated()->isSelected())
+        {
+            QTextCursor c = delegated()->textCursor();
+            if (c.hasSelection())
+            {
+                c.clearSelection();
+                delegated()->setTextCursor(c);
+            }
+        }
+    }
+    return UBGraphicsItemDelegate::itemChange(change, value);
 }

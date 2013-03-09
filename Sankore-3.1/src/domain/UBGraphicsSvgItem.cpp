@@ -1,17 +1,24 @@
 /*
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2012 Webdoc SA
  *
- * This program is distributed in the hope that it will be useful,
+ * This file is part of Open-Sankoré.
+ *
+ * Open-Sankoré is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License,
+ * with a specific linking exception for the OpenSSL project's
+ * "OpenSSL" library (or with modified versions of it that use the
+ * same license as the "OpenSSL" library).
+ *
+ * Open-Sankoré is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Open-Sankoré.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 
 #include "UBGraphicsSvgItem.h"
 
@@ -53,9 +60,11 @@ void UBGraphicsSvgItem::init()
 {
     setData(UBGraphicsItemData::ItemLayerType, UBItemLayerType::Object);
 
-    mDelegate = new UBGraphicsItemDelegate(this, 0, true, true);
-    mDelegate->init();
-    mDelegate->setFlippable(true);
+    setDelegate(new UBGraphicsItemDelegate(this, 0, true, true, false, true));
+    Delegate()->init();
+    Delegate()->setFlippable(true);
+    Delegate()->setRotatable(true);
+
 
     setFlag(QGraphicsItem::ItemSendsGeometryChanges, true);
 
@@ -63,13 +72,13 @@ void UBGraphicsSvgItem::init()
     setMaximumCacheSize(boundingRect().size().toSize() * UB_MAX_ZOOM);
 
     setData(UBGraphicsItemData::itemLayerType, QVariant(itemLayerType::ObjectItem)); //Necessary to set if we want z value to be assigned correctly
+
+    setUuid(QUuid::createUuid());
 }
 
 
 UBGraphicsSvgItem::~UBGraphicsSvgItem()
 {
-    if (mDelegate)
-        delete mDelegate;
 }
 
 
@@ -81,14 +90,14 @@ QByteArray UBGraphicsSvgItem::fileData() const
 
 QVariant UBGraphicsSvgItem::itemChange(GraphicsItemChange change, const QVariant &value)
 {
-    QVariant newValue = mDelegate->itemChange(change, value);
+    QVariant newValue = Delegate()->itemChange(change, value);
     return QGraphicsSvgItem::itemChange(change, newValue);
 }
 
 
 void UBGraphicsSvgItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
-    if (mDelegate->mousePressEvent(event))
+    if (Delegate()->mousePressEvent(event))
     {
         //NOOP
     }
@@ -101,7 +110,7 @@ void UBGraphicsSvgItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
 
 void UBGraphicsSvgItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
-    if (mDelegate->mouseMoveEvent(event))
+    if (Delegate()->mouseMoveEvent(event))
     {
         // NOOP;
     }
@@ -114,7 +123,7 @@ void UBGraphicsSvgItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 
 void UBGraphicsSvgItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
-    mDelegate->mouseReleaseEvent(event);
+    Delegate()->mouseReleaseEvent(event);
     QGraphicsSvgItem::mouseReleaseEvent(event);
 }
 
@@ -133,14 +142,9 @@ UBItem* UBGraphicsSvgItem::deepCopy() const
 {
     UBGraphicsSvgItem* copy = new UBGraphicsSvgItem(this->fileData());
 
-    copy->setPos(this->pos());
-    copy->setTransform(this->transform());
-    copy->setFlag(QGraphicsItem::ItemIsMovable, true);
-    copy->setFlag(QGraphicsItem::ItemIsSelectable, true);
-    copy->setData(UBGraphicsItemData::ItemLayerType, this->data(UBGraphicsItemData::ItemLayerType));
-    copy->setData(UBGraphicsItemData::ItemLocked, this->data(UBGraphicsItemData::ItemLocked));
-    copy->setUuid(this->uuid()); // this is OK for now as long as SVG are imutable
-    copy->setSourceUrl(this->sourceUrl());
+    copy->setUuid(this->uuid()); // this is OK for now as long as Widgets are imutable
+
+    copyItemParameters(copy);
 
     // TODO UB 4.7... complete all members ?
 
@@ -148,6 +152,20 @@ UBItem* UBGraphicsSvgItem::deepCopy() const
 
 }
 
+void UBGraphicsSvgItem::copyItemParameters(UBItem *copy) const
+{
+    UBGraphicsSvgItem *cp = dynamic_cast<UBGraphicsSvgItem*>(copy);
+    if (cp)
+    {
+        cp->setPos(this->pos());
+        cp->setTransform(this->transform());
+        cp->setFlag(QGraphicsItem::ItemIsMovable, true);
+        cp->setFlag(QGraphicsItem::ItemIsSelectable, true);
+        cp->setData(UBGraphicsItemData::ItemLayerType, this->data(UBGraphicsItemData::ItemLayerType));
+        cp->setData(UBGraphicsItemData::ItemLocked, this->data(UBGraphicsItemData::ItemLocked));
+        cp->setSourceUrl(this->sourceUrl());
+    }
+}
 
 void UBGraphicsSvgItem::setRenderingQuality(RenderingQuality pRenderingQuality)
 {
@@ -170,12 +188,6 @@ UBGraphicsScene* UBGraphicsSvgItem::scene()
 }
 
 
-void UBGraphicsSvgItem::remove()
-{
-    if (mDelegate)
-        mDelegate->remove(true);
-}
-
 
 UBGraphicsPixmapItem* UBGraphicsSvgItem::toPixmapItem() const
 {
@@ -193,4 +205,10 @@ UBGraphicsPixmapItem* UBGraphicsSvgItem::toPixmapItem() const
     pixmapItem->setData(UBGraphicsItemData::ItemLayerType, this->data(UBGraphicsItemData::ItemLayerType));
 
     return pixmapItem;
+}
+
+void UBGraphicsSvgItem::setUuid(const QUuid &pUuid)
+{
+    UBItem::setUuid(pUuid);
+    setData(UBGraphicsItemData::ItemUuid, QVariant(pUuid)); //store item uuid inside the QGraphicsItem to fast operations with Items on the scene
 }

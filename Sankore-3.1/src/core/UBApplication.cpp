@@ -1,17 +1,24 @@
 /*
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2012 Webdoc SA
  *
- * This program is distributed in the hope that it will be useful,
+ * This file is part of Open-Sankoré.
+ *
+ * Open-Sankoré is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License,
+ * with a specific linking exception for the OpenSSL project's
+ * "OpenSSL" library (or with modified versions of it that use the
+ * same license as the "OpenSSL" library).
+ *
+ * Open-Sankoré is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Open-Sankoré.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 
 #include "UBApplication.h"
 
@@ -36,8 +43,6 @@
 #include "UBIdleTimer.h"
 #include "UBApplicationController.h"
 
-//#include "softwareupdate/UBSoftwareUpdateController.h"
-
 #include "board/UBBoardController.h"
 #include "board/UBDrawingController.h"
 #include "board/UBBoardView.h"
@@ -57,6 +62,7 @@
 #include "frameworks/UBCryptoUtils.h"
 #include "tools/UBToolsManager.h"
 
+#include "UBDisplayManager.h"
 #include "core/memcheck.h"
 
 QPointer<QUndoStack> UBApplication::undoStack;
@@ -131,31 +137,15 @@ UBApplication::UBApplication(const QString &id, int &argc, char **argv) : QtSing
         || args.contains("-log")
         || args.contains("log");
 
-    UBPlatformUtils::init();
+
+    setupTranslators(args);
+
     UBResources::resources();
 
     if (!undoStack)
-    {
         undoStack = new QUndoStack(staticMemoryCleaner);
-    }
 
-    mApplicationTranslator = new QTranslator(this);
-    mApplicationTranslator->load(UBPlatformUtils::preferredTranslation(QString("sankore_")));
-    installTranslator(mApplicationTranslator);
-
-    QString localString;
-    if (!mApplicationTranslator->isEmpty())
-        localString = UBPlatformUtils::preferredLanguage();
-    else
-        localString = "en_US";
-
-    mQtGuiTranslator = new QTranslator(this);
-    mQtGuiTranslator->load(UBPlatformUtils::preferredTranslation(QString("qt_")));
-    installTranslator(mQtGuiTranslator);
-
-
-    QLocale::setDefault(QLocale(localString));
-    qDebug() << "Running application in:" << localString;
+    UBPlatformUtils::init();
 
     UBSettings *settings = UBSettings::settings();
 
@@ -217,6 +207,76 @@ UBApplication::~UBApplication()
     staticMemoryCleaner = 0;
 }
 
+QString UBApplication::checkLanguageAvailabilityForSankore(QString &language)
+{
+    QStringList availableTranslations = UBPlatformUtils::availableTranslations();
+    if(availableTranslations.contains(language,Qt::CaseInsensitive))
+        return language;
+    else{
+        if(language.length() > 2){
+            QString shortLanguageCode = language.left(2);
+            if(availableTranslations.contains(shortLanguageCode,Qt::CaseInsensitive))
+                return shortLanguageCode;
+        }
+    }
+    return QString("");
+}
+
+void UBApplication::setupTranslators(QStringList args)
+{
+    QString forcedLanguage("");
+    if(args.contains("-lang"))
+        forcedLanguage=args.at(args.indexOf("-lang") + 1);
+// TODO claudio: this has been commented because some of the translation seem to be loaded at this time
+//               especially tools name. This is a workaround and we have to be able to load settings without
+//               impacting the translations
+//    else{
+//        QString setLanguage = UBSettings::settings()->appPreferredLanguage->get().toString();
+//        if(!setLanguage.isEmpty())
+//            forcedLanguage = setLanguage;
+//    }
+
+    QString language("");
+
+    if(!forcedLanguage.isEmpty())
+        language = checkLanguageAvailabilityForSankore(forcedLanguage);
+
+    if(language.isEmpty()){
+        QString systemLanguage = UBPlatformUtils::systemLanguage();
+        language = checkLanguageAvailabilityForSankore(systemLanguage);
+    }
+
+    if(language.isEmpty()){
+        language = "en_US";
+        //fallback if no translation are available
+    }
+    else{
+        mApplicationTranslator = new QTranslator(this);
+        mQtGuiTranslator = new QTranslator(this);
+        mApplicationTranslator->load(UBPlatformUtils::translationPath(QString("sankore_"),language));
+        installTranslator(mApplicationTranslator);
+
+        QString qtGuiTranslationPath = UBPlatformUtils::translationPath("qt_", language);
+
+
+        if(!QFile(qtGuiTranslationPath).exists()){
+            qtGuiTranslationPath = UBPlatformUtils::translationPath("qt_", language.left(2));
+            if(!QFile(qtGuiTranslationPath).exists())
+                qtGuiTranslationPath = "";
+        }
+
+        if(!qtGuiTranslationPath.isEmpty()){
+            mQtGuiTranslator->load(qtGuiTranslationPath);
+            installTranslator(mQtGuiTranslator);
+        }
+        else
+            qDebug() << "Qt gui translation in " << language << " is not available";
+    }
+
+    QLocale::setDefault(QLocale(language));
+    qDebug() << "Running application in:" << language;
+}
+
 int UBApplication::exec(const QString& pFileToImport)
 {
     QPixmapCache::setCacheLimit(1024 * 100);
@@ -264,7 +324,11 @@ int UBApplication::exec(const QString& pFileToImport)
 
     UBDrawingController::drawingController()->setStylusTool((int)UBStylusTool::Pen);
 
-    applicationController = new UBApplicationController(boardController->controlView(), boardController->displayView(), mainWindow, staticMemoryCleaner);
+    applicationController = new UBApplicationController(boardController->controlView(), 
+                                                        boardController->displayView(), 
+                                                        mainWindow, 
+                                                        staticMemoryCleaner,
+                                                        boardController->paletteManager()->rightPalette());
 
 
     connect(applicationController, SIGNAL(mainModeChanged(UBApplicationController::MainMode)),
@@ -282,8 +346,6 @@ int UBApplication::exec(const QString& pFileToImport)
 #else
     connect(mainWindow->actionHideApplication, SIGNAL(triggered()), this, SLOT(showMinimized()));
 #endif
-
-    connect(documentController, SIGNAL(movedToIndex(int)), boardController, SIGNAL(documentReorganized(int)));
 
     mPreferencesController = new UBPreferencesController(mainWindow);
 
@@ -312,47 +374,28 @@ int UBApplication::exec(const QString& pFileToImport)
     boardController->setupLayout();
 
     if (pFileToImport.length() > 0)
-    {
         UBApplication::applicationController->importFile(pFileToImport);
-    }
 
 #if defined(Q_WS_MAC)
     static AEEventHandlerUPP ub_proc_ae_handlerUPP = AEEventHandlerUPP(ub_appleEventProcessor);
     AEInstallEventHandler(kCoreEventClass, kAEReopenApplication, ub_proc_ae_handlerUPP, SRefCon(UBApplication::applicationController), true);
 #endif
-    if (UBSettings::settings()->appStartMode->get() == "Desktop")
+
+    if (UBSettings::settings()->appStartMode->get().toInt())
         applicationController->showDesktop();
     else
         applicationController->showBoard();
 
-
-    if (UBSettings::settings()->appIsInSoftwareUpdateProcess->get().toBool())
-    {
-        UBSettings::settings()->appIsInSoftwareUpdateProcess->set(false);
-
-        // clean potential updater in temp directory
-        UBFileSystemUtils::cleanupGhostTempFolders();
-
-        QUuid docUuid( UBSettings::settings()->appLastSessionDocumentUUID->get().toString());
-
-        if (!docUuid.isNull())
-        {
-            UBDocumentProxy* proxy = UBPersistenceManager::persistenceManager()->documentByUuid(docUuid);
-
-            if (proxy)
-            {
-                bool ok;
-                int lastSceneIndex = UBSettings::settings()->appLastSessionPageIndex->get().toInt(&ok);
-
-                if (!ok)
-                    lastSceneIndex = 0;
-
-                boardController->setActiveDocumentScene(proxy, lastSceneIndex);
-            }
-        }
-    }
-
+    onScreenCountChanged(1);
+    connect(desktop(), SIGNAL(screenCountChanged(int)), this, SLOT(onScreenCountChanged(int)));
     return QApplication::exec();
+}
+
+void UBApplication::onScreenCountChanged(int newCount)
+{
+    Q_UNUSED(newCount);
+    UBDisplayManager displayManager;
+    mainWindow->actionMultiScreen->setEnabled(displayManager.numScreens() > 1);
 }
 
 void UBApplication::importUniboardFiles()
@@ -450,6 +493,8 @@ void UBApplication::closing()
     if (webController)
         webController->closing();
 
+    UBSettings::settings()->closing();
+
     UBSettings::settings()->appToolBarPositionedAtTop->set(mainWindow->toolBarArea(mainWindow->boardToolBar) == Qt::TopToolBarArea);
 
     quit();
@@ -493,30 +538,29 @@ void UBApplication::decorateActionMenu(QAction* action)
             menu->addAction(mainWindow->actionCut);
             menu->addAction(mainWindow->actionCopy);
             menu->addAction(mainWindow->actionPaste);
-
-            menu->addSeparator();
-            menu->addAction(mainWindow->actionPreferences);
             menu->addAction(mainWindow->actionHideApplication);
             menu->addAction(mainWindow->actionSleep);
 
             menu->addSeparator();
-            menu->addAction(mainWindow->actionSankoreEditor);
-
+            menu->addAction(mainWindow->actionPreferences);
+            menu->addAction(mainWindow->actionMultiScreen);
+            menu->addAction(mainWindow->actionImportUniboardDocuments);
             // SANKORE-48: Hide the check update action if the setting
             // EnableAutomaticSoftwareUpdates is false in Uniboard.config
-            if(UBSettings::settings()->appEnableAutomaticSoftwareUpdates->get().toBool()){
+            if(UBSettings::settings()->appEnableAutomaticSoftwareUpdates->get().toBool())
                 menu->addAction(mainWindow->actionCheckUpdate);
-            }
-            else{
+            else
                 mainWindow->actionCheckUpdate->setEnabled(false);
-            }
+
+            menu->addSeparator();
+            menu->addAction(mainWindow->actionTutorial);
+            menu->addAction(mainWindow->actionSankoreEditor);
 
 #ifndef Q_WS_X11 // No Podcast on Linux yet
             menu->addAction(mainWindow->actionPodcast);
             mainWindow->actionPodcast->setText(tr("Podcast"));
 #endif
-            menu->addAction(mainWindow->actionMultiScreen);
-            menu->addAction(mainWindow->actionImportUniboardDocuments);
+
             menu->addSeparator();
             menu->addAction(mainWindow->actionQuit);
 
@@ -576,6 +620,12 @@ bool UBApplication::eventFilter(QObject *obj, QEvent *event)
     {
         if (boardController && boardController->controlView())
             boardController->controlView()->forcedTabletRelease();
+    }
+
+
+    if (event->type() == QEvent::ApplicationActivate)
+    {
+        boardController->controlView()->setMultiselection(false);
     }
 
 #ifdef Q_WS_MAC
