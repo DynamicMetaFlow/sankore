@@ -1,17 +1,24 @@
 /*
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2012 Webdoc SA
  *
- * This program is distributed in the hope that it will be useful,
+ * This file is part of Open-Sankoré.
+ *
+ * Open-Sankoré is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License,
+ * with a specific linking exception for the OpenSSL project's
+ * "OpenSSL" library (or with modified versions of it that use the
+ * same license as the "OpenSSL" library).
+ *
+ * Open-Sankoré is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Open-Sankoré.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 
 #ifndef UBWEBCONTROLLER_H_
 #define UBWEBCONTROLLER_H_
@@ -23,7 +30,6 @@
 
 class WBBrowserWindow;
 class UBApplication;
-class UBScreenMirror;
 class UBTrapFlashController;
 class UBMainWindow;
 class UBWebToolsPalette;
@@ -105,7 +111,7 @@ class UBWebController : public QObject
         void lookForEmbedContent(QString* pHtml, QString tag, QString attribute, QList<QUrl>* pList);
         void checkForOEmbed(QString* pHtml);
 
-        QStackedWidget mStackedWidget[TotalNumberOfWebInstances];
+        QStackedWidget *mStackedWidget;
 
         UBMainWindow *mMainWindow;
 

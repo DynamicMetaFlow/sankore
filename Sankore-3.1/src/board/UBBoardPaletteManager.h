@@ -1,42 +1,47 @@
 /*
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2012 Webdoc SA
  *
- * This program is distributed in the hope that it will be useful,
+ * This file is part of Open-Sankoré.
+ *
+ * Open-Sankoré is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License,
+ * with a specific linking exception for the OpenSSL project's
+ * "OpenSSL" library (or with modified versions of it that use the
+ * same license as the "OpenSSL" library).
+ *
+ * Open-Sankoré is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Open-Sankoré.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 
 #ifndef UBBOARDPALETTEMANAGER_H_
 #define UBBOARDPALETTEMANAGER_H_
 
 #include <QtGui>
 #include <QtWebKit>
-
-#include "web/UBRoutedMouseEventWebView.h"
+ 
 #include "gui/UBLeftPalette.h"
 #include "gui/UBRightPalette.h"
 #include "gui/UBPageNavigationWidget.h"
-#include "gui/UBLibWidget.h"
 #include "gui/UBCachePropertiesWidget.h"
 #include "gui/UBDockDownloadWidget.h"
 #include "core/UBApplicationController.h"
 #include "gui/UBFeaturesWidget.h"
 
 
+class UBWebToolsPalette;
 class UBStylusPalette;
 class UBClockPalette;
 class UBPageNumberPalette;
 class UBZoomPalette;
 class UBActionPalette;
 class UBBoardController;
-class UBFloatingPalette;
 class UBServerXMLHttpRequest;
 class UBKeyboardPalette;
 class UBMainWindow;
@@ -44,7 +49,7 @@ class UBApplicationController;
 class UBDockTeacherGuideWidget;
 
 // Uncomment this to use old-styles lib paletter
- #define USE_WEB_WIDGET
+// #define USE_WEB_WIDGET
 
 
 class UBBoardPaletteManager : public QObject
@@ -59,12 +64,18 @@ class UBBoardPaletteManager : public QObject
         UBLeftPalette* leftPalette(){return mLeftPalette;}
         UBRightPalette* rightPalette(){return mRightPalette;}
         UBStylusPalette* stylusPalette(){return mStylusPalette;}
+        UBActionPalette *addItemPalette() {return mAddItemPalette;}
         void showVirtualKeyboard(bool show = true);
         void initPalettesPosAtStartup();
         void connectToDocumentController();
         void refreshPalettes();
 
         UBKeyboardPalette *mKeyboardPalette;
+
+        void setCurrentWebToolsPalette(UBWebToolsPalette *palette) {mWebToolsCurrentPalette = palette;}
+        UBWebToolsPalette* mWebToolsCurrentPalette;
+
+        UBDockTeacherGuideWidget* teacherGuideDockWidget() { return mpTeacherGuideWidget;}
 
         void processPalettersWidget(UBDockPalette *paletter, eUBDockPaletteWidgetMode mode);
         void changeMode(eUBDockPaletteWidgetMode newMode, bool isInit = false);
@@ -84,6 +95,8 @@ class UBBoardPaletteManager : public QObject
 
         void slot_changeMainMode(UBApplicationController::MainMode);
         void slot_changeDesktopMode(bool);
+
+        void toggleErasePalette(bool ckecked);
 
     private:
 
@@ -130,11 +143,6 @@ class UBBoardPaletteManager : public QObject
         /** The page navigator widget */
         UBPageNavigationWidget* mpPageNavigWidget;
         
-#ifdef USE_WEB_WIDGET
-        /** The library widget */
-        UBLibWidget* mpLibWidget;
-#endif
-
         /** The cache properties widget */
         UBCachePropertiesWidget* mpCachePropWidget;
 
@@ -142,11 +150,6 @@ class UBBoardPaletteManager : public QObject
 
         /** The download widget */
         UBDockDownloadWidget* mpDownloadWidget;
-        // HACK: here we duplicate the lib widget for the desktop mode
-        //       we MUST refactor the architecture in order to use only one
-        //       lib widget!
-        UBLibWidget* mpDesktopLibWidget;
-
         UBDockTeacherGuideWidget* mpTeacherGuideWidget;
 
         bool mDownloadInProgress;
@@ -164,7 +167,6 @@ class UBBoardPaletteManager : public QObject
         void erasePaletteButtonPressed();
         void erasePaletteButtonReleased();
 
-        void toggleErasePalette(bool ckecked);
         void erasePaletteClosed();
 
         void togglePagePalette(bool ckecked);

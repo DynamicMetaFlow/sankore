@@ -1,3 +1,26 @@
+/*
+ * Copyright (C) 2012 Webdoc SA
+ *
+ * This file is part of Open-Sankoré.
+ *
+ * Open-Sankoré is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Library General Public
+ * License as published by the Free Software Foundation, version 2,
+ * with a specific linking exception for the OpenSSL project's
+ * "OpenSSL" library (or with modified versions of it that use the
+ * same license as the "OpenSSL" library).
+ *
+ * Open-Sankoré is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Library General Public License for more details.
+ *
+ * You should have received a copy of the GNU Library General Public
+ * License along with Open-Sankoré; if not, see
+ * <http://www.gnu.org/licenses/>.
+ */
+
+
 #ifndef UBCFFADAPTOR_H
 #define UBCFFADAPTOR_H
 
@@ -20,6 +43,7 @@ public:
 
     bool convertUBZToIWB(const QString &from, const QString &to);
     bool deleteDir(const QString& pDirPath) const;
+    QList<QString> getConversionMessages();
 
 private:
     QString uncompressZip(const QString &zipFile);
@@ -33,6 +57,7 @@ private:
 
 private:
     QStringList tmpDirs;
+    QList<QString> mConversionMessages;
 
 private:
 
@@ -46,8 +71,12 @@ private:
         bool isValid() const;
         QString lastErrStr() const {return errorStr;}
         bool parse();
+        QList<QString> getMessages() {return mExportErrorList;}
 
     private:
+
+        void addLastExportError(QString error) {mExportErrorList.append(error);}
+
         void fillNamespaces();
 
         bool parseMetadata();
@@ -57,7 +86,7 @@ private:
         QDomElement parseSvgPageSection(const QDomElement &element);
         void writeQDomElementToXML(const QDomNode &node);
         bool writeExtendedIwbSection();
-        QDomElement parseGroupPageSection(const QDomElement &element);
+        QDomElement parseGroupsPageSection(const QDomElement &groupRoot);
 
         bool createBackground(const QDomElement &element, QMultiMap<int, QDomElement> &dstSvgList);
         QString createBackgroundImage(const QDomElement &element, QSize size);
@@ -119,6 +148,7 @@ private:
         QString contentIWBFileName() const;
 
     private:
+        QList<QString> mExportErrorList;
         QMap<QString, QString> iwbSVGItemsAttributes;
         QDomDocument *mDataModel; //model for reading indata
         QXmlStreamWriter *mIWBContentWriter; //stream to write outdata

@@ -1,17 +1,24 @@
 /*
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2012 Webdoc SA
  *
- * This program is distributed in the hope that it will be useful,
+ * This file is part of Open-Sankoré.
+ *
+ * Open-Sankoré is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License,
+ * with a specific linking exception for the OpenSSL project's
+ * "OpenSSL" library (or with modified versions of it that use the
+ * same license as the "OpenSSL" library).
+ *
+ * Open-Sankoré is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Open-Sankoré.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 
 #include <QtGui>
 #include <QDomDocument>
@@ -32,7 +39,6 @@
 #include "network/UBNetworkAccessManager.h"
 
 #include "gui/UBWidgetMirror.h"
-#include "gui/UBScreenMirror.h"
 #include "gui/UBMainWindow.h"
 #include "gui/UBWebToolsPalette.h"
 #include "gui/UBKeyboardPalette.h"
@@ -65,6 +71,11 @@ UBWebController::UBWebController(UBMainWindow* mainWindow)
 {
     connect(mMainWindow->actionWebTools, SIGNAL(toggled(bool)), this, SLOT(toggleWebToolsPalette(bool)));
 
+    mStackedWidget = new QStackedWidget();
+    mStackedWidget->addWidget(new QWidget(mStackedWidget));
+    mStackedWidget->addWidget(new QWidget(mStackedWidget));
+    mStackedWidget->addWidget(new QWidget(mStackedWidget));
+
     mMainWindow->addWebWidget(mStackedWidget);
 
     for (int i = 0; i < TotalNumberOfWebInstances; i += 1){
@@ -77,13 +88,15 @@ UBWebController::UBWebController(UBMainWindow* mainWindow)
 
     // TODO : Comment the next line to continue the Youtube button bugfix
     initialiazemOEmbedProviders();
-
 }
 
 
 UBWebController::~UBWebController()
 {
     // NOOP
+    if (mStackedWidget) {
+        delete mStackedWidget;
+    }
 }
 
 void UBWebController::initialiazemOEmbedProviders()
@@ -120,6 +133,7 @@ void UBWebController::webBrowserInstance()
         mCurrentWebBrowser = &mWebBrowserList[WebBrowser];
         mToolsCurrentPalette = &mToolsPaletteList[WebBrowser];
         mToolsPalettePositionned = mToolsPalettePositionnedList[WebBrowser];
+
         if (!(*mCurrentWebBrowser))
         {
             (*mCurrentWebBrowser) = new WBBrowserWindow(mMainWindow->centralWidget(), mMainWindow);
@@ -135,6 +149,10 @@ void UBWebController::webBrowserInstance()
             mMainWindow->actionBookmarks->setVisible(showAddBookmarkButtons);
             mMainWindow->actionAddBookmark->setVisible(showAddBookmarkButtons);
 
+            mStackedWidget->setCurrentIndex(WebBrowser);
+            if (mStackedWidget->currentWidget()) {
+                mStackedWidget->removeWidget(mStackedWidget->currentWidget());
+            }
             mStackedWidget->insertWidget(WebBrowser, (*mCurrentWebBrowser));
 
             showTabAtTop(UBSettings::settings()->appToolBarPositionedAtTop->get().toBool());
@@ -151,9 +169,8 @@ void UBWebController::webBrowserInstance()
             (*mCurrentWebBrowser)->tabWidget()->lineEdits()->show();
         }
 
-        UBApplication::applicationController->setMirrorSourceWidget((*mCurrentWebBrowser)->paintWidget());
-
         mStackedWidget->setCurrentIndex(WebBrowser);
+        UBApplication::applicationController->setMirrorSourceWidget((*mCurrentWebBrowser)->paintWidget());
         mMainWindow->switchToWebWidget();
 
         setupPalettes();
@@ -166,7 +183,6 @@ void UBWebController::webBrowserInstance()
 
     if (mDownloadViewIsVisible)
         WBBrowserWindow::downloadManager()->show();
-
 }
 
 void UBWebController::tutorialWebInstance()
@@ -178,10 +194,8 @@ void UBWebController::tutorialWebInstance()
     QString tutorialPath = "/etc/Tutorial/tutorial" + language + "/index.html";
 #if defined(Q_WS_MAC)
     tutorialHtmlIndexFile = QApplication::applicationDirPath()+ "/../Resources" + tutorialPath;
-#elif defined(Q_WS_WIN)
-    tutorialHtmlIndexFile = QApplication::applicationDirPath()+ tutorialPath;
 #else
-    tutorialHtmlIndexFile = QApplication::applicationDirPath()+ tutorialPath;
+    tutorialHtmlIndexFile = QApplication::applicationDirPath() + tutorialPath;
 #endif
 
     QUrl currentUrl = QUrl::fromLocalFile(tutorialHtmlIndexFile);
@@ -194,13 +208,17 @@ void UBWebController::tutorialWebInstance()
     {
         mCurrentWebBrowser = &mWebBrowserList[Tutorial];
         mToolsPalettePositionned = &mToolsPalettePositionnedList[Tutorial];
+
         if (!(*mCurrentWebBrowser))
         {
             (*mCurrentWebBrowser) = new WBBrowserWindow(mMainWindow->centralWidget(), mMainWindow, true);
             connect((*mCurrentWebBrowser), SIGNAL(activeViewChange(QWidget*)), this, SLOT(setSourceWidget(QWidget*)));
 
+            mStackedWidget->setCurrentIndex(Tutorial);
+            if (mStackedWidget->currentWidget()) {
+                mStackedWidget->removeWidget(mStackedWidget->currentWidget());
+            }
             mStackedWidget->insertWidget(Tutorial, (*mCurrentWebBrowser));
-
             adaptToolBar();
 
             mTrapFlashController = new UBTrapFlashController((*mCurrentWebBrowser));
@@ -212,13 +230,12 @@ void UBWebController::tutorialWebInstance()
             (*mCurrentWebBrowser)->tabWidget()->lineEdits()->hide();
 
         }
-
-        UBApplication::applicationController->setMirrorSourceWidget((*mCurrentWebBrowser)->paintWidget());
-
+        else
+        	(*mCurrentWebBrowser)->loadUrl(currentUrl);
 
         mStackedWidget->setCurrentIndex(Tutorial);
+        UBApplication::applicationController->setMirrorSourceWidget((*mCurrentWebBrowser)->paintWidget());
         mMainWindow->switchToWebWidget();
-
         screenLayoutChanged();
 
         bool mirroring = UBSettings::settings()->webShowPageImmediatelyOnMirroredScreen->get().toBool();
@@ -247,6 +264,7 @@ void UBWebController::paraschoolWebInstance()
     if (UBSettings::settings()->webUseExternalBrowser->get().toBool()){
         QDesktopServices::openUrl(currentUrl);
     }
+
     else {
         mCurrentWebBrowser = &mWebBrowserList[Paraschool];
         mToolsCurrentPalette = &mToolsPaletteList[Paraschool];
@@ -255,6 +273,10 @@ void UBWebController::paraschoolWebInstance()
             (*mCurrentWebBrowser) = new WBBrowserWindow(mMainWindow->centralWidget(), mMainWindow, true);
             connect((*mCurrentWebBrowser), SIGNAL(activeViewChange(QWidget*)), this, SLOT(setSourceWidget(QWidget*)));
 
+            mStackedWidget->setCurrentIndex(Paraschool);
+            if (mStackedWidget->currentWidget()) {
+                mStackedWidget->removeWidget(mStackedWidget->currentWidget());
+            }
             mStackedWidget->insertWidget(Paraschool, (*mCurrentWebBrowser));
 
             adaptToolBar();
@@ -268,11 +290,9 @@ void UBWebController::paraschoolWebInstance()
 
         }
 
-        UBApplication::applicationController->setMirrorSourceWidget((*mCurrentWebBrowser)->paintWidget());
-
         mStackedWidget->setCurrentIndex(Paraschool);
+        UBApplication::applicationController->setMirrorSourceWidget((*mCurrentWebBrowser)->paintWidget());
         mMainWindow->switchToWebWidget();
-
         screenLayoutChanged();
 
         bool mirroring = UBSettings::settings()->webShowPageImmediatelyOnMirroredScreen->get().toBool();
@@ -293,6 +313,7 @@ void UBWebController::show(WebInstance type)
         break;
     case Paraschool:
         paraschoolWebInstance();
+        break;
     default:
         qCritical() << __FILE__ << " non supported web instance type " << QString::number(type) ;
         break;
@@ -424,7 +445,7 @@ void UBWebController::setupPalettes()
     if(!(*mToolsCurrentPalette))
     {
         (*mToolsCurrentPalette) = new UBWebToolsPalette(UBApplication::mainWindow, false);
-
+        UBApplication::boardController->paletteManager()->setCurrentWebToolsPalette(*mToolsCurrentPalette);
 #ifndef Q_WS_WIN
         if (UBPlatformUtils::hasVirtualKeyboard() && UBApplication::boardController->paletteManager()->mKeyboardPalette)
             connect(UBApplication::boardController->paletteManager()->mKeyboardPalette, SIGNAL(closed()),
@@ -719,15 +740,15 @@ bool UBWebController::isEduMedia(const QUrl& pUrl)
 
 void UBWebController::loadUrl(const QUrl& url)
 {
+    bool webBrowserAlreadyInstanciated = dynamic_cast<WBBrowserWindow*>(mStackedWidget->widget(WebBrowser)) != NULL;
+    UBApplication::applicationController->showInternet();
     if (UBSettings::settings()->webUseExternalBrowser->get().toBool())
     {
         QDesktopServices::openUrl(url);
     }
     else
     {
-        UBApplication::applicationController->showInternet();
-
-        if (mCurrentWebBrowser && !(*mCurrentWebBrowser)) {
+        if (!webBrowserAlreadyInstanciated) {
             (*mCurrentWebBrowser)->loadUrl(url);
         }
         else {

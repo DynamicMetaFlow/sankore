@@ -1,32 +1,46 @@
 /*
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2012 Webdoc SA
  *
- * This program is distributed in the hope that it will be useful,
+ * This file is part of Open-Sankoré.
+ *
+ * Open-Sankoré is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License,
+ * with a specific linking exception for the OpenSSL project's
+ * "OpenSSL" library (or with modified versions of it that use the
+ * same license as the "OpenSSL" library).
+ *
+ * Open-Sankoré is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Open-Sankoré.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 
 #ifndef UBFILESYSTEMUTILS_H_
 #define UBFILESYSTEMUTILS_H_
 
 #include <QtCore>
+#include <QThread>
+
+#include "core/UB.h"
 
 class QuaZipFile;
 class UBProcessingProgressListener;
 
-class UBFileSystemUtils
+class UBFileSystemUtils : public QObject
 {
+    Q_OBJECT
+
     public:
 
         UBFileSystemUtils();
         virtual ~UBFileSystemUtils();
+
+        static QString removeLocalFilePrefix(QString input);
 
         static QString defaultTempDirName() { return QCoreApplication::applicationName(); }
         static QString defaultTempDirPath();
@@ -37,13 +51,17 @@ class UBFileSystemUtils
 
         static QFileInfoList allElementsInDirectory(const QString& pDirPath);
 
-        static QStringList allFiles(const QString& pDirPath);
+        static QStringList allFiles(const QString& pDirPath, const bool isRecurive=true);
 
         static bool deleteDir(const QString& pDirPath);
 
         static bool copyDir(const QString& pSourceDirPath, const QString& pTargetDirPath);
 
         static bool moveDir(const QString& pSourceDirPath, const QString& pTargetDirPath);
+
+        static bool copyFile(const QString &source, const QString &destination, bool overwrite = false);
+
+        static bool copy(const QString &source, const QString &Destination, bool overwrite = false);
 
         static QString cleanName(const QString& name);
 
@@ -55,6 +73,10 @@ class UBFileSystemUtils
 
         static QString fileExtensionFromMimeType(const QString& pMimeType);
 
+        static UBMimeType::Enum mimeTypeFromString(const QString& typeString);
+
+        static UBMimeType::Enum mimeTypeFromUrl(const QUrl& url);
+
         static QString normalizeFilePath(const QString& pFilePath);
 
         static QString extension(const QString& filaname);
@@ -65,8 +87,6 @@ class UBFileSystemUtils
 
         static bool isAZipFile(QString &filePath);
 
-        static bool copyFile(const QString &source, const QString &Destination, bool overwrite = false);
-        
         static bool deleteFile(const QString &path);
         /**
          * Compress a source directory in a zip file.

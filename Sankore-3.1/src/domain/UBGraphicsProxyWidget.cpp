@@ -1,17 +1,24 @@
 /*
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2012 Webdoc SA
  *
- * This program is distributed in the hope that it will be useful,
+ * This file is part of Open-Sankoré.
+ *
+ * Open-Sankoré is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License,
+ * with a specific linking exception for the OpenSSL project's
+ * "OpenSSL" library (or with modified versions of it that use the
+ * same license as the "OpenSSL" library).
+ *
+ * Open-Sankoré is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Open-Sankoré.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 
 #include "UBGraphicsProxyWidget.h"
 
@@ -29,8 +36,9 @@ UBGraphicsProxyWidget::UBGraphicsProxyWidget(QGraphicsItem* parent)
 {
     setData(UBGraphicsItemData::ItemLayerType, UBItemLayerType::Object);
 
-    mDelegate = new UBGraphicsItemDelegate(this,0);
-    mDelegate->init();
+    //UBGraphicsItemDelegate* delegate = new UBGraphicsItemDelegate(this,0, true, false, false);
+    //delegate->init();
+    //setDelegate(delegate);
 
     setFlag(QGraphicsItem::ItemSendsGeometryChanges, true);
 
@@ -40,13 +48,15 @@ UBGraphicsProxyWidget::UBGraphicsProxyWidget(QGraphicsItem* parent)
 
 UBGraphicsProxyWidget::~UBGraphicsProxyWidget()
 {
-    if (mDelegate)
-        delete mDelegate;
 }
 
 
 QVariant UBGraphicsProxyWidget::itemChange(GraphicsItemChange change, const QVariant &value)
 {
+    if (change == QGraphicsItem::ItemCursorHasChanged &&  scene())
+    {
+        unsetCursor();
+    }
     if ((change == QGraphicsItem::ItemSelectedHasChanged)
               &&  scene())
     {
@@ -63,29 +73,35 @@ QVariant UBGraphicsProxyWidget::itemChange(GraphicsItemChange change, const QVar
         }
     }
 
-    QVariant newValue = mDelegate->itemChange(change, value);
+    QVariant newValue = Delegate()->itemChange(change, value);
     return QGraphicsProxyWidget::itemChange(change, newValue);
 }
 
+void UBGraphicsProxyWidget::setUuid(const QUuid &pUuid)
+{
+    UBItem::setUuid(pUuid);
+    setData(UBGraphicsItemData::ItemUuid, QVariant(pUuid)); //store item uuid inside the QGraphicsItem to fast operations with Items on the scene
+}
 
 void UBGraphicsProxyWidget::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
-    if (mDelegate->mousePressEvent(event))
+    if (Delegate()->mousePressEvent(event))
     {
         //NOOP
     }
     else
     {
         // QT Proxy Widget is a bit lazy, we force the selection ...
-        QGraphicsProxyWidget::mousePressEvent(event);
+
         setSelected(true);
     }
+    QGraphicsProxyWidget::mousePressEvent(event);
 }
 
 
 void UBGraphicsProxyWidget::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
-    if (mDelegate->mouseMoveEvent(event))
+    if (Delegate()->mouseMoveEvent(event))
     {
         // NOOP;
     }
@@ -98,13 +114,13 @@ void UBGraphicsProxyWidget::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 
 void UBGraphicsProxyWidget::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
-    mDelegate->mouseReleaseEvent(event);
+    Delegate()->mouseReleaseEvent(event);
     QGraphicsProxyWidget::mouseReleaseEvent(event);
 }
 
 void UBGraphicsProxyWidget::wheelEvent(QGraphicsSceneWheelEvent *event)
 {
-    if( mDelegate->weelEvent(event) )
+    if( Delegate()->weelEvent(event) )
     {
         QGraphicsProxyWidget::wheelEvent(event);
         event->accept();
@@ -122,17 +138,6 @@ void UBGraphicsProxyWidget::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
 //    NOOP
 }
 
-void UBGraphicsProxyWidget::setDelegate(UBGraphicsItemDelegate* pDelegate)
-{
-    if (mDelegate)
-    {
-        delete mDelegate;
-    }
-
-    mDelegate = pDelegate;
-}
-
-
 void UBGraphicsProxyWidget::resize(qreal w, qreal h)
 {
     UBGraphicsProxyWidget::resize(QSizeF(w, h));
@@ -143,12 +148,32 @@ void UBGraphicsProxyWidget::resize(const QSizeF & pSize)
 {
     if (pSize != size())
     {
-        QGraphicsProxyWidget::setMaximumSize(pSize.width(), pSize.height());
-        QGraphicsProxyWidget::resize(pSize.width(), pSize.height());
+        qreal sizeX = 0;
+        qreal sizeY = 0;
+
         if (widget())
-            widget()->resize(pSize.width(), pSize.height());
-        if (mDelegate)
-            mDelegate->positionHandles();
+        {
+            
+            QSizeF minimumItemSize(widget()->minimumSize());
+            if (minimumItemSize.width() > pSize.width())
+                sizeX = minimumItemSize.width();
+            else
+                sizeX = pSize.width();
+
+            if (minimumItemSize.height() > pSize.height())
+                sizeY = minimumItemSize.height();
+            else
+                sizeY = pSize.height();
+        }
+        QSizeF size(sizeX, sizeY);
+
+
+        QGraphicsProxyWidget::setMaximumSize(size.width(), size.height());
+        QGraphicsProxyWidget::resize(size.width(), size.height());
+        if (widget())
+            widget()->resize(size.width(), size.height());
+        if (Delegate())
+            Delegate()->positionHandles();
         if (scene())
             scene()->setModified(true);
     }
@@ -167,8 +192,3 @@ UBGraphicsScene* UBGraphicsProxyWidget::scene()
 }
 
 
-void UBGraphicsProxyWidget::remove()
-{
-    if (mDelegate)
-        mDelegate->remove(true);
-}

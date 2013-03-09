@@ -1,17 +1,24 @@
 /*
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2012 Webdoc SA
  *
- * This program is distributed in the hope that it will be useful,
+ * This file is part of Open-Sankoré.
+ *
+ * Open-Sankoré is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License,
+ * with a specific linking exception for the OpenSSL project's
+ * "OpenSSL" library (or with modified versions of it that use the
+ * same license as the "OpenSSL" library).
+ *
+ * Open-Sankoré is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Open-Sankoré.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 
 #include <QGraphicsPolygonItem>
 #include <QPolygonF>
@@ -94,14 +101,23 @@ UBItem* UBGraphicsTriangle::deepCopy(void) const
 {
     UBGraphicsTriangle* copy = new UBGraphicsTriangle();
 
-    copy->setPos(this->pos());
-    copy->setPolygon(this->polygon());
-    copy->setTransform(this->transform());
+    copyItemParameters(copy);
 
     // TODO UB 4.7 ... complete all members ?
 
     return copy;
 
+}
+
+void UBGraphicsTriangle::copyItemParameters(UBItem *copy) const
+{
+    UBGraphicsTriangle* cp = dynamic_cast<UBGraphicsTriangle*>(copy);
+    if (cp)
+    {   
+        cp->setPos(this->pos());
+        cp->setPolygon(this->polygon());
+        cp->setTransform(this->transform());
+    }
 }
 
 void UBGraphicsTriangle::setRect(qreal x, qreal y, qreal w, qreal h, UBGraphicsTriangleOrientation orientation)
@@ -288,12 +304,6 @@ QPainterPath UBGraphicsTriangle::shape() const
 
 void UBGraphicsTriangle::paintGraduations(QPainter *painter)
 {
-    const int     centimeterGraduationHeight = 15;
-    const int halfCentimeterGraduationHeight = 10;
-    const int     millimeterGraduationHeight = 5;
-    const int       millimetersPerCentimeter = 10;
-    const int   millimetersPerHalfCentimeter = 5;
-
     qreal kx = (mOrientation == TopLeft || mOrientation == BottomLeft) ? 1 : -1;
     qreal ky = (mOrientation == BottomLeft || mOrientation == BottomRight) ? 1 : -1;
 
@@ -303,10 +313,10 @@ void UBGraphicsTriangle::paintGraduations(QPainter *painter)
     for (int millimeters = 0; millimeters < (rect().width() - sLeftEdgeMargin - sRoundingRadius) / sPixelsPerMillimeter; millimeters++)
     {
         int graduationX = rotationCenter().x() + kx * sPixelsPerMillimeter * millimeters;
-        int graduationHeight = (0 == millimeters % millimetersPerCentimeter) ?
-            centimeterGraduationHeight :
-            ((0 == millimeters % millimetersPerHalfCentimeter) ?
-                halfCentimeterGraduationHeight : millimeterGraduationHeight);
+        int graduationHeight = (0 == millimeters % UBGeometryUtils::millimetersPerCentimeter) ?
+            UBGeometryUtils::centimeterGraduationHeight :
+            ((0 == millimeters % UBGeometryUtils::millimetersPerHalfCentimeter) ?
+                UBGeometryUtils::halfCentimeterGraduationHeight : UBGeometryUtils::millimeterGraduationHeight);
 
         // Check that grad. line inside triangle
         qreal dx = (kx > 0) ? rect().width() - graduationX : graduationX - rect().x();
@@ -323,15 +333,15 @@ void UBGraphicsTriangle::paintGraduations(QPainter *painter)
         }
         
         painter->drawLine(QLine(graduationX, rotationCenter().y(), graduationX, rotationCenter().y() - ky * graduationHeight));
-        if (0 == millimeters % millimetersPerCentimeter)
+        if (0 == millimeters % UBGeometryUtils::millimetersPerCentimeter)
         {
-            QString text = QString("%1").arg((int)(millimeters / millimetersPerCentimeter));
+            QString text = QString("%1").arg((int)(millimeters / UBGeometryUtils::millimetersPerCentimeter));
             int textXRight = graduationX + fontMetrics.width(text) / 2;
             qreal textWidth = fontMetrics.width(text);
             qreal textHeight = fontMetrics.tightBoundingRect(text).height() + 5;
 
-            int textY = (ky > 0) ? rotationCenter().y() - 5 - centimeterGraduationHeight - textHeight
-                : rotationCenter().y() + 5 + centimeterGraduationHeight;
+            int textY = (ky > 0) ? rotationCenter().y() - 5 - UBGeometryUtils::centimeterGraduationHeight - textHeight
+                : rotationCenter().y() + 5 + UBGeometryUtils::centimeterGraduationHeight;
 
             bool bText = false;
             switch(mOrientation)
@@ -587,7 +597,7 @@ QCursor    UBGraphicsTriangle::flipCursor() const
 void UBGraphicsTriangle::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
     lastRect = rect().toRect();
-    lastPos = event->screenPos();
+    lastPos = sceneTransform().inverted().map(event->screenPos());
 
     if (resize1Polygon().containsPoint(event->pos().toPoint(), Qt::OddEvenFill))
     {
@@ -621,18 +631,13 @@ void UBGraphicsTriangle::mousePressEvent(QGraphicsSceneMouseEvent *event)
 void UBGraphicsTriangle::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
  
-    QPoint currPos = event->screenPos();
-//     qDebug() << QString(" X: %1 ").arg(currPos.x());
-//     qDebug() << QString(" Y: %1 ").arg(currPos.y());
-
     if (!mResizing1 && !mResizing2 && !mRotating)
     {
         QGraphicsItem::mouseMoveEvent(event);
     }
     else
     {
-
-        //-----------------------------------------------//
+        QPoint currPos = sceneTransform().inverted().map(event->screenPos());
 
         if (mResizing1)
         {
@@ -763,7 +768,9 @@ void UBGraphicsTriangle::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
 {
     UBStylusTool::Enum currentTool = (UBStylusTool::Enum)UBDrawingController::drawingController ()->stylusTool ();
 
-    if (currentTool == UBStylusTool::Selector)  {
+    if (currentTool == UBStylusTool::Selector ||
+        currentTool == UBStylusTool::Play)
+    {
         mCloseSvgItem->setParentItem(this);
 
         mShowButtons = true;
@@ -798,6 +805,7 @@ void UBGraphicsTriangle::hoverEnterEvent(QGraphicsSceneHoverEvent *event)
 
 void UBGraphicsTriangle::hoverLeaveEvent(QGraphicsSceneHoverEvent *event)
 {
+    mResizing1 = mResizing2 = mRotating = false;
     mShowButtons = false;
     setCursor(Qt::ArrowCursor);
     mCloseSvgItem->setVisible(false);
@@ -813,7 +821,8 @@ void UBGraphicsTriangle::hoverMoveEvent(QGraphicsSceneHoverEvent *event)
 {
     UBStylusTool::Enum currentTool = (UBStylusTool::Enum)UBDrawingController::drawingController ()->stylusTool ();
 
-    if (currentTool == UBStylusTool::Selector)
+    if (currentTool == UBStylusTool::Selector ||
+        currentTool == UBStylusTool::Play)
     {
         mCloseSvgItem->setVisible(mShowButtons);
         mVFlipSvgItem->setVisible(mShowButtons);

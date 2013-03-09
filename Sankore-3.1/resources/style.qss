@@ -5,9 +5,26 @@ QWidget#UBLibNavigatorWidget,
 QWidget#UBLibItemProperties,
 QWidget#UBDownloadWidget,
 QWidget#UBTeacherGuideWidget,
-QWidget#UBFeatureProperties
+QWidget#UBFeaturesNavigatorWidget,
+QWidget#PathList,
+QWidget#UBFeaturesCentralWidget
 {
 	background: #EEEEEE;
+	border-radius: 10px;
+	border: 2px solid #999999;
+}
+
+QTextEdit,
+QLineEdit,
+QComboBox#DockPaletteWidgetComboBox QAbstractItemView
+{
+    selection-background-color: lightgreen;
+    selection-color: black;
+}
+
+
+QWidget#mAdditionalDataContainer
+{
 	border-radius: 10px;
 	border: 2px solid #999999;
 }
@@ -26,18 +43,14 @@ QWidget#UBLibWebView
 	border: 2px solid #999999;
 }
 
-QWidget#UBFeaturesWebView
-{
-	background: #EEEEEE;
-	border-radius : 10px;
-	border: 2px solid #999999;
-}
-
 QListView
 {
-	background: #EEEEEE;
-	border-radius : 10px;
-	border: 2px solid #999999;
+      border: 0px;
+}
+
+QWidget#UBFeatureProperties
+{
+      border: 2px;
 }
 
 QWebView#SearchEngineView

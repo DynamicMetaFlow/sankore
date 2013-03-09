@@ -1,10 +1,24 @@
-
 /*
- * UBSettings.cpp
+ * Copyright (C) 2012 Webdoc SA
  *
- *  Created on: Oct 29, 2008
- *      Author: luc
+ * This file is part of Open-Sankoré.
+ *
+ * Open-Sankoré is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License,
+ * with a specific linking exception for the OpenSSL project's
+ * "OpenSSL" library (or with modified versions of it that use the
+ * same license as the "OpenSSL" library).
+ *
+ * Open-Sankoré is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Open-Sankoré.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 
 #include "UBSettings.h"
 
@@ -78,6 +92,7 @@ QPointer<QSettings> UBSettings::sAppSettings = 0;
 
 const int UBSettings::maxThumbnailWidth = 400;
 const int UBSettings::defaultThumbnailWidth = 150;
+const int UBSettings::defaultLibraryIconSize = 80;
 
 const int UBSettings::defaultGipWidth = 150;
 const int UBSettings::defaultSoundWidth = 50;
@@ -87,7 +102,7 @@ const int UBSettings::defaultWidgetIconWidth = 110;
 const int UBSettings::defaultVideoWidth = 80;
 
 const int UBSettings::thumbnailSpacing = 20;
-const int UBSettings::longClickInterval = 2000;
+const int UBSettings::longClickInterval = 1200;
 
 const qreal UBSettings::minScreenRatio = 1.33; // 800/600 or 1024/768
 
@@ -102,9 +117,6 @@ QColor UBSettings::treeViewBackgroundColor = QColor(209, 215, 226); //in synch w
 int UBSettings::objectInControlViewMargin = 100;
 
 QString UBSettings::appPingMessage = "__uniboard_ping";
-
-QString UBSettings::defaultDocumentGroupName;
-QString UBSettings::documentTrashGroupName;
 
 UBSettings* UBSettings::settings()
 {
@@ -175,7 +187,7 @@ void UBSettings::ValidateKeyboardPaletteKeyBtnSize()
 {
     // if boardKeyboardPaletteKeyBtnSize is not initialized, or supportedKeyboardSizes not initialized or empty
     if( !boardKeyboardPaletteKeyBtnSize ||
-        !supportedKeyboardSizes || 
+        !supportedKeyboardSizes ||
         supportedKeyboardSizes->size() == 0 ) return;
 
     // get original size value
@@ -206,9 +218,16 @@ void UBSettings::init()
     appEnableAutomaticSoftwareUpdates = new UBSetting(this, "App", "EnableAutomaticSoftwareUpdates", true);
     appEnableSoftwareUpdates = new UBSetting(this, "App", "EnableSoftwareUpdates", true);
     appToolBarOrientationVertical = new UBSetting(this, "App", "ToolBarOrientationVertical", false);
-    navigPaletteWidth = new UBSetting(this, "Board", "NavigPaletteWidth", 270);
-    rightLibPaletteWidth = new UBSetting(this, "Board", "RightLibPaletteWidth", 270);
-    leftLibPaletteWidth = new UBSetting(this, "Board", "LeftLibPaletteWidth",270);
+    appPreferredLanguage = new UBSetting(this,"App","PreferredLanguage", "");
+
+    rightLibPaletteBoardModeWidth = new UBSetting(this, "Board", "RightLibPaletteBoardModeWidth", 270);
+    rightLibPaletteBoardModeIsCollapsed = new UBSetting(this,"Board", "RightLibPaletteBoardModeIsCollapsed",false);
+    rightLibPaletteDesktopModeWidth = new UBSetting(this, "Board", "RightLibPaletteDesktopModeWidth", 270);
+    rightLibPaletteDesktopModeIsCollapsed = new UBSetting(this,"Board", "RightLibPaletteDesktopModeIsCollapsed",false);
+    leftLibPaletteBoardModeWidth = new UBSetting(this, "Board", "LeftLibPaletteBoardModeWidth",270);
+    leftLibPaletteBoardModeIsCollapsed = new UBSetting(this,"Board","LeftLibPaletteBoardModeIsCollapsed",false);
+    leftLibPaletteDesktopModeWidth = new UBSetting(this, "Board", "LeftLibPaletteDesktopModeWidth",270);
+    leftLibPaletteDesktopModeIsCollapsed = new UBSetting(this,"Board","LeftLibPaletteDesktopModeIsCollapsed",false);
 
     appIsInSoftwareUpdateProcess = new UBSetting(this, "App", "IsInSoftwareUpdateProcess", false);
     appLastSessionDocumentUUID = new UBSetting(this, "App", "LastSessionDocumentUUID", "");
@@ -216,6 +235,8 @@ void UBSettings::init()
     appUseMultiscreen = new UBSetting(this, "App", "UseMusliscreenMode", true);
 
     appStartMode = new UBSetting(this, "App", "StartMode", "");
+
+    featureSliderPosition = new UBSetting(this, "Board", "FeatureSliderPosition", 40);
 
     boardPenFineWidth = new UBSetting(this, "Board", "PenFineWidth", 1.5);
     boardPenMediumWidth = new UBSetting(this, "Board", "PenMediumWidth", 3.0);
@@ -234,7 +255,9 @@ void UBSettings::init()
     ValidateKeyboardPaletteKeyBtnSize();
 
     pageSize = new UBSetting(this, "Board", "DefaultPageSize", documentSizes.value(DocumentSizeRatio::Ratio4_3));
-    
+
+    pageDpi = new UBSetting(this, "Board", "pageDpi", 0);
+
     QStringList penLightBackgroundColors;
     penLightBackgroundColors << "#000000" << "#FF0000" <<"#004080" << "#008000" << "#C87400" << "#800040" << "#008080"  << "#5F2D0A";
     boardPenLightBackgroundColors = new UBColorListSetting(this, "Board", "PenLightBackgroundColors", penLightBackgroundColors, 1.0);
@@ -322,9 +345,6 @@ void UBSettings::init()
     lastWidgetPath = new UBSetting(this, "Library", "LastWidgetPath", QVariant(QDesktopServices::storageLocation(QDesktopServices::DocumentsLocation)));
     lastVideoPath = new UBSetting(this, "Library", "LastVideoPath", QVariant(QDesktopServices::storageLocation(QDesktopServices::MoviesLocation)));
 
-    defaultDocumentGroupName = tr("Untitled Documents");
-    documentTrashGroupName = tr("Trash");
-
     appOnlineUserName = new UBSetting(this, "App", "OnlineUserName", "");
 
     boardShowToolsPalette = new UBSetting(this, "Board", "ShowToolsPalette", "false");
@@ -344,6 +364,7 @@ void UBSettings::init()
 
     podcastPublishToYoutube = new UBSetting(this, "Podcast", "PublishToYouTube", false);
     youTubeUserEMail = new UBSetting(this, "YouTube", "UserEMail", "");
+    youTubeCredentialsPersistence = new UBSetting(this,"YouTube", "CredentialsPersistence",false);
 
     uniboardWebEMail = new UBSetting(this, "UniboardWeb", "EMail", "");
     uniboardWebAuthor = new UBSetting(this, "UniboardWeb", "Author", "");
@@ -351,6 +372,7 @@ void UBSettings::init()
 
     communityUser = new UBSetting(this, "Community", "Username", "");
     communityPsw = new UBSetting(this, "Community", "Password", "");
+    communityCredentialsPersistence = new UBSetting(this,"Community", "CredentialsPersistence",false);
 
     QStringList uris = UBToolsManager::manager()->allToolIDs();
 
@@ -377,13 +399,17 @@ void UBSettings::init()
     intranetPodcastPublishingUrl = new UBSetting(this, "IntranetPodcast", "PublishingUrl", "");
     intranetPodcastAuthor = new UBSetting(this, "IntranetPodcast", "Author", "");
 
-	KeyboardLocale = new UBSetting(this, "Board", "StartupKeyboardLocale", 0);
+    KeyboardLocale = new UBSetting(this, "Board", "StartupKeyboardLocale", 0);
     swapControlAndDisplayScreens = new UBSetting(this, "App", "SwapControlAndDisplayScreens", false);
 
     angleTolerance = new UBSetting(this, "App", "AngleTolerance", 4);
     historyLimit = new UBSetting(this, "Web", "HistoryLimit", 15);
     teacherGuidePageZeroActivated = new UBSetting(this,"DockPalette","TeacherGuideActivatePageZero",true);
     teacherGuideLessonPagesActivated = new UBSetting(this,"DockPalette","TeacherGuideActivateLessonPages",true);
+
+    libIconSize = new UBSetting(this, "Library", "LibIconSize", defaultLibraryIconSize);
+
+    cleanNonPersistentSettings();
 }
 
 
@@ -393,7 +419,7 @@ QVariant UBSettings::value ( const QString & key, const QVariant & defaultValue)
     {
         sAppSettings->setValue(key, defaultValue);
     }
-    
+
     return mUserSettings->value(key, sAppSettings->value(key, defaultValue));
 }
 
@@ -884,6 +910,17 @@ QString UBSettings::userTrashDirPath()
 }
 
 
+QString UBSettings::userGipLibraryDirectory()
+{
+    static QString dirPath = "";
+    if(dirPath.isEmpty()){
+        dirPath = userDataDirectory() + "/library/gips";
+        checkDirectory(dirPath);
+    }
+    return dirPath;
+}
+
+
 QString UBSettings::applicationShapeLibraryDirectory()
 {
     QString defaultRelativePath = QString("./library/shape");
@@ -911,16 +948,6 @@ QString UBSettings::applicationCustomFontDirectory()
     return applicationCustomizationDirectory() + defaultFontDirectory;
 }
 
-QString UBSettings::applicationGipLibraryDirectory()
-{
-    static QString dirPath = "";
-    if(dirPath.isEmpty()){
-        dirPath = UBPlatformUtils::applicationResourcesDirectory() + "/library/gips";
-        checkDirectory(dirPath);
-    }
-    return dirPath;
-}
-
 QString UBSettings::userSearchDirectory()
 {
     static QString dirPath = "";
@@ -933,7 +960,7 @@ QString UBSettings::userSearchDirectory()
 
 QString UBSettings::applicationImageLibraryDirectory()
 {
-    QString defaultRelativePath = QString("./library/image");
+    QString defaultRelativePath = QString("./library/pictures");
 
     QString configPath = value("Library/ImageDirectory", QVariant(defaultRelativePath)).toString();
 
@@ -1002,6 +1029,48 @@ QString UBSettings::applicationApplicationsLibraryDirectory()
     }
 }
 
+
+QString UBSettings::applicationAudiosLibraryDirectory()
+{
+    QString defaultRelativePath = QString("./library/audios");
+
+    QString configPath = value("Library/AudiosDirectory", QVariant(defaultRelativePath)).toString();
+
+    if (configPath.startsWith(".")) {
+        return UBPlatformUtils::applicationResourcesDirectory() + configPath.right(configPath.size() - 1);
+    }
+    else {
+        return configPath;
+    }
+}
+
+QString UBSettings::applicationVideosLibraryDirectory()
+{
+    QString defaultRelativePath = QString("./library/videos");
+
+    QString configPath = value("Library/VideosDirectory", QVariant(defaultRelativePath)).toString();
+
+    if (configPath.startsWith(".")) {
+        return UBPlatformUtils::applicationResourcesDirectory() + configPath.right(configPath.size() - 1);
+    }
+    else {
+        return configPath;
+    }
+}
+
+QString UBSettings::applicationAnimationsLibraryDirectory()
+{
+    QString defaultRelativePath = QString("./library/animations");
+
+    QString configPath = value("Library/AnimationsDirectory", QVariant(defaultRelativePath)).toString();
+
+    if (configPath.startsWith(".")) {
+        return UBPlatformUtils::applicationResourcesDirectory() + configPath.right(configPath.size() - 1);
+    }
+    else {
+        return configPath;
+    }
+}
 
 QString UBSettings::userInteractiveFavoritesDirectory()
 {
@@ -1129,6 +1198,18 @@ void UBSettings::setCommunityPassword(const QString &password)
     communityPsw->set(QVariant(password));
 }
 
+void UBSettings::setCommunityPersistence(const bool persistence)
+{
+    communityCredentialsPersistence->set(QVariant(persistence));
+}
+
+int UBSettings::libraryIconSize(){
+    return libIconSize->get().toInt();
+}
+
+void UBSettings::setLibraryIconsize(const int& size){
+    libIconSize->set(QVariant(size));
+}
 
 bool UBSettings::checkDirectory(QString& dirPath)
 {
@@ -1160,3 +1241,20 @@ QString UBSettings::replaceWildcard(QString& path)
     return result;
 }
 
+void UBSettings::closing()
+{
+    cleanNonPersistentSettings();
+}
+
+void UBSettings::cleanNonPersistentSettings()
+{
+    if(!communityCredentialsPersistence->get().toBool()){
+        communityPsw->set(QVariant(""));
+        communityUser->set(QVariant(""));
+    }
+
+    if(!youTubeCredentialsPersistence->get().toBool()){
+        removePassword(youTubeUserEMail->get().toString());
+        youTubeUserEMail->set(QVariant(""));
+    }
+}

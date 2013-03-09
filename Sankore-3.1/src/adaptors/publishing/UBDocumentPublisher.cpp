@@ -1,17 +1,25 @@
 /*
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2012 Webdoc SA
  *
- * This program is distributed in the hope that it will be useful,
+ * This file is part of Open-Sankoré.
+ *
+ * Open-Sankoré is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License,
+ * with a specific linking exception for the OpenSSL project's
+ * "OpenSSL" library (or with modified versions of it that use the
+ * same license as the "OpenSSL" library).
+ *
+ * Open-Sankoré is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Open-Sankoré.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+
 #include <QFileInfo>
 
 #include "UBDocumentPublisher.h"
@@ -33,6 +41,7 @@
 #include "gui/UBMainWindow.h"
 
 #include "document/UBDocumentProxy.h"
+#include "document/UBDocumentContainer.h"
 
 #include "domain/UBGraphicsWidgetItem.h"
 
@@ -57,22 +66,16 @@ THIRD_PARTY_WARNINGS_ENABLE
 UBDocumentPublisher::UBDocumentPublisher(UBDocumentProxy* pDocument, QObject *parent)
         : QObject(parent)
         , mSourceDocument(pDocument)
-        , mPublishingDocument(0)
         , mUsername("")
         , mPassword("")
         , bLoginCookieSet(false)
 {
-	//NOOP
     init();
 }
 
 
 UBDocumentPublisher::~UBDocumentPublisher()
 {
-    if(mPublishingDocument){
-        delete mPublishingDocument;
-        mPublishingDocument = NULL;
-    }
 }
 
 
@@ -113,10 +116,10 @@ void UBDocumentPublisher::buildUbwFile()
 
     if (UBFileSystemUtils::copyDir(mSourceDocument->persistencePath(), tmpDir))
     {
-        QUuid publishingUuid = QUuid::createUuid();
+        QString documentName = mSourceDocument->name();
 
-        mPublishingDocument = new UBDocumentProxy(tmpDir);
-        mPublishingDocument->setPageCount(mSourceDocument->pageCount());
+        mPublishingPath = tmpDir;
+        mPublishingSize = mSourceDocument->pageCount();
 
         rasterizeScenes();
 
@@ -124,24 +127,24 @@ void UBDocumentPublisher::buildUbwFile()
 
         UBExportFullPDF pdfExporter;
         pdfExporter.setVerbode(false);
-        pdfExporter.persistsDocument(mSourceDocument, mPublishingDocument->persistencePath() + "/" + UBStringUtils::toCanonicalUuid(publishingUuid) + ".pdf");
+        pdfExporter.persistsDocument(mSourceDocument, mPublishingPath + "/" + documentName + ".pdf");
 
         UBExportDocument ubzExporter;
         ubzExporter.setVerbode(false);
-        ubzExporter.persistsDocument(mSourceDocument, mPublishingDocument->persistencePath() + "/" + UBStringUtils::toCanonicalUuid(publishingUuid) + ".ubz");
+        ubzExporter.persistsDocument(mSourceDocument, mPublishingPath + "/" + documentName + ".ubz");
 
         // remove all useless files
 
-        for (int pageIndex = 0; pageIndex < mPublishingDocument->pageCount(); pageIndex++) {
-            QString filename = mPublishingDocument->persistencePath() + UBFileSystemUtils::digitFileFormat("/page%1.svg",pageIndex);
+        for (int pageIndex = 0; pageIndex < mPublishingSize; pageIndex++) {
+            QString filename = mPublishingPath + UBFileSystemUtils::digitFileFormat("/page%1.svg",pageIndex);
 
             QFile::remove(filename);
         }
 
-        UBFileSystemUtils::deleteDir(mPublishingDocument->persistencePath() + "/" + UBPersistenceManager::imageDirectory);
-        UBFileSystemUtils::deleteDir(mPublishingDocument->persistencePath() + "/" + UBPersistenceManager::objectDirectory);
-        UBFileSystemUtils::deleteDir(mPublishingDocument->persistencePath() + "/" + UBPersistenceManager::videoDirectory);
-        UBFileSystemUtils::deleteDir(mPublishingDocument->persistencePath() + "/" + UBPersistenceManager::audioDirectory);
+        UBFileSystemUtils::deleteDir(mPublishingPath + "/" + UBPersistenceManager::imageDirectory);
+        UBFileSystemUtils::deleteDir(mPublishingPath + "/" + UBPersistenceManager::objectDirectory);
+        UBFileSystemUtils::deleteDir(mPublishingPath + "/" + UBPersistenceManager::videoDirectory);
+        UBFileSystemUtils::deleteDir(mPublishingPath + "/" + UBPersistenceManager::audioDirectory);
 
         mTmpZipFile = UBFileSystemUtils::defaultTempDirPath() + "/" + UBStringUtils::toCanonicalUuid(QUuid::createUuid()) + ".ubw~";
 
@@ -156,7 +159,7 @@ void UBDocumentPublisher::buildUbwFile()
 
         QuaZipFile outFile(&zip);
 
-        if (!UBFileSystemUtils::compressDirInZip(mPublishingDocument->persistencePath(), "", &outFile, true))
+        if (!UBFileSystemUtils::compressDirInZip(mPublishingPath, "", &outFile, true))
         {
             qWarning("Export failed. compressDirInZip failed ...");
             zip.close();
@@ -187,13 +190,14 @@ void UBDocumentPublisher::buildUbwFile()
 void UBDocumentPublisher::rasterizeScenes()
 {
 
-    for (int pageIndex = 0; pageIndex < mPublishingDocument->pageCount(); pageIndex++)
+    for (int pageIndex = 0; pageIndex < mPublishingSize; pageIndex++)
     {
-        UBApplication::showMessage(tr("Converting page %1/%2 ...").arg(UBApplication::boardController->pageFromSceneIndex(pageIndex)).arg(mPublishingDocument->pageCount()), true);
+        UBApplication::showMessage(tr("Converting page %1/%2 ...").arg(UBDocumentContainer::pageFromSceneIndex(pageIndex)).arg(mPublishingSize), true);
 
-        UBSvgSubsetRasterizer rasterizer(mPublishingDocument, pageIndex);
+        UBDocumentProxy publishingDocument(mPublishingPath);
+        UBSvgSubsetRasterizer rasterizer(&publishingDocument, pageIndex);
 
-        QString filename = mPublishingDocument->persistencePath() + UBFileSystemUtils::digitFileFormat("/page%1.jpg",pageIndex);
+        QString filename = mPublishingPath + UBFileSystemUtils::digitFileFormat("/page%1.jpg",pageIndex);
 
         rasterizer.rasterizeToFile(filename);
 
@@ -203,7 +207,7 @@ void UBDocumentPublisher::rasterizeScenes()
 
 void UBDocumentPublisher::updateGoogleMapApiKey()
 {
-    QDir widgestDir(mPublishingDocument->persistencePath() + "/" + UBPersistenceManager::widgetDirectory);
+    QDir widgestDir(mPublishingPath + "/" + UBPersistenceManager::widgetDirectory);
 
     QString uniboardWebGoogleMapApiKey = UBSettings::settings()->uniboardWebGoogleMapApiKey->get().toString();
 
@@ -242,9 +246,10 @@ void UBDocumentPublisher::updateGoogleMapApiKey()
 
 void UBDocumentPublisher::upgradeDocumentForPublishing()
 {
-    for (int pageIndex = 0; pageIndex < mPublishingDocument->pageCount(); pageIndex++)
+    for (int pageIndex = 0; pageIndex < mPublishingSize; pageIndex++)
     {
-        UBGraphicsScene *scene = UBSvgSubsetAdaptor::loadScene(mPublishingDocument, pageIndex);
+        UBDocumentProxy publishingDocument(mPublishingPath);
+        UBGraphicsScene *scene = UBSvgSubsetAdaptor::loadScene(&publishingDocument, pageIndex);
 
         QList<UBGraphicsW3CWidgetItem*> widgets;
 
@@ -252,12 +257,12 @@ void UBDocumentPublisher::upgradeDocumentForPublishing()
             UBGraphicsW3CWidgetItem *widgetItem = dynamic_cast<UBGraphicsW3CWidgetItem*>(item);
 
             if(widgetItem){
-                generateWidgetPropertyScript(widgetItem, UBApplication::boardController->pageFromSceneIndex(pageIndex));
+                generateWidgetPropertyScript(widgetItem, UBDocumentContainer::pageFromSceneIndex(pageIndex));
                 widgets << widgetItem;
             }
         }
 
-        QString filename = mPublishingDocument->persistencePath() + UBFileSystemUtils::digitFileFormat("/page%1.json",pageIndex);
+        QString filename = mPublishingPath + UBFileSystemUtils::digitFileFormat("/page%1.json",pageIndex);
 
         QFile jsonFile(filename);
         if (jsonFile.open(QIODevice::WriteOnly | QIODevice::Truncate))
@@ -283,12 +288,12 @@ void UBDocumentPublisher::upgradeDocumentForPublishing()
                 jsonFile.write(QString("      \"uuid\": \"%1\",\n").arg(UBStringUtils::toCanonicalUuid(widget->uuid())).toUtf8());
                 jsonFile.write(QString("      \"id\": \"%1\",\n").arg(widget->metadatas().id).toUtf8());
 
-                jsonFile.write(QString("      \"name\": \"%1\",\n").arg(widget->w3cWidget()->metadatas().name).toUtf8());
-                jsonFile.write(QString("      \"description\": \"%1\",\n").arg(widget->w3cWidget()->metadatas().description).toUtf8());
-                jsonFile.write(QString("      \"author\": \"%1\",\n").arg(widget->w3cWidget()->metadatas().author).toUtf8());
-                jsonFile.write(QString("      \"authorEmail\": \"%1\",\n").arg(widget->w3cWidget()->metadatas().authorEmail).toUtf8());
-                jsonFile.write(QString("      \"authorHref\": \"%1\",\n").arg(widget->w3cWidget()->metadatas().authorHref).toUtf8());
-                jsonFile.write(QString("      \"version\": \"%1\",\n").arg(widget->w3cWidget()->metadatas().authorHref).toUtf8());
+                jsonFile.write(QString("      \"name\": \"%1\",\n").arg(widget->metadatas().name).toUtf8());
+                jsonFile.write(QString("      \"description\": \"%1\",\n").arg(widget->metadatas().description).toUtf8());
+                jsonFile.write(QString("      \"author\": \"%1\",\n").arg(widget->metadatas().author).toUtf8());
+                jsonFile.write(QString("      \"authorEmail\": \"%1\",\n").arg(widget->metadatas().authorEmail).toUtf8());
+                jsonFile.write(QString("      \"authorHref\": \"%1\",\n").arg(widget->metadatas().authorHref).toUtf8());
+                jsonFile.write(QString("      \"version\": \"%1\",\n").arg(widget->metadatas().authorHref).toUtf8());
 
                 jsonFile.write(QString("      \"x\": %1,\n").arg(widget->sceneBoundingRect().x()).toUtf8());
                 jsonFile.write(QString("      \"y\": %1,\n").arg(widget->sceneBoundingRect().y()).toUtf8());
@@ -300,10 +305,10 @@ void UBDocumentPublisher::upgradeDocumentForPublishing()
 
                 QString url = UBPersistenceManager::widgetDirectory + "/" + widget->uuid().toString() + ".wgt";
                 jsonFile.write(QString("      \"src\": \"%1\",\n").arg(url).toUtf8());
-                QString startFile = widget->w3cWidget()->mainHtmlFileName();
+                QString startFile = widget->mainHtmlFileName();
                 jsonFile.write(QString("      \"startFile\": \"%1\",\n").arg(startFile).toUtf8());
 
-                QMap<QString, QString> preferences = widget->preferences();
+                QMap<QString, QString> preferences = widget->UBGraphicsWidgetItem::preferences();
 
                 jsonFile.write(QString("      \"preferences\": {\n").toUtf8());
 
@@ -362,14 +367,14 @@ void UBDocumentPublisher::upgradeDocumentForPublishing()
 void UBDocumentPublisher::generateWidgetPropertyScript(UBGraphicsW3CWidgetItem *widgetItem, int pageNumber)
 {
 
-    QMap<QString, QString> preferences = widgetItem->preferences();
+    QMap<QString, QString> preferences = widgetItem->UBGraphicsWidgetItem::preferences();
     QMap<QString, QString> datastoreEntries = widgetItem->datastoreEntries();
 
-    QString startFileName = widgetItem->w3cWidget()->mainHtmlFileName();
+    QString startFileName = widgetItem->mainHtmlFileName();
 
     if (!startFileName.startsWith("http://"))
     {
-        QString startFilePath = mPublishingDocument->persistencePath() + "/" + UBPersistenceManager::widgetDirectory + "/" + widgetItem->uuid().toString() + ".wgt/" + startFileName;
+        QString startFilePath = mPublishingPath + "/" + UBPersistenceManager::widgetDirectory + "/" + widgetItem->uuid().toString() + ".wgt/" + startFileName;
 
         QFile startFile(startFilePath);
 
@@ -396,18 +401,18 @@ void UBDocumentPublisher::generateWidgetPropertyScript(UBGraphicsW3CWidgetItem *
                             lines << "  <script type=\"text/javascript\">";
 
                             lines << "    var widget = {};";
-                            lines << "    widget.id = '" + widgetItem->w3cWidget()->metadatas().id + "';";
-                            lines << "    widget.name = '" + widgetItem->w3cWidget()->metadatas().name + "';";
-                            lines << "    widget.description = '" + widgetItem->w3cWidget()->metadatas().description + "';";
-                            lines << "    widget.author = '" + widgetItem->w3cWidget()->metadatas().author + "';";
-                            lines << "    widget.authorEmail = '" + widgetItem->w3cWidget()->metadatas().authorEmail + "';";
-                            lines << "    widget.authorHref = '" + widgetItem->w3cWidget()->metadatas().authorHref + "';";
-                            lines << "    widget.version = '" + widgetItem->w3cWidget()->metadatas().version + "';";
+                            lines << "    widget.id = '" + widgetItem->metadatas().id + "';";
+                            lines << "    widget.name = '" + widgetItem->metadatas().name + "';";
+                            lines << "    widget.description = '" + widgetItem->metadatas().description + "';";
+                            lines << "    widget.author = '" + widgetItem->metadatas().author + "';";
+                            lines << "    widget.authorEmail = '" + widgetItem->metadatas().authorEmail + "';";
+                            lines << "    widget.authorHref = '" + widgetItem->metadatas().authorHref + "';";
+                            lines << "    widget.version = '" + widgetItem->metadatas().version + "';";
 
                             lines << "    widget.uuid = '" + UBStringUtils::toCanonicalUuid(widgetItem->uuid()) + "';";
 
-                            lines << "    widget.width = " + QString("%1").arg(widgetItem->w3cWidget()->width()) + ";";
-                            lines << "    widget.height = " + QString("%1").arg(widgetItem->w3cWidget()->height()) + ";";
+                            lines << "    widget.width = " + QString("%1").arg(widgetItem->nominalSize().width()) + ";";
+                            lines << "    widget.height = " + QString("%1").arg(widgetItem->nominalSize().height()) + ";";
                             lines << "    widget.openUrl = function(url) { window.open(url); }";
                             lines << "    widget.preferences = new Array()";
 
@@ -434,7 +439,7 @@ void UBDocumentPublisher::generateWidgetPropertyScript(UBGraphicsW3CWidgetItem *
                             lines << "    widget.preferences.clear = function() {}";
 
                             lines << "    var uniboard = {};";
-                            lines << "    uniboard.pageCount = " + QString("%1").arg(mPublishingDocument->pageCount()) + ";";
+                            lines << "    uniboard.pageCount = " + QString("%1").arg(mPublishingSize) + ";";
                             lines << "    uniboard.currentPageNumber = " + QString("%1").arg(pageNumber) + ";";
                             lines << "    uniboard.uuid = '" + UBStringUtils::toCanonicalUuid(widgetItem->uuid()) + "'";
                             lines << "    uniboard.lang = navigator.language;";

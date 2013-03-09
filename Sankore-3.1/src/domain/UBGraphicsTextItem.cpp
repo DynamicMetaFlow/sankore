@@ -1,19 +1,27 @@
 /*
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2012 Webdoc SA
  *
- * This program is distributed in the hope that it will be useful,
+ * This file is part of Open-Sankoré.
+ *
+ * Open-Sankoré is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License,
+ * with a specific linking exception for the OpenSSL project's
+ * "OpenSSL" library (or with modified versions of it that use the
+ * same license as the "OpenSSL" library).
+ *
+ * Open-Sankoré is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Open-Sankoré.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+
 #include <QtGui>
+#include "UBGraphicsGroupContainerItem.h"
 #include "UBGraphicsTextItem.h"
 #include "UBGraphicsTextItemDelegate.h"
 #include "UBGraphicsScene.h"
@@ -22,21 +30,25 @@
 #include "core/UBApplication.h"
 #include "board/UBBoardController.h"
 #include "board/UBBoardView.h"
+#include "board/UBDrawingController.h"
 #include "core/UBSettings.h"
 
 #include "core/memcheck.h"
 
 QColor UBGraphicsTextItem::lastUsedTextColor;
 
-UBGraphicsTextItem::UBGraphicsTextItem(QGraphicsItem * parent)
-    : QGraphicsTextItem(parent)
+UBGraphicsTextItem::UBGraphicsTextItem(QGraphicsItem * parent) :
+    QGraphicsTextItem(parent)
+    , UBGraphicsItem()
     , mMultiClickState(0)
     , mLastMousePressTime(QTime::currentTime())
 {
-    mDelegate = new UBGraphicsTextItemDelegate(this, 0);
-    mDelegate->init();
+    setDelegate(new UBGraphicsTextItemDelegate(this, 0));
+    Delegate()->init();
 
-    mDelegate->frame()->setOperationMode(UBGraphicsDelegateFrame::Resizing);
+    Delegate()->frame()->setOperationMode(UBGraphicsDelegateFrame::Resizing);
+    Delegate()->setFlippable(false);
+    Delegate()->setRotatable(true);
 
     mTypeTextHereLabel = tr("<Type Text Here>");
 
@@ -52,7 +64,9 @@ UBGraphicsTextItem::UBGraphicsTextItem(QGraphicsItem * parent)
 
     setTextInteractionFlags(Qt::TextEditorInteraction);
 
-    connect(document(), SIGNAL(contentsChanged()), mDelegate, SLOT(contentsChanged()));
+    setUuid(QUuid::createUuid());
+
+    connect(document(), SIGNAL(contentsChanged()), Delegate(), SLOT(contentsChanged()));
     connect(document(), SIGNAL(undoCommandAdded()), this, SLOT(undoCommandAdded()));
 
     connect(document()->documentLayout(), SIGNAL(documentSizeChanged(const QSizeF &)),
@@ -62,43 +76,54 @@ UBGraphicsTextItem::UBGraphicsTextItem(QGraphicsItem * parent)
 
 UBGraphicsTextItem::~UBGraphicsTextItem()
 {
-    if (mDelegate)
-    {
-        delete mDelegate;
-    }
 }
 
 QVariant UBGraphicsTextItem::itemChange(GraphicsItemChange change, const QVariant &value)
 {
-    if (QGraphicsItem::ItemSelectedChange == change)
-    {
-        bool selected = value.toBool();
-
-        if (selected)
-        {
-            setTextInteractionFlags(Qt::TextEditorInteraction);
-        }
-        else
-        {
-            QTextCursor tc = textCursor();
-            tc.clearSelection();
-            setTextCursor(tc);
-            setTextInteractionFlags(Qt::NoTextInteraction);
-        }
-    }
-
     QVariant newValue = value;
 
-    if(mDelegate)
-        newValue = mDelegate->itemChange(change, value);
+    if(Delegate())
+        newValue = Delegate()->itemChange(change, value);
 
     return QGraphicsTextItem::itemChange(change, newValue);
 }
 
 void UBGraphicsTextItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
-    if (mDelegate)
-        mDelegate->mousePressEvent(event);
+    // scene()->itemAt(pos) returns 0 if pos is not over text, but over text item, but mouse press comes. 
+    // It is a cludge... 
+    if (UBStylusTool::Play == UBDrawingController::drawingController()->stylusTool())
+    {
+        event->accept();
+        clearFocus();
+        return;
+    }
+
+    if (Delegate())
+    {
+        Delegate()->mousePressEvent(event);
+        if (Delegate() && parentItem() && UBGraphicsGroupContainerItem::Type == parentItem()->type())
+        {
+            UBGraphicsGroupContainerItem *group = qgraphicsitem_cast<UBGraphicsGroupContainerItem*>(parentItem());
+            if (group)
+            {
+                QGraphicsItem *curItem = group->getCurrentItem();
+                if (curItem && this != curItem)
+                {   
+                    group->deselectCurrentItem();    
+                }   
+                group->setCurrentItem(this);
+                this->setSelected(true);
+                Delegate()->positionHandles();
+            }       
+
+        }
+        else
+        {
+            Delegate()->getToolBarItem()->show();
+        }
+
+    }
 
     if (!data(UBGraphicsItemData::ItemEditable).toBool())
         return;
@@ -144,7 +169,7 @@ void UBGraphicsTextItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
 
 void UBGraphicsTextItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
-    if (!mDelegate || !mDelegate->mouseMoveEvent(event))
+    if (!Delegate() || !Delegate()->mouseMoveEvent(event))
     {
         QGraphicsTextItem::mouseMoveEvent(event);
     }
@@ -152,10 +177,19 @@ void UBGraphicsTextItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 
 void UBGraphicsTextItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
+    // scene()->itemAt(pos) returns 0 if pos is not over text, but over text item, but mouse press comes. 
+    // It is a cludge... 
+    if (UBStylusTool::Play == UBDrawingController::drawingController()->stylusTool())
+    {
+        event->accept();
+        clearFocus();
+        return;
+    }
+
     if (mMultiClickState == 1)
     {
-        if (mDelegate)
-            mDelegate->mouseReleaseEvent(event);
+        if (Delegate())
+            Delegate()->mouseReleaseEvent(event);
 
         QGraphicsTextItem::mouseReleaseEvent(event);
     }
@@ -191,28 +225,36 @@ UBItem* UBGraphicsTextItem::deepCopy() const
 {
     UBGraphicsTextItem* copy = new UBGraphicsTextItem();
 
-    copy->setHtml(toHtml());
-    copy->setPos(this->pos());
-    copy->setTransform(this->transform());
-    copy->setFlag(QGraphicsItem::ItemIsMovable, true);
-    copy->setFlag(QGraphicsItem::ItemIsSelectable, true);
-    copy->setData(UBGraphicsItemData::ItemLayerType, this->data(UBGraphicsItemData::ItemLayerType));
-    copy->setData(UBGraphicsItemData::ItemLocked, this->data(UBGraphicsItemData::ItemLocked));
-    copy->setData(UBGraphicsItemData::ItemEditable, data(UBGraphicsItemData::ItemEditable).toBool());
-//    copy->setDefaultTextColor(this->defaultTextColor());
-//    copy->setFont(this->font());
-//    copy->setColorOnDarkBackground(this->colorOnDarkBackground());
-//    copy->setColorOnLightBackground(this->colorOnLightBackground());
-    copy->setTextWidth(this->textWidth());
-    copy->setTextHeight(this->textHeight());
-
-    copy->setSourceUrl(this->sourceUrl());
+    copyItemParameters(copy);
 
    // TODO UB 4.7 ... complete all members ?
 
    return copy;
 }
 
+void UBGraphicsTextItem::copyItemParameters(UBItem *copy) const
+{
+    UBGraphicsTextItem *cp = dynamic_cast<UBGraphicsTextItem*>(copy);
+    if (cp)
+    {
+        cp->setHtml(toHtml());
+        cp->setPos(this->pos());
+        cp->setTransform(this->transform());
+        cp->setFlag(QGraphicsItem::ItemIsMovable, true);
+        cp->setFlag(QGraphicsItem::ItemIsSelectable, true);
+        cp->setData(UBGraphicsItemData::ItemLayerType, this->data(UBGraphicsItemData::ItemLayerType));
+        cp->setData(UBGraphicsItemData::ItemLocked, this->data(UBGraphicsItemData::ItemLocked));
+        cp->setData(UBGraphicsItemData::ItemEditable, data(UBGraphicsItemData::ItemEditable).toBool());
+        //    cp->setDefaultTextColor(this->defaultTextColor());
+        //    cp->setFont(this->font());
+        //    cp->setColorOnDarkBackground(this->colorOnDarkBackground());
+        //    cp->setColorOnLightBackground(this->colorOnLightBackground());
+        cp->setTextWidth(this->textWidth());
+        cp->setTextHeight(this->textHeight());
+
+        cp->setSourceUrl(this->sourceUrl());
+    }
+}
 
 QRectF UBGraphicsTextItem::boundingRect() const
 {
@@ -286,8 +328,8 @@ void UBGraphicsTextItem::resize(qreal w, qreal h)
     setTextWidth(w);
     setTextHeight(h);
 
-    if (mDelegate)
-        mDelegate->positionHandles();
+    if (Delegate())
+        Delegate()->positionHandles();
 }
 
 
@@ -296,18 +338,18 @@ QSizeF UBGraphicsTextItem::size() const
     return QSizeF(textWidth(), textHeight());
 }
 
+void UBGraphicsTextItem::setUuid(const QUuid &pUuid)
+{
+    UBItem::setUuid(pUuid);
+    setData(UBGraphicsItemData::ItemUuid, QVariant(pUuid)); //store item uuid inside the QGraphicsItem to fast operations with Items on the scene
+}
+
 
 void UBGraphicsTextItem::undoCommandAdded()
 {
     emit textUndoCommandAdded(this);
 }
 
-
-void UBGraphicsTextItem::remove()
-{
-    if (mDelegate)
-        mDelegate->remove(true);
-}
 
 void UBGraphicsTextItem::documentSizeChanged(const QSizeF & newSize)
 {

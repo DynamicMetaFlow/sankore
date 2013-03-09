@@ -1,17 +1,24 @@
 /*
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2012 Webdoc SA
  *
- * This program is distributed in the hope that it will be useful,
+ * This file is part of Open-Sankoré.
+ *
+ * Open-Sankoré is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License,
+ * with a specific linking exception for the OpenSSL project's
+ * "OpenSSL" library (or with modified versions of it that use the
+ * same license as the "OpenSSL" library).
+ *
+ * Open-Sankoré is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Open-Sankoré.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 
 #ifndef UBSVGSUBSETADAPTOR_H_
 #define UBSVGSUBSETADAPTOR_H_
@@ -26,8 +33,7 @@ class UBGraphicsPolygonItem;
 class UBGraphicsPixmapItem;
 class UBGraphicsPDFItem;
 class UBGraphicsWidgetItem;
-class UBGraphicsVideoItem;
-class UBGraphicsAudioItem;
+class UBGraphicsMediaItem;
 class UBGraphicsAppleWidgetItem;
 class UBGraphicsW3CWidgetItem;
 class UBGraphicsTextItem;
@@ -42,6 +48,7 @@ class UBPersistenceManager;
 class UBGraphicsTriangle;
 class UBGraphicsCache;
 class IDataStorage;
+class UBGraphicsGroupContainerItem;
 
 class UBSvgSubsetAdaptor
 {
@@ -95,6 +102,8 @@ class UBSvgSubsetAdaptor
         static QMap<QString,IDataStorage*> additionalElementToStore;
 
 
+
+
         class UBSvgSubsetReader
         {
             public:
@@ -119,9 +128,9 @@ class UBSvgSubsetAdaptor
 
                 UBGraphicsPDFItem* pdfItemFromPDF();
 
-                UBGraphicsVideoItem* videoItemFromSvg();
+                UBGraphicsMediaItem* videoItemFromSvg();
 
-                UBGraphicsAudioItem* audioItemFromSvg();
+                UBGraphicsMediaItem* audioItemFromSvg();
 
                 UBGraphicsAppleWidgetItem* graphicsAppleWidgetFromSvg();
 
@@ -141,9 +150,14 @@ class UBSvgSubsetAdaptor
 
                 UBGraphicsCache* cacheFromSvg();
 
+                void readGroupRoot();
+                QGraphicsItem *readElementFromGroup();
+                UBGraphicsGroupContainerItem* readGroup();
+
                 void graphicsItemFromSvg(QGraphicsItem* gItem);
 
                 qreal getZValueFromSvg();
+                QUuid getUuidFromSvg();
 
                 QXmlStreamReader mXmlReader;
                 int mFileVersion;
@@ -156,6 +170,7 @@ class UBSvgSubsetAdaptor
                 bool mGroupHasInfo;
 
                 QString mNamespaceUri;
+                UBGraphicsScene *mScene;
         };
 
         class UBSvgSubsetWriter
@@ -170,6 +185,8 @@ class UBSvgSubsetAdaptor
 
             private:
 
+                void persistGroupToDom(QGraphicsItem *groupItem, QDomElement *curParent, QDomDocument *curDomDocument);
+                void persistStrokeToDom(QGraphicsItem *strokeItem, QDomElement *curParent, QDomDocument *curDomDocument);
                 void polygonItemToSvgPolygon(UBGraphicsPolygonItem* polygonItem, bool groupHoldsInfo);
                 void polygonItemToSvgLine(UBGraphicsPolygonItem* polygonItem, bool groupHoldsInfo);
                 void strokeToSvgPolyline(UBGraphicsStroke* stroke, bool groupHoldsInfo);
@@ -218,8 +235,8 @@ class UBSvgSubsetAdaptor
                 void pixmapItemToLinkedImage(UBGraphicsPixmapItem *pixmapItem);
                 void svgItemToLinkedSvg(UBGraphicsSvgItem *svgItem);
                 void pdfItemToLinkedPDF(UBGraphicsPDFItem *pdfItem);
-                void videoItemToLinkedVideo(UBGraphicsVideoItem *videoItem);
-                void audioItemToLinkedAudio(UBGraphicsAudioItem* audioItem);
+                void videoItemToLinkedVideo(UBGraphicsMediaItem *videoItem);
+                void audioItemToLinkedAudio(UBGraphicsMediaItem *audioItem);
                 void graphicsItemToSvg(QGraphicsItem *item);
                 void graphicsAppleWidgetToSvg(UBGraphicsAppleWidgetItem *item);
                 void graphicsW3CWidgetToSvg(UBGraphicsW3CWidgetItem *item);

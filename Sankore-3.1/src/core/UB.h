@@ -1,24 +1,49 @@
 /*
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2012 Webdoc SA
  *
- * This program is distributed in the hope that it will be useful,
+ * This file is part of Open-Sankoré.
+ *
+ * Open-Sankoré is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License,
+ * with a specific linking exception for the OpenSSL project's
+ * "OpenSSL" library (or with modified versions of it that use the
+ * same license as the "OpenSSL" library).
+ *
+ * Open-Sankoré is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Open-Sankoré.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 
 #ifndef UB_H_
 #define UB_H_
 
 #include <QtGui>
 
-#define UB_MAX_ZOOM 15
+#define UB_MAX_ZOOM 9
+
+struct UBMimeType
+{
+    enum Enum
+    {
+        RasterImage = 0,
+        VectorImage,
+        AppleWidget,
+        W3CWidget,
+        Video,
+        Audio,
+        Flash,
+        PDF,
+        UniboardTool,
+        Group,
+        UNKNOWN
+    };
+};
 
 struct UBStylusTool
 {
@@ -28,6 +53,7 @@ struct UBStylusTool
 		Eraser, 
  		Marker, 
 		Selector, 
+        Play,
 		Hand, 
 		ZoomIn, 
 		ZoomOut, 
@@ -98,6 +124,10 @@ struct UBGraphicsItemData
         , ItemEditable//for text only
         , ItemOwnZValue
         , itemLayerType //use instead of deprecated ItemLayerType
+        , ItemUuid //storing uuid in QGraphicsItem for fast finding operations
+        //Duplicating delegate's functions to make possible working with pure QGraphicsItem
+        , ItemFlippable // (bool)
+        , ItemRotatable // (bool)
     };
 };
 
@@ -110,12 +140,10 @@ struct UBGraphicsItemType
         PolygonItemType = QGraphicsItem::UserType + 1, 
 		PixmapItemType,
         SvgItemType, 
-		VideoItemType, 
-		AudioItemType, 
-		AppleWidgetItemType, 
+        DelegateButtonType,
+		MediaItemType, 
 		PDFItemType, 
-		TextItemType, 
-		W3CWidgetItemType, 
+		TextItemType,
 		CurtainItemType,
         RulerItemType, 
 		CompassItemType, 
@@ -124,7 +152,11 @@ struct UBGraphicsItemType
 		TriangleItemType,
         MagnifierItemType,
         cacheItemType,
-        groupContainerType
+        AristoItemType,
+        groupContainerType,
+        ToolWidgetItemType,
+        GraphicsWidgetItemType,
+        UserTypesCount // this line must be the last line in this enum because it is types counter.
     };
 };
 

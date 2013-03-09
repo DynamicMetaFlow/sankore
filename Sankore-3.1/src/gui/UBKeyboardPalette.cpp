@@ -1,9 +1,24 @@
 /*
- * UBKeyboardPalette.cpp
+ * Copyright (C) 2012 Webdoc SA
  *
- *  Created on: Feb 10, 2011
- *      Author: tolik
+ * This file is part of Open-Sankoré.
+ *
+ * Open-Sankoré is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License,
+ * with a specific linking exception for the OpenSSL project's
+ * "OpenSSL" library (or with modified versions of it that use the
+ * same license as the "OpenSSL" library).
+ *
+ * Open-Sankoré is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Open-Sankoré.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 
 #include <QtGui>
 #include <QList>
@@ -38,11 +53,16 @@ UBKeyboardPalette::UBKeyboardPalette(QWidget *parent)
     setGrip(false);
 
     capsLock = false;
+    shift = false;
     languagePopupActive = false;
     keyboardActive = false;
+    nSpecialModifierIndex = 0;
+    specialModifier = 0;
     btnWidth = btnHeight = 16;
     strSize = "16x16";
     currBtnImages = new BTNImages("16", btnWidth, btnHeight);
+    storage = NULL;
+
 
     buttons = new UBKeyButton*[47];
     for (int i=0; i<47; i++)
@@ -55,7 +75,10 @@ UBKeyboardPalette::UBKeyboardPalette(QWidget *parent)
     createCtrlButtons();
 
     nCurrentLocale = UBSettings::settings()->KeyboardLocale->get().toInt();
-    setInput(locales[nCurrentLocale]);
+	if (nCurrentLocale < 0 || nCurrentLocale >= nLocalesCount)
+		nCurrentLocale = 0;
+	if (locales!=NULL)
+	    setInput(locales[nCurrentLocale]);
 
     setContentsMargins( 22, 22, 22, 22 );
 
@@ -143,6 +166,8 @@ UBKeyboardPalette::~UBKeyboardPalette()
         delete currBtnImages;
         currBtnImages = NULL;
     }
+
+    onActivated(false);
 }
 
 QSize  UBKeyboardPalette::sizeHint () const
@@ -236,6 +261,8 @@ void UBKeyboardPalette::adjustSizeAndPosition(bool pUp)
 
 void  UBKeyboardPalette::paintEvent( QPaintEvent* event)
 {
+    checkLayout();
+
     UBActionPalette::paintEvent(event);
 
     QRect r = this->geometry();
@@ -302,8 +329,10 @@ void  UBKeyboardPalette::paintEvent( QPaintEvent* event)
     //-------------------
 
 //     // Row 3 Stub
-//     ctrlButtons[ctrlButtonsId++]->setGeometry(offX, offY, btnWidth, btnHeight);
-//    offX += btnWidth;
+
+    // button Enter
+    ctrlButtons[ctrlButtonsId++]->setGeometry(offX, offY, btnWidth * 1, btnHeight);
+    offX += btnWidth*1;
 
     // buttons [a]..[\]
     for (int i = 0; i < 12; i++)
@@ -313,8 +342,8 @@ void  UBKeyboardPalette::paintEvent( QPaintEvent* event)
     }
 
     // button Enter
-    ctrlButtons[ctrlButtonsId++]->setGeometry(offX, offY, btnWidth * 3, btnHeight);
-    offX += btnWidth*3;
+    ctrlButtons[ctrlButtonsId++]->setGeometry(offX, offY, btnWidth * 2, btnHeight);
+    offX += btnWidth*2;
 
     //------------------------------------------------
     // set geometry (position) for row 4
@@ -351,6 +380,11 @@ void  UBKeyboardPalette::paintEvent( QPaintEvent* event)
     ctrlButtons[ctrlButtonsId++]->setGeometry(offX + btnWidth * 12, offY, btnWidth * 2, btnHeight);
 
     //------------------------------------------------
+}
+
+void  UBKeyboardPalette::onDeactivated()
+{
+    onActivated(false);
 }
 
 
@@ -415,6 +449,11 @@ UBKeyboardButton::~UBKeyboardButton()
     }
 }
 
+bool UBKeyboardButton::isPressed()
+{
+    return bPressed;
+}
+
 void UBKeyboardButton::paintEvent(QPaintEvent*)
 {
 
@@ -437,7 +476,7 @@ void UBKeyboardButton::paintEvent(QPaintEvent*)
 
     //--------------------------
 
-    if (bPressed)
+    if (isPressed())
     {
         painter.drawImage( 0,0, m_parent->currBtnImages->m_btnLeftActive, 0,0, m_parent->currBtnImages->m_btnLeftActive.width(), m_parent->currBtnImages->m_btnLeftActive.height() );
         painter.drawImage( QRect(m_parent->currBtnImages->m_btnLeftActive.width(), 0, width() - m_parent->currBtnImages->m_btnLeftActive.width() - m_parent->currBtnImages->m_btnRightActive.width(), height()), m_parent->currBtnImages->m_btnCenterActive );
@@ -471,7 +510,7 @@ void  UBKeyboardButton::leaveEvent ( QEvent*)
 
 void  UBKeyboardButton::mousePressEvent ( QMouseEvent * event)
 {
-    event->accept();
+    event->accept(); 
     bPressed = true;
     update();
     this->onPress();
@@ -492,10 +531,55 @@ UBKeyButton::UBKeyButton(UBKeyboardPalette* parent)
 UBKeyButton::~UBKeyButton()
 {}
 
+bool UBKeyButton::shifted()
+{
+    bool b = keyboard->shift;
+    if (keybt->capsLockSwitch && keyboard->capsLock)
+        b = !b;
+    return b;
+}
+
 void UBKeyButton::onPress()
 {
     if (keybt!=NULL)
-        sendUnicodeSymbol(keybt->code1, keybt->code2, capsLock());
+    {
+        int codeIndex = keyboard->nSpecialModifierIndex * 2 + shifted();
+
+        if (keyboard->nSpecialModifierIndex)
+        {
+            if (keybt->codes[codeIndex].empty())
+            {
+                sendUnicodeSymbol(keyboard->specialModifier);
+                sendUnicodeSymbol(keybt->codes[shifted()]);
+            }
+            else
+            {
+                sendUnicodeSymbol(keybt->codes[codeIndex]);
+            }
+
+            keyboard->nSpecialModifierIndex = 0;
+        }
+        else
+        {
+            int nSpecialModifierIndex = shifted()? keybt->modifier2 : keybt->modifier1;
+
+            if (nSpecialModifierIndex)
+            {
+                keyboard->nSpecialModifierIndex = nSpecialModifierIndex;
+                keyboard->specialModifier = keybt->codes[codeIndex];
+            }
+            else
+            {
+                sendUnicodeSymbol(keybt->codes[codeIndex]);            
+            }
+        }
+    }
+
+    if (keyboard->shift)
+    {
+        keyboard->shift = false;
+        keyboard->update();
+    }
 }
 
 void UBKeyButton::onRelease()
@@ -505,7 +589,7 @@ void UBKeyButton::paintContent(QPainter& painter)
 {
     if (keybt)
     {
-        QString text(QChar(capsLock() ? keybt->symbol2 : keybt->symbol1));
+        QString text(QChar(shifted() ? keybt->symbol2 : keybt->symbol1));
         QRect textRect(rect().x()+2, rect().y()+2, rect().width()-4, rect().height()-4);
         painter.drawText(textRect, Qt::AlignCenter, text);
     }
@@ -565,6 +649,11 @@ void UBCapsLockButton::onPress()
 void UBCapsLockButton::onRelease()
 {}
 
+bool UBCapsLockButton::isPressed()
+{
+    return keyboard->capsLock;
+}
+
 void UBCapsLockButton::paintContent(QPainter& painter)
 {
     if(imgContent != NULL)
@@ -575,6 +664,40 @@ void UBCapsLockButton::paintContent(QPainter& painter)
     else
         painter.drawText(rect(), Qt::AlignCenter, "^");
 }
+
+UBShiftButton::UBShiftButton(UBKeyboardPalette* parent, const QString _contentImagePath)
+    :UBKeyboardButton(parent, _contentImagePath)
+{}
+
+UBShiftButton::~UBShiftButton()
+{}
+
+void UBShiftButton::onPress()
+{
+    keyboard->shift = !keyboard->shift;
+    keyboard->update();
+}
+
+
+void UBShiftButton::onRelease()
+{}
+
+bool UBShiftButton::isPressed()
+{
+    return keyboard->shift;
+}
+
+void UBShiftButton::paintContent(QPainter& painter)
+{
+    if(imgContent != NULL)
+    {
+        painter.drawImage(( rect().width() - imgContent->m_btnContent.width() ) / 2, ( rect().height() - imgContent->m_btnContent.height() ) / 2,
+            imgContent->m_btnContent, 0,0, imgContent->m_btnContent.width(), imgContent->m_btnContent.height());
+    }
+    else
+        painter.drawText(rect(), Qt::AlignCenter, "^");
+}
+
 
 
 UBLocaleButton::UBLocaleButton(UBKeyboardPalette* parent)

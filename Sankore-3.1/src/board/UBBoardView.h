@@ -1,17 +1,24 @@
 /*
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2012 Webdoc SA
  *
- * This program is distributed in the hope that it will be useful,
+ * This file is part of Open-Sankoré.
+ *
+ * Open-Sankoré is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License,
+ * with a specific linking exception for the OpenSSL project's
+ * "OpenSSL" library (or with modified versions of it that use the
+ * same license as the "OpenSSL" library).
+ *
+ * Open-Sankoré is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Open-Sankoré.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 
 #ifndef UBBOARDVIEW_H_
 #define UBBOARDVIEW_H_
@@ -21,19 +28,18 @@
 #include "domain/UBGraphicsDelegateFrame.h"
 
 class UBBoardController;
-class UBAppleWidget;
 class UBGraphicsScene;
 class UBGraphicsWidgetItem;
 class UBRubberBand;
 
 class UBBoardView : public QGraphicsView
 {
-    Q_OBJECT;
+    Q_OBJECT
 
     public:
 
-        UBBoardView(UBBoardController* pController, QWidget* pParent = 0);
-        UBBoardView(UBBoardController* pController, int pStartLayer, int pEndLayer, QWidget* pParent = 0);
+        UBBoardView(UBBoardController* pController, QWidget* pParent = 0, bool isControl = false, bool isDesktop = false);
+        UBBoardView(UBBoardController* pController, int pStartLayer, int pEndLayer, QWidget* pParent = 0, bool isControl = false, bool isDesktop = false);
         virtual ~UBBoardView();
 
         UBGraphicsScene* scene();
@@ -41,6 +47,12 @@ class UBBoardView : public QGraphicsView
         void forcedTabletRelease();
 
         void setToolCursor(int tool);
+
+        void rubberItems();
+        void moveRubberedItems(QPointF movingVector);
+
+        void setMultiselection(bool enable);
+        bool isMultipleSelectionEnabled() { return mMultipleSelectionIsEnabled; }
 
     signals:
 
@@ -51,9 +63,23 @@ class UBBoardView : public QGraphicsView
 
     protected:
 
+        bool itemIsLocked(QGraphicsItem *item);
+        bool isUBItem(QGraphicsItem *item); // we should to determine items who is not UB and use general scene behavior for them.
+        bool isCppTool(QGraphicsItem *item);
+        void handleItemsSelection(QGraphicsItem *item);
+        bool itemShouldReceiveMousePressEvent(QGraphicsItem *item);
+        bool itemShouldReceiveSuspendedMousePressEvent(QGraphicsItem *item);
+        bool itemHaveParentWithType(QGraphicsItem *item, int type);
+        bool itemShouldBeMoved(QGraphicsItem *item);
+        QGraphicsItem* determineItemToPress(QGraphicsItem *item);
+        QGraphicsItem* determineItemToMove(QGraphicsItem *item);
+        void handleItemMousePress(QMouseEvent *event);
+        void handleItemMouseMove(QMouseEvent *event);
+
         virtual bool event (QEvent * e);
 
         virtual void keyPressEvent(QKeyEvent *event);
+        virtual void keyReleaseEvent(QKeyEvent *event);
         virtual void tabletEvent(QTabletEvent * event);
         virtual void mouseDoubleClickEvent(QMouseEvent *event);
         virtual void mousePressEvent(QMouseEvent *event);
@@ -124,8 +150,22 @@ class UBBoardView : public QGraphicsView
         QGraphicsItem *movingItem;
         QMouseEvent *suspendedMousePressEvent;
 
+        bool moveRubberBand;
         UBRubberBand *mUBRubberBand;
+        
+        QList<QGraphicsItem *> mRubberedItems;
         QSet<QGraphicsItem*> mJustSelectedItems;
+
+        int mLongPressInterval;
+        QTimer mLongPressTimer;
+
+        bool mIsDragInProgress;
+        bool mMultipleSelectionIsEnabled;
+        bool bIsControl;
+        bool bIsDesktop;
+        bool mRubberBandInPlayMode;
+
+        static bool hasSelectedParents(QGraphicsItem * item);
 
     private slots:
 
@@ -134,6 +174,7 @@ class UBBoardView : public QGraphicsView
 	public slots:
 
 		void virtualKeyboardActivated(bool b);
+        void longPressEvent();
 
 };
 

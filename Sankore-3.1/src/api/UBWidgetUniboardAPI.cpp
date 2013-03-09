@@ -1,17 +1,25 @@
 /*
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2012 Webdoc SA
  *
- * This program is distributed in the hope that it will be useful,
+ * This file is part of Open-Sankoré.
+ *
+ * Open-Sankoré is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License,
+ * with a specific linking exception for the OpenSSL project's
+ * "OpenSSL" library (or with modified versions of it that use the
+ * same license as the "OpenSSL" library).
+ *
+ * Open-Sankoré is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Open-Sankoré.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+
 #include "UBWidgetUniboardAPI.h"
 
 #include <QWebView>
@@ -30,7 +38,6 @@
 
 #include "domain/UBGraphicsScene.h"
 #include "domain/UBGraphicsWidgetItem.h"
-#include "domain/UBAbstractWidget.h"
 
 #include "adaptors/UBThumbnailAdaptor.h"
 
@@ -79,7 +86,7 @@ UBWidgetUniboardAPI::UBWidgetUniboardAPI(UBGraphicsScene *pScene, UBGraphicsWidg
 
     if (w3CGraphicsWidget)
     {
-        mMessagesAPI = new UBWidgetMessageAPI(w3CGraphicsWidget->w3cWidget());
+        mMessagesAPI = new UBWidgetMessageAPI(w3CGraphicsWidget);
         mDatastoreAPI = new UBDatastoreAPI(w3CGraphicsWidget);
     }
 
@@ -122,6 +129,10 @@ void UBWidgetUniboardAPI::setTool(const QString& toolString)
     else if (lower == "arrow")
     {
         UBDrawingController::drawingController()->setStylusTool(UBStylusTool::Selector);
+    }
+    else if (lower == "play")
+    {
+        UBDrawingController::drawingController()->setStylusTool(UBStylusTool::Play);
     }
     else if (lower == "line")
     {
@@ -198,7 +209,7 @@ void UBWidgetUniboardAPI::addObject(QString pUrl, int width, int height, int x, 
     if (UBApplication::boardController->activeScene() != mScene)
         return;
 
-    UBApplication::boardController->downloadURL(QUrl(pUrl), QPointF(x, y), QSize(width, height), background);
+    UBApplication::boardController->downloadURL(QUrl(pUrl), QString(), QPointF(x, y), QSize(width, height), background);
 
 }
 
@@ -247,7 +258,7 @@ void UBWidgetUniboardAPI::eraseLineTo(const qreal x, const qreal y, const qreal 
 void UBWidgetUniboardAPI::clear()
 {
     if (mScene)
-            mScene->clearItemsAndAnnotations();
+            mScene->clearContent(UBGraphicsScene::clearItemsAndAnnotations);
 }
 
 
@@ -342,7 +353,7 @@ QString UBWidgetUniboardAPI::pageThumbnail(const int pageNumber)
     if (UBApplication::boardController->activeScene() != mScene)
         return "";
 
-    UBDocumentProxy *doc = UBApplication::boardController->activeDocument();
+    UBDocumentProxy *doc = UBApplication::boardController->selectedDocument();
 
     if (!doc)
         return "";
@@ -467,10 +478,13 @@ void UBWidgetUniboardAPI::sendFileMetadata(QString metaData)
 
 void UBWidgetUniboardAPI::enableDropOnWidget(bool enable)
 {
-    mGraphicsWidget->setAcceptDrops(enable);
+    if (mGraphicsWidget)
+    {
+        mGraphicsWidget->setAcceptDrops(enable);
+    }
 }
 
-void UBWidgetUniboardAPI::ProcessDropEvent(QDropEvent *event)
+void UBWidgetUniboardAPI::ProcessDropEvent(QGraphicsSceneDragDropEvent *event)
 {
     const QMimeData *pMimeData = event->mimeData();
 
@@ -479,11 +493,12 @@ void UBWidgetUniboardAPI::ProcessDropEvent(QDropEvent *event)
     bool downloaded = false;
 
     QGraphicsView *tmpView = mGraphicsWidget->scene()->views().at(0);
-    QPoint dropPoint(mGraphicsWidget->mapFromScene(tmpView->mapToScene(event->pos())).toPoint());
-    Qt::DropActions dropActions = event->dropAction();
-    Qt::MouseButtons dropMouseButtons = event->mouseButtons();
-    Qt::KeyboardModifiers dropModifiers = event->keyboardModifiers();
-    QMimeData dropMimeData;
+    QPoint dropPoint(mGraphicsWidget->mapFromScene(tmpView->mapToScene(event->pos().toPoint())).toPoint());
+    Qt::DropActions dropActions = event->possibleActions();
+    Qt::MouseButtons dropMouseButtons = event->buttons();
+    Qt::KeyboardModifiers dropModifiers = event->modifiers();
+    QMimeData *dropMimeData = new QMimeData;
+    qDebug() << event->possibleActions();
 
 
     if (pMimeData->hasHtml()) { //Dropping element from web browser
@@ -499,12 +514,12 @@ void UBWidgetUniboardAPI::ProcessDropEvent(QDropEvent *event)
             sDownloadFileDesc desc;
             desc.dest = sDownloadFileDesc::graphicsWidget;
             desc.modal = true;
-            desc.url = url;
+            desc.srcUrl = url;
             desc.currentSize = 0;
             desc.name = QFileInfo(url).fileName();
             desc.totalSize = 0; // The total size will be retrieved during the download
 
-            desc.dropPoint = event->pos(); //Passing pure event point. No modifications
+            desc.dropPoint = event->pos().toPoint(); //Passing pure event point. No modifications
             desc.dropActions = dropActions;
             desc.dropMouseButtons = dropMouseButtons;
             desc.dropModifiers = dropModifiers;
@@ -536,12 +551,9 @@ void UBWidgetUniboardAPI::ProcessDropEvent(QDropEvent *event)
     }
     qDebug() << destFileName;
     QString mimeText = createMimeText(downloaded, contentType, destFileName);
-    dropMimeData.setData(tMimeText, mimeText.toAscii());
+    dropMimeData->setData(tMimeText, mimeText.toAscii());
 
-    QDropEvent readyEvent(dropPoint, dropActions, &dropMimeData, dropMouseButtons, dropModifiers);
-    //sending event to destination either it had been downloaded or not
-    QApplication::sendEvent(mGraphicsWidget->widgetWebView(),&readyEvent);
-    readyEvent.acceptProposedAction();
+    event->setMimeData(dropMimeData);
 }
 
 void UBWidgetUniboardAPI::onDownloadFinished(bool pSuccess, sDownloadFileDesc desc, QByteArray pData)
@@ -595,11 +607,11 @@ void UBWidgetUniboardAPI::onDownloadFinished(bool pSuccess, sDownloadFileDesc de
 
     //To make js interpreter accept drop event we need to generate move event first.
     QDragMoveEvent pseudoMove(dropPoint, desc.dropActions, &dropMimeData, desc.dropMouseButtons, desc.dropModifiers);
-    QApplication::sendEvent(mGraphicsWidget->widgetWebView(),&pseudoMove);
+    QApplication::sendEvent(mGraphicsWidget,&pseudoMove);
 
     QDropEvent readyEvent(dropPoint, desc.dropActions, &dropMimeData, desc.dropMouseButtons, desc.dropModifiers);
     //sending event to destination either it had been downloaded or not
-    QApplication::sendEvent(mGraphicsWidget->widgetWebView(),&readyEvent);
+    QApplication::sendEvent(mGraphicsWidget,&readyEvent);
     readyEvent.acceptProposedAction();
 }
 
@@ -729,9 +741,9 @@ void UBDocumentDatastoreAPI::removeItem(const QString& key)
 {
     mGraphicsW3CWidget->removeDatastoreEntry(key);
 }
+void
 
-
-void UBDocumentDatastoreAPI::clear()
+ UBDocumentDatastoreAPI::clear()
 {
     mGraphicsW3CWidget->removeAllDatastoreEntries();
 }

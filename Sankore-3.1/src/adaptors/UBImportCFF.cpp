@@ -1,19 +1,27 @@
 /*
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2012 Webdoc SA
  *
- * This program is distributed in the hope that it will be useful,
+ * This file is part of Open-Sankoré.
+ *
+ * Open-Sankoré is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License,
+ * with a specific linking exception for the OpenSSL project's
+ * "OpenSSL" library (or with modified versions of it that use the
+ * same license as the "OpenSSL" library).
+ *
+ * Open-Sankoré is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Open-Sankoré.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+
 #include <QDir>
+#include <QList>
 
 #include "core/UBApplication.h"
 #include "core/UBPersistenceManager.h"
@@ -38,7 +46,7 @@ THIRD_PARTY_WARNINGS_ENABLE
 #include "core/memcheck.h"
 
 UBImportCFF::UBImportCFF(QObject *parent)
-    : UBImportAdaptor(parent)
+    : UBDocumentBasedImportAdaptor(parent)
 {
     // NOOP
 }
@@ -76,7 +84,6 @@ QString UBImportCFF::importFileFilter()
 
     return filter;
 }
-
 
 bool UBImportCFF::addFileToDocument(UBDocumentProxy* pDocument, const QFile& pFile)
 {
@@ -220,6 +227,7 @@ QString UBImportCFF::expandFileToDir(const QFile& pZipFile, const QString& pDir)
     return documentRootFolder;
 }
 
+
 UBDocumentProxy* UBImportCFF::importFile(const QFile& pFile, const QString& pGroup)
 {
     Q_UNUSED(pGroup); // group is defined in the imported file
@@ -277,4 +285,3 @@ UBDocumentProxy* UBImportCFF::importFile(const QFile& pFile, const QString& pGro
         return newDocument;
     }
 }
-

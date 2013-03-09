@@ -1,17 +1,25 @@
 /*
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2012 Webdoc SA
  *
- * This program is distributed in the hope that it will be useful,
+ * This file is part of Open-Sankoré.
+ *
+ * Open-Sankoré is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License,
+ * with a specific linking exception for the OpenSSL project's
+ * "OpenSSL" library (or with modified versions of it that use the
+ * same license as the "OpenSSL" library).
+ *
+ * Open-Sankoré is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Open-Sankoré.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+
 #ifndef UBGRAPHICSPOLYGONITEM_H
 #define UBGRAPHICSPOLYGONITEM_H
 
@@ -20,6 +28,7 @@
 #include "core/UB.h"
 #include "UBItem.h"
 #include "UBGraphicsStrokesGroup.h"
+#include "domain/UBGraphicsGroupContainerItem.h"
 
 class UBItem;
 class UBGraphicsScene;
@@ -37,6 +46,8 @@ class UBGraphicsPolygonItem : public QGraphicsPolygonItem, public UBItem
         ~UBGraphicsPolygonItem();
 
         void initialize();
+
+        void setUuid(const QUuid &pUuid);
 
         void setStrokesGroup(UBGraphicsStrokesGroup* group);
         UBGraphicsStrokesGroup* strokesGroup() const{return mpGroup;}
@@ -86,8 +97,7 @@ class UBGraphicsPolygonItem : public QGraphicsPolygonItem, public UBItem
 
         virtual UBItem* deepCopy() const;
 
-        // optimisation (eraser)
-        UBGraphicsPolygonItem* deepCopy(const QPolygonF& pol) const;
+        virtual void copyItemParameters(UBItem *copy) const;
 
         QLineF originalLine() { return mOriginalLine;}
         qreal originalWidth() { return mOriginalWidth;}
@@ -118,7 +128,7 @@ class UBGraphicsPolygonItem : public QGraphicsPolygonItem, public UBItem
 
     protected:
         void paint ( QPainter * painter, const QStyleOptionGraphicsItem * option, QWidget * widget);
-//        QPainterPath shape () const;
+        QPainterPath shape () const;
 
 
     private:

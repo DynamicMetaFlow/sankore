@@ -1,17 +1,24 @@
 /*
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2012 Webdoc SA
  *
- * This prograscenem is distributed in the hope that it will be useful,
+ * This file is part of Open-Sankoré.
+ *
+ * Open-Sankoré is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License,
+ * with a specific linking exception for the OpenSSL project's
+ * "OpenSSL" library (or with modified versions of it that use the
+ * same license as the "OpenSSL" library).
+ *
+ * Open-Sankoré is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Open-Sankoré.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 
 #ifndef UBGRAPHICSITEMDELEGATE_H_
 #define UBGRAPHICSITEMDELEGATE_H_
@@ -29,6 +36,7 @@ class UBGraphicsScene;
 class UBGraphicsProxyWidget;
 class UBGraphicsDelegateFrame;
 class UBGraphicsWidgetItem;
+class UBGraphicsMediaItem;
 
 class DelegateButton: public QGraphicsSvgItem
 {
@@ -39,12 +47,18 @@ class DelegateButton: public QGraphicsSvgItem
 
         virtual ~DelegateButton();
 
+        enum { Type = UBGraphicsItemType::DelegateButtonType };
+        virtual int type() const { return Type; }
+
         void setTransparentToMouseEvent(bool tr)
         {
             mIsTransparentToMouseEvent = tr;
         }
 
         void setFileName(const QString & fileName);
+
+        void setShowProgressIndicator(bool pShow) {mShowProgressIndicator = pShow;}
+        bool testShowProgresIndicator() const {return mShowProgressIndicator;}
 
         void setSection(Qt::WindowFrameSection section) {mButtonAlignmentSection =  section;}
         Qt::WindowFrameSection getSection() const {return mButtonAlignmentSection;}
@@ -53,8 +67,13 @@ class DelegateButton: public QGraphicsSvgItem
 
         virtual void mousePressEvent(QGraphicsSceneMouseEvent *event);
         virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
+        virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
+        void timerEvent(QTimerEvent *event);
 
         void modified();
+
+private slots:
+        void startShowProgress();
 
     private:
 
@@ -62,6 +81,10 @@ class DelegateButton: public QGraphicsSvgItem
 
         QTime mPressedTime;
         bool mIsTransparentToMouseEvent;
+        bool mIsPressed;
+        int mProgressTimerId;
+        int mPressProgres;
+        bool mShowProgressIndicator;
         Qt::WindowFrameSection mButtonAlignmentSection;
 
     signals:
@@ -70,29 +93,119 @@ class DelegateButton: public QGraphicsSvgItem
 
 };
 
+/*
+    Code of this class is copied from QT QLCDNumber class sources
+    See src\gui\widgets\qlcdnumber.cpp for original code
+*/
+class MediaTimer: public QGraphicsRectItem
+{
+public:
+    MediaTimer(QGraphicsItem * parent = 0);
+    ~MediaTimer();
+
+    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
+                QWidget *widget);
+
+    void display(const QString &str);
+
+private:
+
+    static const char* getSegments(char);
+    void drawString(const QString& s, QPainter &, QBitArray * = 0, bool = true);
+    void drawDigit(const QPoint &, QPainter &, int, char, char = ' ');
+    void drawSegment(const QPoint &, char, QPainter &, int, bool = false);
+    void addPoint(QPolygon&, const QPoint&);
+    void internalSetString(const QString& s);
+    void setNumDigits(int nDigits);
+
+    static char segments [][8];
+
+    int ndigits;
+    QString digitStr;
+    QBitArray points;
+    double val;
+
+    uint shadow : 1;
+    uint smallPoint : 1;
+};
+
+class DelegateMediaControl: public QObject, public QGraphicsRectItem
+{
+    Q_OBJECT
+
+    public:
+
+        DelegateMediaControl(UBGraphicsMediaItem* pDelegated, QGraphicsItem * parent = 0);
+
+        virtual ~DelegateMediaControl()
+        {
+            // NOOP
+        }
+
+        void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
+                QWidget *widget);
+
+        QPainterPath shape() const;
+
+        virtual void mousePressEvent(QGraphicsSceneMouseEvent *event);
+        virtual void mouseMoveEvent(QGraphicsSceneMouseEvent *event);
+        virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
+        virtual void update();
+
+        void positionHandles();
+        void updateTicker(qint64 time);
+        void totalTimeChanged(qint64 newTotalTime);
+        QSizeF lcdAreaSize(){return mLCDTimerArea.size();}
+
+    signals:
+        void used();
+
+    protected:
+        void seekToMousePos(QPointF mousePos);
+
+        UBGraphicsMediaItem* mDelegate;
+        bool mDisplayCurrentTime;
+
+        qint64 mCurrentTimeInMs;
+        qint64 mTotalTimeInMs;
+
+    private:
+        int mStartWidth;
+        int mSeecAreaBorderHeight;
+
+        QRectF mSeecArea;
+        QRectF mLCDTimerArea;
+
+        MediaTimer *lcdTimer;
+};
+
 class UBGraphicsToolBarItem : public QGraphicsRectItem, public QObject
 {
     public:
         UBGraphicsToolBarItem(QGraphicsItem * parent = 0);
-        virtual ~UBGraphicsToolBarItem() {};
+        virtual ~UBGraphicsToolBarItem() {;}
 
         bool isVisibleOnBoard() const { return mVisible; }
         void setVisibleOnBoard(bool visible) { mVisible = visible; }
         bool isShifting() const { return mShifting; }
         void setShifting(bool shifting) { mShifting = shifting; } 
-        int offsetOnToolBar() const { return mOffsetOnToolBar; }
-        void setOffsetOnToolBar(int pOffset) { mOffsetOnToolBar = pOffset; }
         QList<QGraphicsItem*> itemsOnToolBar() const { return mItemsOnToolBar; }
         void setItemsOnToolBar(QList<QGraphicsItem*> itemsOnToolBar) { mItemsOnToolBar = itemsOnToolBar;}
         int minWidth() { return mMinWidth; }
+        void positionHandles();
+        void update();
+        int getElementsPadding(){return mElementsPadding;}
+
+    private:
         void paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
                 QWidget *widget);
 
     private:
         bool mShifting;
         bool mVisible;
-        int mOffsetOnToolBar;
         int mMinWidth;
+        int mInitialHeight;
+        int mElementsPadding;
         QList<QGraphicsItem*> mItemsOnToolBar;
 };
 
@@ -101,7 +214,7 @@ class UBGraphicsItemDelegate : public QObject
     Q_OBJECT
 
     public:
-        UBGraphicsItemDelegate(QGraphicsItem* pDelegated, QObject * parent = 0,  bool respectRatio = true, bool canRotate = false);
+        UBGraphicsItemDelegate(QGraphicsItem* pDelegated, QObject * parent = 0,  bool respectRatio = true, bool canRotate = false, bool useToolBar = true, bool showGoContentButton = false);
 
         virtual ~UBGraphicsItemDelegate();
 
@@ -133,8 +246,8 @@ class UBGraphicsItemDelegate : public QObject
 
         UBGraphicsDelegateFrame* frame() { return mFrame; }
 
-        bool canRotate() { return mCanRotate; }
-        bool isLocked();
+        bool canRotate() const { return mCanRotate; }
+        bool isLocked() const;
         bool canDuplicate() { return mCanDuplicate; }
 
         QMimeData* mimeData(){ return mMimeData; }
@@ -142,6 +255,7 @@ class UBGraphicsItemDelegate : public QObject
         void setDragPixmap(const QPixmap &pix) {mDragPixmap = pix;}
 
         void setFlippable(bool flippable);
+        void setRotatable(bool pCanRotate);
         bool isFlippable();
 
         void setButtonsVisible(bool visible);
@@ -149,6 +263,7 @@ class UBGraphicsItemDelegate : public QObject
         UBGraphicsToolBarItem* getToolBarItem() const { return mToolBarItem; }
 
         qreal antiScaleRatio() const { return mAntiScaleRatio; }
+        virtual void update() {positionHandles();}
 
     signals:
         void showOnDisplayChanged(bool shown);
@@ -167,8 +282,10 @@ class UBGraphicsItemDelegate : public QObject
         void increaseZlevelTop();
         void increaseZlevelBottom();
 
+        void onZoomChanged();
+
     protected:
-        virtual void buildButtons() {;}
+        virtual void buildButtons();
         virtual void decorateMenu(QMenu *menu);
         virtual void updateMenuActionState();
 
@@ -194,18 +311,16 @@ class UBGraphicsItemDelegate : public QObject
         qreal mAntiScaleRatio;
 
         QList<DelegateButton*> mButtons;
-
+        QList<DelegateButton*> mToolBarButtons;
         UBGraphicsToolBarItem* mToolBarItem;
 
 protected slots:
-        virtual void gotoContentSource(bool checked);
+        virtual void gotoContentSource();
 
 private:
         void updateFrame();
         void updateButtons(bool showUpdated = false);
-        void updateToolBar();
-
-
+        inline void showHideRecurs(const QVariant &pShow, QGraphicsItem *pItem);
 
         QPointF mOffset;
         QTransform mPreviousTransform;
@@ -221,6 +336,9 @@ private:
 
         /** A boolean saying that this object can be flippable (mirror effect) */
         bool mFlippable;
+        bool mToolBarUsed;
+
+        bool mShowGoContentButton;
 };
 
 

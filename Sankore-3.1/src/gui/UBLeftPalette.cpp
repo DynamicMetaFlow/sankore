@@ -1,17 +1,25 @@
 /*
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2012 Webdoc SA
  *
- * This program is distributed in the hope that it will be useful,
+ * This file is part of Open-Sankoré.
+ *
+ * Open-Sankoré is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License,
+ * with a specific linking exception for the OpenSSL project's
+ * "OpenSSL" library (or with modified versions of it that use the
+ * same license as the "OpenSSL" library).
+ *
+ * Open-Sankoré is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Open-Sankoré.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+
 #include "UBLeftPalette.h"
 #include "core/UBSettings.h"
 
@@ -25,11 +33,22 @@ UBLeftPalette::UBLeftPalette(QWidget *parent, const char *name):
 {
     setObjectName(name);
     setOrientation(eUBDockOrientation_Left);
-
-    mLastWidth = UBSettings::settings()->leftLibPaletteWidth->get().toInt();
     mCollapseWidth = 150;
 
-    resize(mLastWidth, parentWidget()->height());
+    bool isCollapsed = false;
+    if(mCurrentMode == eUBDockPaletteWidget_BOARD){
+    	mLastWidth = UBSettings::settings()->leftLibPaletteBoardModeWidth->get().toInt();
+    	isCollapsed = UBSettings::settings()->leftLibPaletteBoardModeIsCollapsed->get().toBool();
+    }
+    else{
+    	mLastWidth = UBSettings::settings()->leftLibPaletteDesktopModeWidth->get().toInt();
+    	isCollapsed = UBSettings::settings()->leftLibPaletteDesktopModeIsCollapsed->get().toBool();
+    }
+
+    if(isCollapsed)
+    	resize(0,parentWidget()->height());
+    else
+    	resize(mLastWidth, parentWidget()->height());
 }
 
 /**
@@ -40,12 +59,20 @@ UBLeftPalette::~UBLeftPalette()
 
 }
 
+
+void UBLeftPalette::onDocumentSet(UBDocumentProxy* documentProxy)
+{
+	//This is necessary to force the teacher guide to be showed in priority each time a document is set
+	if(documentProxy && UBSettings::settings()->teacherGuidePageZeroActivated->get().toBool())
+		mLastOpenedTabForMode.insert(eUBDockPaletteWidget_BOARD, 1);
+}
+
 /**
  * \brief Update the maximum width
  */
 void UBLeftPalette::updateMaxWidth()
 {
-    setMaximumWidth(270);
+    setMaximumWidth((int)(parentWidget()->width() * 0.45));
 }
 
 /**
@@ -54,6 +81,36 @@ void UBLeftPalette::updateMaxWidth()
  */
 void UBLeftPalette::resizeEvent(QResizeEvent *event)
 {
-    UBSettings::settings()->leftLibPaletteWidth->set(width());
+	int newWidth = width();
+	if(mCurrentMode == eUBDockPaletteWidget_BOARD){
+		if(newWidth > mCollapseWidth)
+			UBSettings::settings()->leftLibPaletteBoardModeWidth->set(newWidth);
+		UBSettings::settings()->leftLibPaletteBoardModeIsCollapsed->set(newWidth == 0);
+	}
+	else{
+		if(newWidth > mCollapseWidth)
+			UBSettings::settings()->leftLibPaletteDesktopModeWidth->set(newWidth);
+		UBSettings::settings()->leftLibPaletteDesktopModeIsCollapsed->set(newWidth == 0);
+	}
     UBDockPalette::resizeEvent(event);
+}
+
+
+bool UBLeftPalette::switchMode(eUBDockPaletteWidgetMode mode)
+{
+	int newModeWidth;
+	if(mode == eUBDockPaletteWidget_BOARD){
+		mLastWidth = UBSettings::settings()->leftLibPaletteBoardModeWidth->get().toInt();
+		newModeWidth = mLastWidth;
+		if(UBSettings::settings()->leftLibPaletteBoardModeIsCollapsed->get().toBool())
+			newModeWidth = 0;
+	}
+	else{
+		mLastWidth = UBSettings::settings()->leftLibPaletteDesktopModeWidth->get().toInt();
+		newModeWidth = mLastWidth;
+		if(UBSettings::settings()->leftLibPaletteDesktopModeIsCollapsed->get().toBool())
+			newModeWidth = 0;
+	}
+	resize(newModeWidth,height());
+	return UBDockPalette::switchMode(mode);
 }

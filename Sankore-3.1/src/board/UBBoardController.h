@@ -1,17 +1,24 @@
 /*
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2012 Webdoc SA
  *
- * This program is distributed in the hope that it will be useful,
+ * This file is part of Open-Sankoré.
+ *
+ * Open-Sankoré is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License,
+ * with a specific linking exception for the OpenSSL project's
+ * "OpenSSL" library (or with modified versions of it that use the
+ * same license as the "OpenSSL" library).
+ *
+ * Open-Sankoré is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Open-Sankoré.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 
 #ifndef UBBOARDCONTROLLER_H_
 #define UBBOARDCONTROLLER_H_
@@ -19,6 +26,7 @@
 #include <QtGui>
 
 #include <QObject>
+#include "document/UBDocumentContainer.h"
 
 class UBMainWindow;
 class UBApplication;
@@ -33,13 +41,16 @@ class UBToolWidget;
 class UBVersion;
 class UBSoftwareUpdate;
 class UBSoftwareUpdateDialog;
+class UBGraphicsMediaItem;
 class UBGraphicsVideoItem;
 class UBGraphicsAudioItem;
 class UBGraphicsWidgetItem;
 class UBBoardPaletteManager;
+class UBItem;
+class UBGraphicsItem;
 
 
-class UBBoardController : public QObject
+class UBBoardController : public UBDocumentContainer
 {
     Q_OBJECT
 
@@ -49,7 +60,7 @@ class UBBoardController : public QObject
 
         void init();
         void setupLayout();
-        UBDocumentProxy* activeDocument() const;
+
         UBGraphicsScene* activeScene() const;
         int activeSceneIndex() const;
         QSize displayViewport();
@@ -58,14 +69,6 @@ class UBBoardController : public QObject
         void closing();
 
         int currentPage();
-
-        int pageFromSceneIndex(int sceneIndex);
-        int sceneIndexFromPage(int page);
-
-        UBDocumentProxy* activeDocument()
-        {
-            return mActiveDocument;
-        }
 
         QWidget* controlContainer()
         {
@@ -157,10 +160,21 @@ class UBBoardController : public QObject
         void displayMetaData(QMap<QString, QString> metadatas);
 
         void ClearUndoStack();
-        void emitScrollSignal() { emit scrollToSelectedPage(); }
+
+        void setActiveDocumentScene(UBDocumentProxy* pDocumentProxy, int pSceneIndex = 0, bool forceReload = false);
+        void setActiveDocumentScene(int pSceneIndex);
+
+        void moveSceneToIndex(int source, int target);
+        void duplicateScene(int index);
+        UBGraphicsItem *duplicateItem(UBItem *item, bool bAsync = true);
+        void deleteScene(int index);
+
+        bool cacheIsVisible() {return mCacheWidgetIsEnabled;}
+
+        QString actionGroupText(){ return mActionGroupText;}
+        QString actionUngroupText(){ return mActionUngroupText;}
 
     public slots:
-        void setActiveDocumentScene(UBDocumentProxy* pDocumentProxy, int pSceneIndex = 0);
         void showDocumentsDialog();
         void showKeyboard(bool show);
         void togglePodcast(bool checked);
@@ -173,6 +187,7 @@ class UBBoardController : public QObject
         void clearScene();
         void clearSceneItems();
         void clearSceneAnnotation();
+        void clearSceneBackground();
         void zoomIn(QPointF scenePoint = QPointF(0,0));
         void zoomOut(QPointF scenePoint = QPointF(0,0));
         void zoomRestore();
@@ -184,16 +199,17 @@ class UBBoardController : public QObject
         void nextScene();
         void firstScene();
         void lastScene();
-        void downloadURL(const QUrl& url, const QPointF& pPos = QPointF(0.0, 0.0), const QSize& pSize = QSize(), bool isBackground = false);
-        void downloadFinished(bool pSuccess, QUrl sourceUrl, QString pHeader, QByteArray pData, QPointF pPos, QSize pSize, bool isBackground = false);
+        void groupButtonClicked();
+        void downloadURL(const QUrl& url, QString contentSourceUrl = QString(), const QPointF& pPos = QPointF(0.0, 0.0), const QSize& pSize = QSize(), bool isBackground = false, bool internalData = false);
+        UBItem *downloadFinished(bool pSuccess, QUrl sourceUrl, QUrl contentUrl, QString pHeader,
+                                 QByteArray pData, QPointF pPos, QSize pSize,
+                                 bool isBackground = false, bool internalData = false);
         void changeBackground(bool isDark, bool isCrossed);
         void setToolCursor(int tool);
-        void showMessage(const QString& message, bool showSpinningWheel);
+        void showMessage(const QString& message, bool showSpinningWheel = false);
         void hideMessage();
         void setDisabled(bool disable);
         void setColorIndex(int pColorIndex);
-        UBToolWidget* addTool(const QUrl& toolUrl, QPointF scenePos);
-        UBToolWidget* addTool(const QUrl& toolUrl);
         void removeTool(UBToolWidget* toolWidget);
         void hide();
         void show();
@@ -201,10 +217,8 @@ class UBBoardController : public QObject
         void setRegularPageSize(bool checked);
         void stylusToolChanged(int tool);
         void grabScene(const QRectF& pSceneRect);
-        void controlViewHidden();
-        void controlViewShown();
-        UBGraphicsVideoItem* addVideo(const QUrl& pUrl, bool startPlay, const QPointF& pos);
-        UBGraphicsAudioItem* addAudio(const QUrl& pUrl, bool startPlay, const QPointF& pos);
+        UBGraphicsMediaItem* addVideo(const QUrl& pUrl, bool startPlay, const QPointF& pos, bool bUseSource = false);
+        UBGraphicsMediaItem* addAudio(const QUrl& pUrl, bool startPlay, const QPointF& pos, bool bUseSource = false);
         UBGraphicsWidgetItem *addW3cWidget(const QUrl& pUrl, const QPointF& pos);
 
         void cut();
@@ -221,10 +235,8 @@ class UBBoardController : public QObject
         void stopScript();
 
     signals:
-        void activeSceneWillBePersisted();
-        void activeSceneWillChange();
+        void newPageAdded();
         void activeSceneChanged();
-        void activeDocumentChanged();
         void zoomChanged(qreal pZoomFactor);
         void systemScaleFactorChanged(qreal pSystemScaleFactor);
         void penColorChanged();
@@ -233,10 +245,10 @@ class UBBoardController : public QObject
         void cacheEnabled();
         void cacheDisabled();
         void pageChanged();
-        void setDocOnPageNavigator(UBDocumentProxy* doc);
         void documentReorganized(int index);
         void displayMetadata(QMap<QString, QString> metadata);
-        void scrollToSelectedPage();
+        void pageSelectionChanged(int index);
+        void npapiWidgetCreated(const QString &Url);
 
     protected:
         void setupViews();
@@ -258,7 +270,6 @@ class UBBoardController : public QObject
         void adjustDisplayViews();
 
         UBMainWindow *mMainWindow;
-        UBDocumentProxy* mActiveDocument;
         UBGraphicsScene* mActiveScene;
         int mActiveSceneIndex;
         UBBoardPaletteManager *mPaletteManager;
@@ -274,10 +285,15 @@ class UBBoardController : public QObject
         QColor mPenColorOnLightBackground;
         QColor mMarkerColorOnDarkBackground;
         QColor mMarkerColorOnLightBackground;
-        QList<UBToolWidget*> mTools;
         qreal mSystemScaleFactor;
         bool mCleanupDone;
         QMap<QAction*, QPair<QString, QString> > mActionTexts;
+        bool mCacheWidgetIsEnabled;
+        QGraphicsItem* mLastCreatedItem;
+        int mDeletingSceneIndex;
+        int mMovingSceneIndex;
+        QString mActionGroupText;
+        QString mActionUngroupText;
 
     private slots:
         void stylusToolDoubleClicked(int tool);

@@ -1,17 +1,24 @@
 /*
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2012 Webdoc SA
  *
- * This program is distributed in the hope that it will be useful,
+ * This file is part of Open-Sankoré.
+ *
+ * Open-Sankoré is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License,
+ * with a specific linking exception for the OpenSSL project's
+ * "OpenSSL" library (or with modified versions of it that use the
+ * same license as the "OpenSSL" library).
+ *
+ * Open-Sankoré is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Open-Sankoré.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 
 #include "UBGraphicsCurtainItem.h"
 
@@ -37,8 +44,10 @@ const QColor UBGraphicsCurtainItem::sDarkBackgroundOpaqueControlColor = QColor(6
 UBGraphicsCurtainItem::UBGraphicsCurtainItem(QGraphicsItem* parent)
     : QGraphicsRectItem(parent)
 {
-    mDelegate = new UBGraphicsCurtainItemDelegate(this, 0);
-    mDelegate->init();
+    UBGraphicsCurtainItemDelegate* delegate = new UBGraphicsCurtainItemDelegate(this, 0);
+    delegate->init();
+    setDelegate(delegate);
+
     setFlag(QGraphicsItem::ItemIsMovable, true);
     setFlag(QGraphicsItem::ItemIsSelectable, true);
 
@@ -55,7 +64,6 @@ UBGraphicsCurtainItem::UBGraphicsCurtainItem(QGraphicsItem* parent)
 
 UBGraphicsCurtainItem::~UBGraphicsCurtainItem()
 {
-    delete mDelegate;
 }
 
 QVariant UBGraphicsCurtainItem::itemChange(GraphicsItemChange change, const QVariant &value)
@@ -63,17 +71,23 @@ QVariant UBGraphicsCurtainItem::itemChange(GraphicsItemChange change, const QVar
 
     QVariant newValue = value;
 
-    if (mDelegate)
+    if (Delegate())
     {
-        newValue = mDelegate->itemChange(change, value);
+        newValue = Delegate()->itemChange(change, value);
     }
 
     return QGraphicsRectItem::itemChange(change, newValue);
 }
 
+void UBGraphicsCurtainItem::setUuid(const QUuid &pUuid)
+{
+    UBItem::setUuid(pUuid);
+    setData(UBGraphicsItemData::ItemUuid, QVariant(pUuid)); //store item uuid inside the QGraphicsItem to fast operations with Items on the scene
+}
+
 void UBGraphicsCurtainItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
-    if (mDelegate->mousePressEvent(event))
+    if (Delegate()->mousePressEvent(event))
     {
         //NOOP
     }
@@ -85,7 +99,7 @@ void UBGraphicsCurtainItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
 
 void UBGraphicsCurtainItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
-    if (mDelegate->mouseMoveEvent(event))
+    if (Delegate()->mouseMoveEvent(event))
     {
         // NOOP;
     }
@@ -97,7 +111,7 @@ void UBGraphicsCurtainItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 
 void UBGraphicsCurtainItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
-    mDelegate->mouseReleaseEvent(event);
+    Delegate()->mouseReleaseEvent(event);
     QGraphicsRectItem::mouseReleaseEvent(event);
 }
 
@@ -127,20 +141,28 @@ UBItem* UBGraphicsCurtainItem::deepCopy() const
 {
    UBGraphicsCurtainItem* copy = new UBGraphicsCurtainItem();
 
-   copy->setRect(this->rect());
-   copy->setPos(this->pos());
-   copy->setBrush(this->brush());
-   copy->setPen(this->pen());
-   copy->setTransform(this->transform());
-   copy->setFlag(QGraphicsItem::ItemIsMovable, true);
-   copy->setFlag(QGraphicsItem::ItemIsSelectable, true);
-   copy->setData(UBGraphicsItemData::ItemLayerType, this->data(UBGraphicsItemData::ItemLayerType));
+    copyItemParameters(copy);
 
    // TODO UB 4.7 ... complete all members ?
 
    return copy;
 }
 
+void UBGraphicsCurtainItem::copyItemParameters(UBItem *copy) const
+{
+    UBGraphicsCurtainItem *cp = dynamic_cast<UBGraphicsCurtainItem*>(copy);
+    if (cp)
+    {
+        cp->setRect(this->rect());
+        cp->setPos(this->pos());
+        cp->setBrush(this->brush());
+        cp->setPen(this->pen());
+        cp->setTransform(this->transform());
+        cp->setFlag(QGraphicsItem::ItemIsMovable, true);
+        cp->setFlag(QGraphicsItem::ItemIsSelectable, true);
+        cp->setData(UBGraphicsItemData::ItemLayerType, this->data(UBGraphicsItemData::ItemLayerType));
+    }
+}
 
 QColor UBGraphicsCurtainItem::drawColor() const
 {
@@ -153,13 +175,6 @@ QColor UBGraphicsCurtainItem::opaqueControlColor() const
 {
     UBGraphicsScene* pScene = static_cast<UBGraphicsScene*>(QGraphicsRectItem::scene());
     return pScene->isDarkBackground() ? sDarkBackgroundOpaqueControlColor : sOpaqueControlColor;
-}
-
-
-void UBGraphicsCurtainItem::remove()
-{
-    if (mDelegate)
-        mDelegate->remove(true);
 }
 
 

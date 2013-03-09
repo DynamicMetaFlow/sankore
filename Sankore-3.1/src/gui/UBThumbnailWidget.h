@@ -1,17 +1,24 @@
 /*
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2012 Webdoc SA
  *
- * This program is distributed in the hope that it will be useful,
+ * This file is part of Open-Sankoré.
+ *
+ * Open-Sankoré is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License,
+ * with a specific linking exception for the OpenSSL project's
+ * "OpenSSL" library (or with modified versions of it that use the
+ * same license as the "OpenSSL" library).
+ *
+ * Open-Sankoré is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Open-Sankoré.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 
 #ifndef UBTHUMBNAILWIDGET_H_
 #define UBTHUMBNAILWIDGET_H_
@@ -306,6 +313,7 @@ class UBSceneThumbnailNavigPixmap : public UBSceneThumbnailPixmap
     private:
         void updateButtonsState();
         void deletePage();
+        void duplicatePage();
         void moveUpPage();
         void moveDownPage();
 
@@ -313,6 +321,7 @@ class UBSceneThumbnailNavigPixmap : public UBSceneThumbnailPixmap
         bool bCanDelete;
         bool bCanMoveUp;
         bool bCanMoveDown;
+        bool bCanDuplicate;
 };
 
 class UBThumbnailVideo : public UBThumbnailPixmap
@@ -398,19 +407,19 @@ class UBThumbnailTextItem : public QGraphicsTextItem
 class UBImgTextThumbnailElement
 {
 private:
-	QGraphicsItem* thumbnail;
+	UBSceneThumbnailNavigPixmap* thumbnail;
 	UBThumbnailTextItem* caption;
 	int border;
 
 public:
-	UBImgTextThumbnailElement(QGraphicsItem* thumb, UBThumbnailTextItem* text): border(0)
+	UBImgTextThumbnailElement(UBSceneThumbnailNavigPixmap* thumb, UBThumbnailTextItem* text): border(0)
 	{
 		this->thumbnail = thumb;
 		this->caption = text;
 	}
 
-	QGraphicsItem* getThumbnail() const { return this->thumbnail; }
-	void setThumbnail(QGraphicsItem* newGItem) { this->thumbnail = newGItem; }
+	UBSceneThumbnailNavigPixmap* getThumbnail() const { return this->thumbnail; }
+	void setThumbnail(UBSceneThumbnailNavigPixmap* newGItem) { this->thumbnail = newGItem; }
 
 	UBThumbnailTextItem* getCaption() const { return this->caption; }
 	void setCaption(UBThumbnailTextItem* newcaption) { this->caption = newcaption; }

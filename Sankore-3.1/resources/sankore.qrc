@@ -14,7 +14,6 @@
         <file>images/soundOn.svg</file>
         <file>images/soundOff.svg</file>
         <file>images/shape.png</file>
-        <file>images/pencil.svg</file>
         <file>images/font.svg</file>
         <file>images/color.svg</file>
         <file>images/eyeOpened.svg</file>
@@ -42,6 +41,8 @@
         <file>images/currentDocument.png</file>
         <file>images/minus.svg</file>
         <file>images/plus.svg</file>
+        <file>images/z_layer_up.svg</file>
+        <file>images/z_layer_down.svg</file>
         <file>images/trash.png</file>
         <file>images/pin.svg</file>
         <file>images/unpin.svg</file>
@@ -49,6 +50,8 @@
         <file>images/reload.svg</file>
         <file>images/frozen.svg</file>
         <file>images/unfrozen.svg</file>
+        <file>images/toolbar/group.png</file>
+        <file>images/toolbar/ungroup.png</file>
         <file>images/toolbar/window.png</file>
         <file>images/toolbar/plusBlack.png</file>
         <file>images/toolbar/plusBlackOn.png</file>
@@ -125,6 +128,8 @@
         <file>images/toolbar/tools.png</file>
         <file>images/stylusPalette/arrow.png</file>
         <file>images/stylusPalette/arrowOn.png</file>
+        <file>images/stylusPalette/handPlay.png</file>
+        <file>images/stylusPalette/handPlayOn.png</file>
         <file>images/stylusPalette/eraser.png</file>
         <file>images/stylusPalette/eraserOn.png</file>
         <file>images/stylusPalette/hand.png</file>
@@ -160,6 +165,7 @@
         <file>images/toolPalette/triangleTool.png</file>
         <file>images/toolPalette/protractorTool.png</file>
         <file>images/toolPalette/compassTool.png</file>
+        <file>images/toolPalette/aristoTool.png</file>
         <file>images/toolPalette/maskTool.png</file>
         <file>images/toolPalette/magnifierTool.png</file>
         <file>images/extraPalette/blackout.png</file>
@@ -171,6 +177,7 @@
         <file>images/erasePalette/eraseAll.svg</file>
         <file>images/erasePalette/eraseItem.svg</file>
         <file>images/erasePalette/eraseAnnotation.svg</file>
+        <file>images/erasePalette/eraseBackground.svg</file>
         <file>images/cursors/eraser.png</file>
         <file>images/cursors/laser.png</file>
         <file>images/cursors/marker.png</file>
@@ -180,6 +187,7 @@
         <file>images/cursors/resize.png</file>
         <file>images/cursors/drawCompass.png</file>
         <file>images/cursors/drawRulerLine.png</file>
+        <file>images/cursors/play.png</file>
         <file>images/print/onepage.png</file>
         <file>images/print/thumbnails.png</file>
         <file>images/print/twopages.png</file>
@@ -262,6 +270,7 @@
         <file>images/libpalette/notFound.png</file>
         <file>images/libpalette/trash_favorite.svg</file>
         <file>images/libpalette/back.png</file>
+        <file>images/libpalette/loading.png</file>
         <file>images/stylusPalette/eraserArrow.png</file>
         <file>images/stylusPalette/eraserOnArrow.png</file>
         <file>images/stylusPalette/markerArrow.png</file>
@@ -299,6 +308,7 @@
         <file>images/virtual.keyboard/41/right-active.png</file>
         <file>images/virtual.keyboard/41/backspace.png</file>
         <file>images/virtual.keyboard/41/capslock.png</file>
+        <file>images/virtual.keyboard/41/shift.png</file>
         <file>images/virtual.keyboard/41/tab.png</file>
         <file>images/virtual.keyboard/29/centre-passive.png</file>
         <file>images/virtual.keyboard/29/left-passive.png</file>
@@ -308,6 +318,7 @@
         <file>images/virtual.keyboard/29/right-active.png</file>
         <file>images/virtual.keyboard/29/backspace.png</file>
         <file>images/virtual.keyboard/29/capslock.png</file>
+        <file>images/virtual.keyboard/29/shift.png</file>
         <file>images/virtual.keyboard/29/tab.png</file>
         <file>images/toolPalette/cacheTool.png</file>
         <file>images/libpalette/FlashCategory.svg</file>
@@ -347,10 +358,14 @@
         <file>images/licenses/ccbyncsa.png</file>
         <file>images/licenses/ccbynd.png</file>
         <file>images/licenses/ccbysa.png</file>
-        <file>images/teacherGuide/audio.png</file>
-        <file>images/teacherGuide/image.png</file>
-        <file>images/teacherGuide/link.png</file>
-        <file>images/teacherGuide/movie.png</file>
-        <file>images/teacherGuide/w3c.png</file>
+        <file>images/teacherGuide/audio_24x24.svg</file>
+        <file>images/teacherGuide/image_24x24.svg</file>
+        <file>images/teacherGuide/link_24x24.svg</file>
+        <file>images/teacherGuide/movie_24x24.svg</file>
+        <file>images/teacherGuide/w3c_24x24.svg</file>
+        <file>images/teacherGuide/pencil.svg</file>
+        <file>images/duplicateDisabled.svg</file>
+        <file>images/teacherGuide/flash_24x24.svg</file>
+        <file>images/toque.svg</file>
     </qresource>
 </RCC>

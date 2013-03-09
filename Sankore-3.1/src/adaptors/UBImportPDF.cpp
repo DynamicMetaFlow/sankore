@@ -1,17 +1,24 @@
 /*
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2012 Webdoc SA
  *
- * This program is distributed in the hope that it will be useful,
+ * This file is part of Open-Sankoré.
+ *
+ * Open-Sankoré is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License,
+ * with a specific linking exception for the OpenSSL project's
+ * "OpenSSL" library (or with modified versions of it that use the
+ * same license as the "OpenSSL" library).
+ *
+ * Open-Sankoré is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Open-Sankoré.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 
 #include "UBImportPDF.h"
 
@@ -27,7 +34,7 @@
 #include "core/memcheck.h"
 
 UBImportPDF::UBImportPDF(QObject *parent)
-    : UBImportAdaptor(parent)
+    : UBPageBasedImportAdaptor(parent)
 {
     QDesktopWidget* desktop = UBApplication::desktop();
 	this->dpi = (desktop->physicalDpiX() + desktop->physicalDpiY()) / 2;
@@ -52,63 +59,41 @@ QString UBImportPDF::importFileFilter()
 }
 
 
-bool UBImportPDF::addFileToDocument(UBDocumentProxy* pDocument, const QFile& pFile)
+QList<UBGraphicsItem*> UBImportPDF::import(const QUuid& uuid, const QString& filePath)
 {
-    QString documentName = QFileInfo(pFile.fileName()).completeBaseName();
+    QList<UBGraphicsItem*> result;
 
-    QUuid uuid = QUuid::createUuid();
-
-    QString filepath = UBPersistenceManager::persistenceManager()->addPdfFileToDocument(pDocument, pFile.fileName(), uuid);
-
-    PDFRenderer *pdfRenderer = PDFRenderer::rendererForUuid(uuid, pDocument->persistencePath() + "/" + filepath, true); // renderer is automatically deleted when not used anymore
+    PDFRenderer *pdfRenderer = PDFRenderer::rendererForUuid(uuid, filePath, true); // renderer is automatically deleted when not used anymore
 
     if (!pdfRenderer->isValid())
     {
         UBApplication::showMessage(tr("PDF import failed."));
-        return false;
+        return result;
     }
 	pdfRenderer->setDPI(this->dpi);
-
-    int documentPageCount = pDocument->pageCount();
-
-    if (documentPageCount == 1 && UBPersistenceManager::persistenceManager()->loadDocumentScene(pDocument, 0)->isEmpty())
-    {
-        documentPageCount = 0;
-    }
 
     int pdfPageCount = pdfRenderer->pageCount();
 
     for(int pdfPageNumber = 1; pdfPageNumber <= pdfPageCount; pdfPageNumber++)
     {
-        int pageIndex = documentPageCount + (pdfPageNumber - 1);
         UBApplication::showMessage(tr("Importing page %1 of %2").arg(pdfPageNumber).arg(pdfPageCount), true);
-
-        UBGraphicsScene* scene = 0;
-
-        if (pageIndex == 0)
-        {
-            scene = UBPersistenceManager::persistenceManager()->loadDocumentScene(pDocument, pageIndex);
-        }
-        else
-        {
-            scene = UBPersistenceManager::persistenceManager()->createDocumentSceneAt(pDocument, pageIndex);
-        }
-
-        scene->setBackground(false, false);
-        UBGraphicsPDFItem *pdfItem = new UBGraphicsPDFItem(pdfRenderer, pdfPageNumber); // deleted by the scene
-        scene->addItem(pdfItem);
-
-        pdfItem->setPos(-pdfItem->boundingRect().width() / 2, -pdfItem->boundingRect().height() / 2);
-
-        scene->setAsBackgroundObject(pdfItem, false, false);
-
-        scene->setNominalSize(pdfItem->boundingRect().width(), pdfItem->boundingRect().height());
-
-
-        UBPersistenceManager::persistenceManager()->persistDocumentScene(pDocument, scene, pageIndex);
+        result << new UBGraphicsPDFItem(pdfRenderer, pdfPageNumber); // deleted by the scene
     }
+    return result;
+}
 
-    UBApplication::showMessage(tr("PDF import successful."));
+void UBImportPDF::placeImportedItemToScene(UBGraphicsScene* scene, UBGraphicsItem* item)
+{
+    UBGraphicsPDFItem *pdfItem = (UBGraphicsPDFItem*)item;
 
-    return true;
+    pdfItem->setPos(-pdfItem->boundingRect().width() / 2, -pdfItem->boundingRect().height() / 2);
+
+    scene->setAsBackgroundObject(pdfItem, false, false);
+
+    scene->setNominalSize(pdfItem->boundingRect().width(), pdfItem->boundingRect().height());
+}
+
+const QString& UBImportPDF::folderToCopy()
+{
+    return UBPersistenceManager::objectDirectory;
 }

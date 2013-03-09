@@ -1,32 +1,36 @@
 /*
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2012 Webdoc SA
  *
- * This program is distributed in the hope that it will be useful,
+ * This file is part of Open-Sankoré.
+ *
+ * Open-Sankoré is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License,
+ * with a specific linking exception for the OpenSSL project's
+ * "OpenSSL" library (or with modified versions of it that use the
+ * same license as the "OpenSSL" library).
+ *
+ * Open-Sankoré is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Open-Sankoré.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 
 #include "UBWidgetMessageAPI.h"
 
 #include "core/UBApplication.h"
 
-#include "domain/UBAbstractWidget.h"
-
 #include "core/memcheck.h"
 
-UBWidgetMessageAPI::UBWidgetMessageAPI(UBW3CWidget *widget)
-    : QObject(widget)
-    , mWebWidget(widget)
+UBWidgetMessageAPI::UBWidgetMessageAPI(UBGraphicsWidgetItem *graphicsWidgetItem, QObject *parent)
+    : QObject(parent)
+    , mGraphicsWidgetItem(graphicsWidgetItem)
 {
-    connect(UBWidgetAPIMessageBroker::instance(), SIGNAL(newMessage(const QString&, const QString&))
-            , this, SLOT(onNewMessage(const QString&, const QString&)), Qt::QueuedConnection);
+    connect(UBWidgetAPIMessageBroker::instance(), SIGNAL(newMessage(const QString&, const QString&)), this, SLOT(onNewMessage(const QString&, const QString&)), Qt::QueuedConnection);
 }
 
 UBWidgetMessageAPI::~UBWidgetMessageAPI()
@@ -45,9 +49,7 @@ void UBWidgetMessageAPI::onNewMessage(const QString& pTopicName, const QString& 
 {
     if (mSubscribedTopics.contains(pTopicName))
     {
-        if (mWebWidget
-                && mWebWidget->page()
-                && mWebWidget->page()->mainFrame())
+        if (mGraphicsWidgetItem && mGraphicsWidgetItem->page() && mGraphicsWidgetItem->page()->mainFrame())
         {
 
             QString js;
@@ -55,7 +57,7 @@ void UBWidgetMessageAPI::onNewMessage(const QString& pTopicName, const QString& 
             js += "{widget.messages.onmessage('";
             js += pMessage + "', '" + pTopicName + "')}";
 
-            mWebWidget->page()->
+            mGraphicsWidgetItem->page()->
                 mainFrame()->evaluateJavaScript(js);
 
         }

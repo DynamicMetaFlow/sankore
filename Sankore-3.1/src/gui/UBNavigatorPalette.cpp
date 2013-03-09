@@ -1,17 +1,25 @@
 /*
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * Copyright (C) 2012 Webdoc SA
  *
- * This program is distributed in the hope that it will be useful,
+ * This file is part of Open-Sankoré.
+ *
+ * Open-Sankoré is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License,
+ * with a specific linking exception for the OpenSSL project's
+ * "OpenSSL" library (or with modified versions of it that use the
+ * same license as the "OpenSSL" library).
+ *
+ * Open-Sankoré is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Open-Sankoré.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+
 #include "UBNavigatorPalette.h"
 #include "core/UBApplication.h"
 #include "board/UBBoardController.h"
@@ -24,19 +32,13 @@
  * @param name as the object name
  */
 UBNavigatorPalette::UBNavigatorPalette(QWidget *parent, const char *name):
-    UBDockPalette(eUBDockPaletteType_NAVIGATOR, parent, name)
+	UBDockPalette(eUBDockPaletteType_LEFT, parent, name)
 	, mNavigator(NULL)
 	, mLayout(NULL)
     , mHLayout(NULL)
     , mPageNbr(NULL)
     , mClock(NULL)
 {
-    setOrientation(eUBDockOrientation_Left);
-    setMaximumWidth(300);
-
-    resize(UBSettings::settings()->navigPaletteWidth->get().toInt(), height());
-    mLastWidth = 300;
-
     // Build the gui
     mLayout = new QVBoxLayout(this);
     mLayout->setContentsMargins(customMargin(), customMargin(), 2*border() + customMargin(), customMargin());
@@ -69,8 +71,7 @@ UBNavigatorPalette::UBNavigatorPalette(QWidget *parent, const char *name):
     mTimeFormat = mTimeFormat.remove(":s");
     mTimerID = startTimer(1000);
 
-    connect(mNavigator, SIGNAL(changeCurrentPage()), this, SLOT(changeCurrentPage()));  
-}
+}  
 
 /**
  * \brief Destructor
@@ -110,34 +111,12 @@ UBNavigatorPalette::~UBNavigatorPalette()
  * \brief Set the current document in the navigator
  * @param document as the given document
  */
-void UBNavigatorPalette::setDocument(UBDocumentProxy *document)
-{
-    if(mNavigator->currentDoc() != document)
-    {
-	mNavigator->setDocument(document);
-    }
-}
-
-/**
- * \brief Change the current page
- */
-void UBNavigatorPalette::changeCurrentPage()
-{
-    //	Get the index of the page to display
-    int iPage = mNavigator->selectedPageNumber();
-    if(NO_PAGESELECTED != iPage)
-    {
-	// Display the selected page
-    UBApplication::boardController->setActiveDocumentScene(mNavigator->currentDoc(), iPage);
-    }
-}
 
 /**
  * \brief Refresh the thumbnails widget
  */
 void UBNavigatorPalette::refresh()
 {
-    mNavigator->setDocument(UBApplication::boardController->activeDocument());
 }
 
 /**
@@ -151,7 +130,6 @@ void UBNavigatorPalette::resizeEvent(QResizeEvent *event)
     {
         mNavigator->setMinimumHeight(height() - 2*border());
     }
-    UBSettings::settings()->navigPaletteWidth->set(width());
 }
 
 void UBNavigatorPalette::timerEvent(QTimerEvent *event)
