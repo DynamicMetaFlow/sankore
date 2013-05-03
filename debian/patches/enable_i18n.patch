@@ -3,8 +3,8 @@ Author: Mike Gabriel <mike.gabriel@das-netzwerkteam.de>
 --- a/Sankore-3.1/Sankore_3.1.pro
 +++ b/Sankore-3.1/Sankore_3.1.pro
 @@ -110,6 +110,46 @@
- 
- LIBS += "-Lplugins/cffadaptor/$$BUILD_DIR/lib" "-lCFF_Adaptor"
+ RCC_DIR = $$BUILD_DIR/rcc
+ UI_DIR = $$BUILD_DIR/ui
  
 +TRANSLATIONS += resources/i18n/sankore_es.ts \
 +                resources/i18n/sankore_ko.ts \
