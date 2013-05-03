@@ -1,7 +1,7 @@
-build_opts.patch
-absolute_dirs.patch
-qt_pre_4.7.patch
-includes.patch
-enable_i18n.patch
-UBGraphicsAristo.patch
-UBDesktopPropertyPalette.patch
+001_build_opts.patch
+002_absolute_dirs.patch
+003_qt_pre_4.7.patch
+004_includes.patch
+005_enable_i18n.patch
+011_UBGraphicsAristo.patch
+012_UBDesktopPropertyPalette.patch
