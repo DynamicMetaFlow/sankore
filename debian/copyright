@@ -1,17 +1,62 @@
-Format: http://svn.debian.org/wsvn/dep/web/deps/dep5.mdwn?op=file&rev=166
-Upstream-Name: sankore
+Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: Sankore-3.1
 Upstream-Contact: Open-Sankoré Developers team <dev@open-sankore.org>
 Source: http://dev.open-sankore.org/
 Debianized-By: Miriam Ruiz <miriam@debian.org>
 Debianized-Date: Thu, 10 May 2012 18:29:03 +0200
 
-Files: *
-Copyright: Copyright (C) 2010  Open-Sankoré
-License: GPL-3+
+Files:
+ Sankore-3.1/plugins/*
+ Sankore-3.1/resources/win/sankore.rc
+ Sankore-3.1/src/*
+ Sankore-3.1/tools/*
+Copyright:
+ 2012,  Webdoc SA
+License: GPL-3+ with OpenSSL exception
+
+Files:
+ Sankore-3.1/resources/*
+License:
+ Sankore-3.1/public-domain
 
 Files: debian/*
-Copyright: Copyright (C) 2012, Miriam Ruiz <miriam@debian.org>
+Copyright:
+ 2012-2013, Miriam Ruiz <miriam@debian.org>
+ 2012-2013, Mike Gabriel <sunweaver@debian.org>
 License: GPL-3+
+
+License: GPL-3+ with OpenSSL exception
+ Open-Sankoré is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License,
+ with a specific linking exception for the OpenSSL project's
+ "OpenSSL" library (or with modified versions of it that use the
+ same license as the "OpenSSL" library).
+ .
+ In addition, as a special exception, the copyright holders give
+ permission to link the code of portions of this program with the
+ OpenSSL library under certain conditions as described in each
+ individual source file, and distribute linked combinations including
+ the two.
+ .
+ You must obey the GNU General Public License in all respects for all
+ of the code used other than OpenSSL. If you modify file(s) with this
+ exception, you may extend this exception to your version of the
+ file(s), but you are not obligated to do so. If you do not wish to do
+ so, delete this exception statement from your version. If you delete
+ this exception statement from all source files in the program, then
+ also delete it here.
+ .
+ Open-Sankoré is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ GNU General Public License for more details.
+ .
+ On Debian systems, the complete text of the latest version of the GNU
+ General Public License can be found in `/usr/share/common-licenses/GPL'.
+ .
+ The complete text of version 3 of the GNU General Public License can be
+ found in `/usr/share/common-licenses/GPL-3'.
 
 License: GPL-3+
  Open-Sankoré is free software: you can redistribute it and/or modify
@@ -31,4 +76,3 @@ License: GPL-3+
  .
  The complete text of version 3 of the GNU General Public License can be
  found in `/usr/share/common-licenses/GPL-3'.
-
