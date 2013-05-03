@@ -2,71 +2,18 @@ sankore (2.00~git20130309-1) UNRELEASED; urgency=low
 
   [ Miriam Ruiz ]
   * New upstream release, obtained from git, corresponding to commits:
+  * Initial release (closes: #673322), obtained from git,
+    corresponding to commits:
     + Sankore-3.1:        3d5330fb193ff74ff115466e92c9d91122f824a1
     + Sankore-ThirdParty: 735e68f1b75c5ece90f5c1d50798e1d07eca51a9
-  * Refreshed patches, and added two new:
-    + UBDesktopPropertyPalette.patch
-    + UBGraphicsAristo.patch
-  * Source code has been relicensed by upstream to GPL-3+ with an special
-    exception that allows it to be linked against OpenSSL and its derivatives.
-  * Changed my email address to miriam@debian.org
+  * Add patches:
+    + 001_build_opts.patch
+    + 002_absolute_dirs.patch
+    + 003_qt_pre_4.7.patch
+    + 004_includes.patch
+    + 005_enable_i18n.patch
+    + 011_UBGraphicsAristo.patch
+    + 012_UBDesktopPropertyPalette.patch
 
  -- Miriam Ruiz <miriam@debian.org>  Wed, 06 Mar 2013 13:05:21 +0100
 
-sankore (3.1~git20120517-1) UNRELEASED; urgency=low
-
-  [ Miriam Ruiz ]
-  * Initial release (closes: #673322).
-
-  [ Mike Gabriel ]
-  * Maintainer team: Debian Edu Packaging Team.
-  * /debian/control:
-    + Fix Uploaders:-field (missing commata).
-  * Lintian issues fixed:
-    + W: sankore source: stronger-dependency-implies-weaker sankore-data
-      depends -> suggests ${misc:Depends}.
-    + E: sankore source: debian-revision-should-not-be-zero 3.1~git20120517-0.
-    + W: sankore: hardening-no-fortify-functions usr/bin/Open-Sankore.bin
-    + W: sankore: hardening-no-fortify-functions
-      usr/lib/open-sankore/x86_64-linux-gnu/libCFF_Adaptor.so.1
-    + W: sankore: hardening-no-fortify-functions
-      usr/lib/open-sankore/x86_64-linux-gnu/libCFF_Adaptor.so.1.0
-    + W: sankore: hardening-no-fortify-functions
-      usr/lib/open-sankore/x86_64-linux-gnu/libCFF_Adaptor.so.1.0.0
-    + W: sankore: hardening-no-relro usr/lib/open-sankore/Open-Sankore.bin
-    + W: sankore: hardening-no-relro
-      usr/lib/open-sankore/x86_64-linux-gnu/libCFF_Adaptor.so.1
-    + W: sankore: hardening-no-relro
-      usr/lib/open-sankore/x86_64-linux-gnu/libCFF_Adaptor.so.1.0
-    + W: sankore: hardening-no-relro
-      usr/lib/open-sankore/x86_64-linux-gnu/libCFF_Adaptor.so.1.0.0
-    + W: sankore: executable-not-elf-or-script usr/bin/Open-Sankore
-    + W: sankore: new-package-should-close-itp-bug
-    + W: sankore-data: new-package-should-close-itp-bug
-    + W: sankore-dbg: new-package-should-close-itp-bug
-    + W: sankore: binary-without-manpage usr/bin/Open-Sankore
-    + P: sankore: copyright-refers-to-symlink-license
-      usr/share/common-licenses/GPL
-    + P: sankore-data: copyright-refers-to-symlink-license
-      usr/share/common-licenses/GPL
-    + P: sankore-dbg: copyright-refers-to-symlink-license
-      usr/share/common-licenses/GPL
-    + reverted - P: sankore source: unneeded-build-dep-on-quilt
-  * Lintian overrides:
-    + Enable dh_lintian.
-    + W: sankore-data: script-not-executable
-      usr/share/open-sankore/linux/run.sh.
-    + sankore: spelling-error-in-binary usr/lib/open-sankore/Open-Sankore.bin
-  * /debian/rules:
-    + Create Open-Sankore.bin in /usr/lib/open-sankore and only keep its
-      wrapper in /usr/bin -> saves us writing/symlinking a second man page.
-    + Make sure that the hardening compiler/linker flags are handled correctly
-      by qmake-qt4.
-    + Enable parallel (make -j4) build.
-    + Fix build flags.
-  * Patches:
-    + Add patch descriptions and authors.
-    + Add patch: enable_i18n.patch -> build .qm files on the fly during
-      qmake-qt4 run.
-
- -- Miriam Ruiz <little_miry@yahoo.es>  Thu, 10 May 2012 18:29:03 +0200
