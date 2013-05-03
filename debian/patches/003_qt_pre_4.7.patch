@@ -1,3 +1,5 @@
+Description: Build against Qt 4.7.
+Author: Miriam Ruiz <miriam@debian.org>
 Index: sankore/Sankore-3.1/src/adaptors/UBMetadataDcSubsetAdaptor.cpp
 ===================================================================
 --- sankore.orig/Sankore-3.1/src/adaptors/UBMetadataDcSubsetAdaptor.cpp	2013-03-07 20:08:11.667607255 +0100

@@ -1,3 +1,5 @@
+Description: Add -g -Wall to CFLAGS/CXXFLAGS.
+Author: Miriam Ruiz <miriam@debian.org>
 Index: sankore/Sankore-3.1/Sankore_3.1.pro
 ===================================================================
 --- sankore.orig/Sankore-3.1/Sankore_3.1.pro	2013-03-07 20:08:11.515607254 +0100
