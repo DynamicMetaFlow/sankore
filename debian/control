@@ -63,6 +63,7 @@ Architecture: all
 Depends:
  ${misc:Depends},
  libjs-jquery,
+ libjs-openlayers,
 Suggests:
  sankore (= ${binary:Version}),
 Description: interactive digital whiteboard software - data

@@ -17,6 +17,7 @@ sankore (2.00~git20130309-1) UNRELEASED; urgency=low
 
   [ Mike Gabriel ]
   * Include upstream changelog (release notes) into package.
-  * Use bin:package libjs-query as jquery.js/jquery.min.js provider.
+  * Use bin:package libjs-query as jquery.js/jquery.min.js library provider.
+  * Use bin:package libjs-openlayers as OpenLayers.js library provider.
 
  -- Miriam Ruiz <miriam@debian.org>  Wed, 06 Mar 2013 13:05:21 +0100
