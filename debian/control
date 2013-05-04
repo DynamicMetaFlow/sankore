@@ -4,18 +4,30 @@ Priority: optional
 Maintainer: Debian Edu Packaging Team <debian-edu-pkg-team@lists.alioth.debian.org>
 Uploaders:
  Miriam Ruiz <miriam@debian.org>,
- Mike Gabriel <mike.gabriel@das-netzwerkteam.de>,
- José Luis Redrejo Rodríguez <jredrejo@debian.org>
-Build-Depends: debhelper (>= 7), dh-buildinfo,
- qt4-qmake, qt4-dev-tools, libqt4-dev, libphonon-dev,
- libfreetype6-dev, libpaper-dev, libt1-dev, libssl-dev,
- libqtwebkit-dev | libqt4-dev (<< 4:4.7), quilt
+ Mike Gabriel <sunweaver@debian.org>,
+ José Luis Redrejo Rodríguez <jredrejo@debian.org>,
+Build-Depends:
+ debhelper (>= 7),
+ dh-buildinfo,
+ qt4-qmake,
+ qt4-dev-tools,
+ libqt4-dev,
+ libphonon-dev,
+ libfreetype6-dev,
+ libpaper-dev,
+ libt1-dev,
+ libssl-dev,
+ libqtwebkit-dev | libqt4-dev (<< 4:4.7),
+ quilt,
 Standards-Version: 3.9.4
 Homepage: http://open-sankore.org/
 
 Package: sankore
 Architecture: any
-Depends: sankore-data (= ${source:Version}), ${shlibs:Depends}, ${misc:Depends}
+Depends:
+ sankore-data (= ${source:Version}),
+ ${shlibs:Depends},
+ ${misc:Depends},
 Suggests: sankore-dbg (= ${binary:Version})
 Description: interactive digital whiteboard software for teaching
  Open-Sankoré is a free and open-source interactive whiteboard (IWB)
@@ -37,7 +49,9 @@ Package: sankore-dbg
 Section: debug
 Priority: extra
 Architecture: any
-Depends: sankore (= ${binary:Version}), ${misc:Depends}
+Depends:
+ sankore (= ${binary:Version}),
+ ${misc:Depends},
 Description: interactive digital whiteboard software - debug
  Open-Sankoré is a free and open-source interactive whiteboard (IWB)
  software compatible with any projector and pointing device. 
@@ -46,8 +60,10 @@ Description: interactive digital whiteboard software - debug
 
 Package: sankore-data
 Architecture: all
-Depends: ${misc:Depends}
-Suggests: sankore (= ${binary:Version})
+Depends:
+ ${misc:Depends},
+Suggests:
+ sankore (= ${binary:Version}),
 Description: interactive digital whiteboard software - data
  Open-Sankoré is a free and open-source interactive whiteboard (IWB)
  software compatible with any projector and pointing device. 
