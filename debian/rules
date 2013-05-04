@@ -124,6 +124,10 @@ install: build
 	dh_prep
 	dh_installdirs
 
+	# convert ReleaseNotes.pdf into a Changelog plain text file
+	pdf2txt Sankore-3.1/ReleaseNotes.pdf > Sankore-3.1/changelog
+
+
 # Build architecture-independent files here.
 binary-indep: install
 	dh_testdir
@@ -210,9 +214,6 @@ binary-arch: install
 	    ; do \
 	        rm -f $fsfile; ln -s /usr/share/javascript/openlayers/OpenLayers.js $(CURDIR)/debian/sankore-data/usr/share/open-sankore/$$jsfile; \
 	    done
-
-	# convert ReleaseNotes.pdf into a Changelog plain text file
-	pdf2txt Sankore-3.1/ReleaseNotes.pdf > Sankore-3.1/changelog
 
 	dh_installchangelogs -a
 	dh_installdocs -a
