@@ -63,6 +63,7 @@ Package: sankore-data
 Architecture: all
 Depends:
  ${misc:Depends},
+ libjs-jquery,
 Suggests:
  sankore (= ${binary:Version}),
 Description: interactive digital whiteboard software - data
