@@ -89,6 +89,7 @@ clean:
 	dh_testdir
 	dh_testroot
 	rm -fv build-stamp config-stamp
+	rm -fv Sankore-3.1/changelog
 	[ ! -f Sankore-3.1/Makefile ] || \
 		$(MAKE) -C Sankore-3.1 clean
 	[ ! -f Sankore-3.1/plugins/cffadaptor/Makefile ] || \
