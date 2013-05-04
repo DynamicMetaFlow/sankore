@@ -1,1 +1,14 @@
-Sankore-3.1/resources/* /usr/share/open-sankore/
+Sankore-3.1/resources/customizations /usr/share/open-sankore/
+Sankore-3.1/resources/etc /usr/share/open-sankore/
+Sankore-3.1/resources/fonts /usr/share/open-sankore/
+Sankore-3.1/resources/forms /usr/share/open-sankore/
+Sankore-3.1/resources/i18n /usr/share/open-sankore/
+Sankore-3.1/resources/images /usr/share/open-sankore/
+Sankore-3.1/resources/library /usr/share/open-sankore/
+Sankore-3.1/resources/podcast /usr/share/open-sankore/
+Sankore-3.1/resources/style /usr/share/open-sankore/
+Sankore-3.1/resources/webbrowser /usr/share/open-sankore/
+Sankore-3.1/resources/www /usr/share/open-sankore/
+Sankore-3.1/resources/sankore.qrc /usr/share/open-sankore/
+Sankore-3.1/resources/style.qss /usr/share/open-sankore/
+
