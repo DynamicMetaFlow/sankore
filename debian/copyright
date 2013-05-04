@@ -7,7 +7,6 @@ Debianized-Date: Thu, 10 May 2012 18:29:03 +0200
 
 Files:
  Sankore-3.1/plugins/*
- Sankore-3.1/resources/win/sankore.rc
  Sankore-3.1/src/*
  Sankore-3.1/tools/*
 Copyright:
@@ -16,57 +15,198 @@ License: GPL-3+ with OpenSSL exception
 
 Files:
  Sankore-3.1/resources/*
-License:
- Sankore-3.1/public-domain
+Copyright:
+ TODO
+License: TODO
+
+Files:
+ Sankore-ThirdParty/quazip/quazip.cpp
+Copyright:
+ 1998-2005, Gilles Vollant
+License: GPL-2+
+
+Files:
+ Sankore-ThirdParty/quazip/quazip.cpp
+ Sankore-ThirdParty/quazip/quazipfile.cpp
+ Sankore-ThirdParty/quazip/quazipfile.h
+ Sankore-ThirdParty/quazip/quazipfileinfo.h
+ Sankore-ThirdParty/quazip/quazip.h
+ Sankore-ThirdParty/quazip/quazipnewinfo.cpp
+ Sankore-ThirdParty/quazip/quazipnewinfo.h
+Copyright:
+ 2005-2008, Sergey A. Tachenov
+License: GPL-2+
+
+Files:
+ Sankore-ThirdParty/quazip/zip.c
+ Sankore-ThirdParty/quazip/zip.h
+ Sankore-ThirdParty/quazip/unzip.h
+ Sankore-ThirdParty/quazip/unzip.c
+Copyright:
+ 1998-2005, Gilles Vollant
+ 1990-2000, Info-ZIP
+License: Zlib
+
+Files:
+ Sankore-ThirdParty/trolltech/*
+Copyright:
+ 2010, Nokia Cooperation <qt-info@nokia.com>
+License: BSD-3-clause
+
+Files:
+ Sankore-ThirdParty/xpdf/*
+Copyright:
+ 1996-2011, Glyph & Cog, LLC
+License: GPL-2 or GPL-3
 
 Files: debian/*
 Copyright:
  2012-2013, Miriam Ruiz <miriam@debian.org>
  2012-2013, Mike Gabriel <sunweaver@debian.org>
+License: GPL-2+ or Zlib
+
+License: GPL-2
+ This program is free software; you can redistribute it
+ and/or modify it under the terms of the GNU General Public
+ License version 2 as published by the Free Software Foundation.
+ .
+ This program is distributed in the hope that it will be
+ useful, but WITHOUT ANY WARRANTY; without even the implied
+ warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+ PURPOSE.  See the GNU General Public License for more
+ details.
+ .
+ You should have received a copy of the GNU General Public
+ License along with this package; if not, write to the Free
+ Software Foundation, Inc., 51 Franklin St, Fifth Floor,
+ Boston, MA  02110-1301 USA
+ .
+ On Debian systems, the full text of the GNU General Public
+ License version 2 can be found in the file
+ `/usr/share/common-licenses/GPL-2'.
+
+License: GPL-2+
+ This program is free software; you can redistribute it
+ and/or modify it under the terms of the GNU General Public
+ License as published by the Free Software Foundation; either
+ version 2 of the License, or (at your option) any later
+ version.
+ .
+ This program is distributed in the hope that it will be
+ useful, but WITHOUT ANY WARRANTY; without even the implied
+ warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+ PURPOSE.  See the GNU General Public License for more
+ details.
+ .
+ You should have received a copy of the GNU General Public
+ License along with this package; if not, write to the Free
+ Software Foundation, Inc., 51 Franklin St, Fifth Floor,
+ Boston, MA  02110-1301 USA
+ .
+ On Debian systems, the full text of the GNU General Public
+ License version 2 can be found in the file
+ `/usr/share/common-licenses/GPL-2'.
+
+License: GPL-3
+ This program is free software; you can redistribute it
+ and/or modify it under the terms of the GNU General Public
+ License version 3 as published by the Free Software Foundation.
+ .
+ This program is distributed in the hope that it will be
+ useful, but WITHOUT ANY WARRANTY; without even the implied
+ warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+ PURPOSE.  See the GNU General Public License for more
+ details.
+ .
+ You should have received a copy of the GNU General Public
+ License along with this package; if not, write to the Free
+ Software Foundation, Inc., 51 Franklin St, Fifth Floor,
+ Boston, MA  02110-1301 USA
+ .
+ On Debian systems, the full text of the GNU General Public
+ License version 3 can be found in the file
+ `/usr/share/common-licenses/GPL-3'.
+
 License: GPL-3+
+ This program is free software; you can redistribute it
+ and/or modify it under the terms of the GNU General Public
+ License as published by the Free Software Foundation; either
+ version 3 of the License, or (at your option) any later
+ version.
+ .
+ This program is distributed in the hope that it will be
+ useful, but WITHOUT ANY WARRANTY; without even the implied
+ warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+ PURPOSE.  See the GNU General Public License for more
+ details.
+ .
+ You should have received a copy of the GNU General Public
+ License along with this package; if not, write to the Free
+ Software Foundation, Inc., 51 Franklin St, Fifth Floor,
+ Boston, MA  02110-1301 USA
+ .
+ On Debian systems, the full text of the GNU General Public
+ License version 3 can be found in the file
+ `/usr/share/common-licenses/GPL-3'.
 
 License: GPL-3+ with OpenSSL exception
- Open-Sankoré is free software: you can redistribute it and/or modify
+ This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
- the Free Software Foundation, either version 3 of the License,
+ the Free Software Foundation, either version 2 of the License,
  with a specific linking exception for the OpenSSL project's
  "OpenSSL" library (or with modified versions of it that use the
  same license as the "OpenSSL" library).
  .
- In addition, as a special exception, the copyright holders give
- permission to link the code of portions of this program with the
- OpenSSL library under certain conditions as described in each
- individual source file, and distribute linked combinations including
- the two.
- .
- You must obey the GNU General Public License in all respects for all
- of the code used other than OpenSSL. If you modify file(s) with this
- exception, you may extend this exception to your version of the
- file(s), but you are not obligated to do so. If you do not wish to do
- so, delete this exception statement from your version. If you delete
- this exception statement from all source files in the program, then
- also delete it here.
- .
- Open-Sankoré is distributed in the hope that it will be useful,
+ This program is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  GNU General Public License for more details.
  .
- The complete text of version 3 of the GNU General Public License can be
- found in `/usr/share/common-licenses/GPL-3'.
+ On Debian systems, the full text of the GNU General Public
+ License version 3 can be found in the file
+ `/usr/share/common-licenses/GPL-3'.
 
-License: GPL-3+
- Open-Sankoré is free software: you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation, either version 3 of the License,
- with a specific linking exception for the OpenSSL project's
- "OpenSSL" library (or with modified versions of it that use the
- same license as the "OpenSSL" library).
+License: BSD-3-clause
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions are
+ met:
  .
- Open-Sankoré is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- GNU General Public License for more details.
+     1.Redistributions of source code must retain the above copyright
+       notice, this list of conditions and the following disclaimer.
+     2.Redistributions in binary form must reproduce the above copyright
+       notice, this list of conditions and the following disclaimer in
+       the documentation and/or other materials provided with the
+       distribution.
+     3.Neither the name of Nokia Corporation and its Subsidiary(-ies) nor
+       the names of its contributors may be used to endorse or promote
+       products derived from this software without specific prior written
+       permission.
  .
- The complete text of version 3 of the GNU General Public License can be
- found in `/usr/share/common-licenses/GPL-3'.
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE."
+
+License: Zlib
+ This software is provided 'as-is', without any express or implied
+ warranty.  In no event will the authors be held liable for any damages
+ arising from the use of this software.
+ .
+ Permission is granted to anyone to use this software for any purpose,
+ including commercial applications, and to alter it and redistribute it
+ freely, subject to the following restrictions:
+ .
+ 1. The origin of this software must not be misrepresented; you must not
+    claim that you wrote the original software. If you use this software
+    in a product, an acknowledgment in the product documentation would be
+    appreciated but is not required.
+ 2. Altered source versions must be plainly marked as such, and must not be
+    misrepresented as being the original software.
+ 3. This notice may not be removed or altered from any source distribution.
