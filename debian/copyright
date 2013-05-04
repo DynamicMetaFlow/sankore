@@ -52,9 +52,6 @@ License: GPL-3+ with OpenSSL exception
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  GNU General Public License for more details.
  .
- On Debian systems, the complete text of the latest version of the GNU
- General Public License can be found in `/usr/share/common-licenses/GPL'.
- .
  The complete text of version 3 of the GNU General Public License can be
  found in `/usr/share/common-licenses/GPL-3'.
 
@@ -70,9 +67,6 @@ License: GPL-3+
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  GNU General Public License for more details.
- .
- On Debian systems, the complete text of the latest version of the GNU
- General Public License can be found in `/usr/share/common-licenses/GPL'.
  .
  The complete text of version 3 of the GNU General Public License can be
  found in `/usr/share/common-licenses/GPL-3'.
