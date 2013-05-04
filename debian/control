@@ -18,7 +18,6 @@ Build-Depends:
  libt1-dev,
  libssl-dev,
  libqtwebkit-dev | libqt4-dev (<< 4:4.7),
- quilt,
  python-pdfminer,
 Standards-Version: 3.9.4
 Homepage: http://open-sankore.org/
