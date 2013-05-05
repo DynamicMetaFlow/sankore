@@ -1,10 +1,8 @@
 Description: Add -g -Wall to CFLAGS/CXXFLAGS.
 Author: Miriam Ruiz <miriam@debian.org>
-Index: sankore/Sankore-3.1/Sankore_3.1.pro
-===================================================================
---- sankore.orig/Sankore-3.1/Sankore_3.1.pro	2013-03-07 20:08:11.515607254 +0100
-+++ sankore/Sankore-3.1/Sankore_3.1.pro	2013-03-07 20:08:29.000000000 +0100
-@@ -376,8 +376,8 @@
+--- a/Sankore-3.1/Sankore_3.1.pro
++++ b/Sankore-3.1/Sankore_3.1.pro
+@@ -394,8 +394,8 @@
      CONFIG += link_prl
      LIBS += -lcrypto
      LIBS += -lX11

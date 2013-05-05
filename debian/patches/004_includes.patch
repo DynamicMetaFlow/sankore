@@ -1,10 +1,8 @@
 Description: Fix FTBFS when built with gcc 4.7.
 Author: Miriam Ruiz <miriam@debian.org>
-Index: sankore/Sankore-3.1/src/frameworks/UBPlatformUtils_linux.cpp
-===================================================================
---- sankore.orig/Sankore-3.1/src/frameworks/UBPlatformUtils_linux.cpp	2013-03-07 20:08:11.711607255 +0100
-+++ sankore/Sankore-3.1/src/frameworks/UBPlatformUtils_linux.cpp	2013-03-07 20:08:11.699607252 +0100
-@@ -28,6 +28,8 @@
+--- a/Sankore-3.1/src/frameworks/UBPlatformUtils_linux.cpp
++++ b/Sankore-3.1/src/frameworks/UBPlatformUtils_linux.cpp
+@@ -29,6 +29,8 @@
  #include <X11/Xlib.h>
  #include <X11/keysym.h>
  
@@ -13,10 +11,8 @@ Index: sankore/Sankore-3.1/src/frameworks/UBPlatformUtils_linux.cpp
  #include "frameworks/UBFileSystemUtils.h"
  
  
-Index: sankore/Sankore-ThirdParty/trolltech/singleapplication/qtlocalpeer.cpp
-===================================================================
---- sankore.orig/Sankore-ThirdParty/trolltech/singleapplication/qtlocalpeer.cpp	2013-03-07 20:08:11.711607255 +0100
-+++ sankore/Sankore-ThirdParty/trolltech/singleapplication/qtlocalpeer.cpp	2013-03-07 20:08:11.703607252 +0100
+--- a/Sankore-ThirdParty/trolltech/singleapplication/qtlocalpeer.cpp
++++ b/Sankore-ThirdParty/trolltech/singleapplication/qtlocalpeer.cpp
 @@ -50,6 +50,8 @@
  #endif
  #if defined(Q_OS_UNIX)

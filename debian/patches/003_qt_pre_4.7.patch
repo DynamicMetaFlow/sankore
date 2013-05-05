@@ -1,10 +1,8 @@
 Description: Build against Qt 4.7.
 Author: Miriam Ruiz <miriam@debian.org>
-Index: sankore/Sankore-3.1/src/adaptors/UBMetadataDcSubsetAdaptor.cpp
-===================================================================
---- sankore.orig/Sankore-3.1/src/adaptors/UBMetadataDcSubsetAdaptor.cpp	2013-03-07 20:08:11.667607255 +0100
-+++ sankore/Sankore-3.1/src/adaptors/UBMetadataDcSubsetAdaptor.cpp	2013-03-07 20:08:11.635607254 +0100
-@@ -115,7 +115,7 @@
+--- a/Sankore-3.1/src/adaptors/UBMetadataDcSubsetAdaptor.cpp
++++ b/Sankore-3.1/src/adaptors/UBMetadataDcSubsetAdaptor.cpp
+@@ -117,7 +117,7 @@
      xmlWriter.writeTextElement(UBSettings::uniboardDocumentNamespaceUri, "size", QString("%1x%2").arg(width).arg(height));
  
      // introduced in UB 4.4
@@ -13,11 +11,9 @@ Index: sankore/Sankore-3.1/src/adaptors/UBMetadataDcSubsetAdaptor.cpp
      // introduced in OpenSankore 1.40.00
      xmlWriter.writeTextElement(UBSettings::uniboardDocumentNamespaceUri,UBSettings::sessionTitle,proxy->metaData(UBSettings::sessionTitle).toString());
      xmlWriter.writeTextElement(UBSettings::uniboardDocumentNamespaceUri,UBSettings::sessionAuthors,proxy->metaData(UBSettings::sessionAuthors).toString());
-Index: sankore/Sankore-3.1/src/board/UBFeaturesController.cpp
-===================================================================
---- sankore.orig/Sankore-3.1/src/board/UBFeaturesController.cpp	2013-03-07 20:08:11.667607255 +0100
-+++ sankore/Sankore-3.1/src/board/UBFeaturesController.cpp	2013-03-07 20:08:11.647607253 +0100
-@@ -41,6 +41,10 @@
+--- a/Sankore-3.1/src/board/UBFeaturesController.cpp
++++ b/Sankore-3.1/src/board/UBFeaturesController.cpp
+@@ -42,6 +42,10 @@
  
  #include "gui/UBFeaturesWidget.h"
  
@@ -25,14 +21,12 @@ Index: sankore/Sankore-3.1/src/board/UBFeaturesController.cpp
 +inline bool qHash(const QUrl &url) { return qHash(url.toString()); }
 +#endif
 +
- const QString UBFeaturesController::virtualRootName = "root";
- const QString UBFeaturesController::rootPath  = "/" + virtualRootName;
- 
-Index: sankore/Sankore-3.1/src/gui/UBTeacherGuideWidgetsTools.cpp
-===================================================================
---- sankore.orig/Sankore-3.1/src/gui/UBTeacherGuideWidgetsTools.cpp	2013-03-07 20:08:11.667607255 +0100
-+++ sankore/Sankore-3.1/src/gui/UBTeacherGuideWidgetsTools.cpp	2013-03-07 20:08:11.651607252 +0100
-@@ -625,11 +625,15 @@
+ void UBFeaturesComputingThread::scanFS(const QUrl & currentPath
+                                        , const QString & currVirtualPath
+                                        , const QPair<CategoryData, QSet<QUrl> > &pfavoriteInfo
+--- a/Sankore-3.1/src/gui/UBTeacherGuideWidgetsTools.cpp
++++ b/Sankore-3.1/src/gui/UBTeacherGuideWidgetsTools.cpp
+@@ -665,11 +665,15 @@
      setLayout(mpLayout);
      mpTitle = new QLineEdit(this);
      mpTitle->setObjectName("UBTGLineEdit");
@@ -48,11 +42,9 @@ Index: sankore/Sankore-3.1/src/gui/UBTeacherGuideWidgetsTools.cpp
      mpLayout->addWidget(mpTitle);
      mpLayout->addWidget(mpUrl);
  }
-Index: sankore/Sankore-3.1/src/domain/UBGraphicsWidgetItem.cpp
-===================================================================
---- sankore.orig/Sankore-3.1/src/domain/UBGraphicsWidgetItem.cpp	2013-03-07 20:08:11.667607255 +0100
-+++ sankore/Sankore-3.1/src/domain/UBGraphicsWidgetItem.cpp	2013-03-07 20:08:11.663607255 +0100
-@@ -79,7 +79,9 @@
+--- a/Sankore-3.1/src/domain/UBGraphicsWidgetItem.cpp
++++ b/Sankore-3.1/src/domain/UBGraphicsWidgetItem.cpp
+@@ -80,7 +80,9 @@
      page()->setNetworkAccessManager(UBNetworkAccessManager::defaultAccessManager());
  
      setAcceptDrops(true);

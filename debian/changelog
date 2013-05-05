@@ -12,8 +12,6 @@ sankore (2.1.0+git20130505-1) UNRELEASED; urgency=low
     + 003_qt_pre_4.7.patch
     + 004_includes.patch
     + 005_enable_i18n.patch
-    + 011_UBGraphicsAristo.patch
-    + 012_UBDesktopPropertyPalette.patch
 
   [ Mike Gabriel ]
   * Include upstream changelog (release notes) into package.

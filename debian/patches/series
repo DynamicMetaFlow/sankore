@@ -3,5 +3,3 @@
 003_qt_pre_4.7.patch
 004_includes.patch
 005_enable_i18n.patch
-011_UBGraphicsAristo.patch
-012_UBDesktopPropertyPalette.patch
