@@ -137,6 +137,27 @@ binary-indep: install
 	dh_installdocs -i
 	dh_installexamples -i
 	dh_install -i
+
+	cd $(CURDIR)/debian/sankore-data/usr/share/open-sankore/ && mv "library/applications/Sel video.wgt" library/applications/Sel_video.wgt
+	cd $(CURDIR)/debian/sankore-data/usr/share/open-sankore/ && mv "library/applications/Editeur HTML.wgt" library/applications/Editeur_HTML.wgt
+	cd $(CURDIR)/debian/sankore-data/usr/share/open-sankore/ && mv "library/applications/Navigateur Web.wgt" library/applications/Navigateur_Web.wgt
+	cd $(CURDIR)/debian/sankore-data/usr/share/open-sankore/ && mv "library/applications/Composant Web.wgt" library/applications/Composant_Web.wgt
+	cd $(CURDIR)/debian/sankore-data/usr/share/open-sankore/ && mv "library/interactivities/Ass images.wgt" library/interactivities/Ass_images.wgt
+	cd $(CURDIR)/debian/sankore-data/usr/share/open-sankore/ && mv "library/interactivities/Separe phrase.wgt" library/interactivities/Separe_phrase.wgt
+	cd $(CURDIR)/debian/sankore-data/usr/share/open-sankore/ && mv "library/interactivities/Ordre lettres.wgt" library/interactivities/Ordre_lettres.wgt
+	cd $(CURDIR)/debian/sankore-data/usr/share/open-sankore/ && mv "library/interactivities/Ordre images.wgt" library/interactivities/Ordre_images.wgt
+	cd $(CURDIR)/debian/sankore-data/usr/share/open-sankore/ && mv "library/interactivities/Cat text.wgt" library/interactivities/Cat_text.wgt
+	cd $(CURDIR)/debian/sankore-data/usr/share/open-sankore/ && mv "library/interactivities/Separe texte.wgt" library/interactivities/Separe_texte.wgt
+	cd $(CURDIR)/debian/sankore-data/usr/share/open-sankore/ && mv "library/interactivities/Ass sons.wgt" library/interactivities/Ass_sons.wgt
+	cd $(CURDIR)/debian/sankore-data/usr/share/open-sankore/ && mv "library/interactivities/Cat images.wgt" library/interactivities/Cat_images.wgt
+	cd $(CURDIR)/debian/sankore-data/usr/share/open-sankore/ && mv "library/interactivities/Ordre mots.wgt" library/interactivities/Ordre_mots.wgt
+	cd $(CURDIR)/debian/sankore-data/usr/share/open-sankore/ && mv "library/interactivities/Ordre phrase.wgt" library/interactivities/Ordre_phrase.wgt
+	cd $(CURDIR)/debian/sankore-data/usr/share/open-sankore/ && mv "library/search/Google images.wgs" library/search/Google_images.wgs
+	cd $(CURDIR)/debian/sankore-data/usr/share/open-sankore/ && mv "library/search/Image Planete.wgs" library/search/Image_Planete.wgs
+	cd $(CURDIR)/debian/sankore-data/usr/share/open-sankore/ && mv "library/search/Audio Planete.wgs" library/search/Audio_Planete.wgs
+	cd $(CURDIR)/debian/sankore-data/usr/share/open-sankore/ && mv "library/search/Video Planete.wgs" library/search/Video_Planete.wgs
+	cd $(CURDIR)/debian/sankore-data/usr/share/open-sankore/ && mv "library/search/Flash Planete.wgs" library/search/Flash_Planete.wgs
+
 	dh_installman -i
 	dh_link -i
 	dh_compress -i
