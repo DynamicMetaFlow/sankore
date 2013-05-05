@@ -65,6 +65,8 @@ Depends:
  libjs-jquery,
  libjs-openlayers,
  gsfonts-x11,
+ fonts-ecolier-court,
+ fonts-ecolier-lignes-court,
 Suggests:
  sankore (= ${binary:Version}),
 Description: interactive digital whiteboard software - data
