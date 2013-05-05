@@ -133,6 +133,12 @@ binary-indep: install
 	dh_testdir
 	dh_testroot
 
+	dh_installchangelogs -i
+	dh_installdocs -i
+	dh_installexamples -i
+	dh_install -i
+	dh_installman -i
+
 	# use jquery.js from Debian package libjs-query
 	cd $(CURDIR)/debian/sankore-data/usr/share/open-sankore/ && for jsfile in \
 	    \"library/applications/Editeur HTML.wgt/jquery.pack.js\" \
@@ -184,11 +190,6 @@ binary-indep: install
 	        rm -f $$jsfile; ln -s /usr/share/javascript/openlayers/OpenLayers.js $(CURDIR)/debian/sankore-data/usr/share/open-sankore/$$jsfile; \
 	    done
 
-	dh_installchangelogs -i
-	dh_installdocs -i
-	dh_installexamples -i
-	dh_install -i
-	dh_installman -i
 	dh_link -i
 	dh_compress -i
 	dh_fixperms -i
