@@ -67,6 +67,7 @@ Depends:
  gsfonts-x11,
  fonts-ecolier-court,
  fonts-ecolier-lignes-court,
+ fonts-sil-andika,
 Suggests:
  sankore (= ${binary:Version}),
 Description: interactive digital whiteboard software - data

@@ -54,3 +54,4 @@ usr/share/fonts/X11/Type1/n022024l.pfb usr/share/open-sankore/fonts/n022024l.pfb
 usr/share/fonts/X11/Type1/s050000l.pfb usr/share/open-sankore/fonts/s050000l.pfb
 usr/share/fonts/truetype/ecolier-court/Ecolier-court.ttf usr/share/open-sankore/customizations/fonts/ec_cour.ttf
 usr/share/fonts/truetype/ecolier-lignes-court/Ecolier-lignes-court.ttf usr/share/open-sankore/customizations/fonts/ecl_cour.ttf
+usr/share/fonts/opentype/andika/Andika-R.ttf usr/share/open-sankore/customizations/fonts/AndBasR.ttf
