@@ -138,7 +138,7 @@ binary-indep: install
 	    \"library/applications/Editeur HTML.wgt/jquery.pack.js\" \
 	    \"library/applications/Nuancier.wgt/js/jquery.js\" \
 	    ; do \
-	        rm -f $fsfile; ln -s /usr/share/javascript/jquery/jquery.js $$jsfile; \
+	        rm -f $$jsfile; ln -s /usr/share/javascript/jquery/jquery.js $$jsfile; \
 	    done
 
 	# use jquery.min.js from Debian package libjs-query
@@ -174,14 +174,14 @@ binary-indep: install
 	    \"library/search/Image Planete.wgs/scripts/jquery-1.6.2.min.js\" \
 	    \"library/search/Video Planete.wgs/scripts/jquery-1.6.2.min.js\" \
 	    ; do \
-	        rm -f $fsfile; ln -s /usr/share/javascript/jquery/jquery.min.js $(CURDIR)/debian/sankore-data/usr/share/open-sankore/$$jsfile; \
+	        rm -f $$jsfile; ln -s /usr/share/javascript/jquery/jquery.min.js $(CURDIR)/debian/sankore-data/usr/share/open-sankore/$$jsfile; \
 	    done
 
 	# use OpenLayers.js from Debian package libjs-openstreetmap
 	cd $(CURDIR)/debian/sankore-data/usr/share/open-sankore/ && for jsfile in \
 	    \"library/applications/OpenStreetMap.wgt/api/OpenLayers.js\"
 	    ; do \
-	        rm -f $fsfile; ln -s /usr/share/javascript/openlayers/OpenLayers.js $(CURDIR)/debian/sankore-data/usr/share/open-sankore/$$jsfile; \
+	        rm -f $$jsfile; ln -s /usr/share/javascript/openlayers/OpenLayers.js $(CURDIR)/debian/sankore-data/usr/share/open-sankore/$$jsfile; \
 	    done
 
 	dh_installchangelogs -i
