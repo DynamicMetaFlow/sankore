@@ -135,51 +135,51 @@ binary-indep: install
 
 	# use jquery.js from Debian package libjs-query
 	cd $(CURDIR)/debian/sankore-data/usr/share/open-sankore/ && for jsfile in \
-	    "library/applications/Editeur HTML.wgt/jquery.pack.js" \
-	    "library/applications/Nuancier.wgt/js/jquery.js" \
+	    \"library/applications/Editeur HTML.wgt/jquery.pack.js\" \
+	    \"library/applications/Nuancier.wgt/js/jquery.js\" \
 	    ; do \
 	        rm -f $fsfile; ln -s /usr/share/javascript/jquery/jquery.js $$jsfile; \
 	    done
 
 	# use jquery.min.js from Debian package libjs-query
 	cd $(CURDIR)/debian/sankore-data/usr/share/open-sankore/ && for jsfile in \
-	    "library/applications/Wikipedia.wgt/script/jquery.min.js" \
-	    "library/applications/Wiktionnaire.wgt/script/jquery.min.js" \
-	    "library/applications/Calculatrice.wgt/js/jquery-1.3.2.min.js" \
-	    "library/applications/GeoInfo.wgt/js/jquery-1.6.2.min.js" \
-	    "library/applications/Grapheur.wgt/JavaScript/jquery-1.3.2.min.js" \
-	    "library/applications/Minuteur.wgt/js/jquery-1.3.2.min.js" \
-	    "library/applications/Navigateur Web.wgt/scripts/jquery-1.3.2.min.js" \
-	    "library/applications/Notes.wgt/js/jquery-1.3.2.min.js" \
-	    "library/applications/Sel video.wgt/scripts/jquery-1.3.2.min.js" \
-	    "library/applications/Wikipedia.wgt/script/jquery.min.js" \
-	    "library/applications/Wiktionnaire.wgt/script/jquery.min.js" \
-	    "library/interactivities/Ass images.wgt/js/jquery-1.6.2.min.js" \
-	    "library/interactivities/Ass sons.wgt/js/jquery-1.6.2.min.js" \
-	    "library/interactivities/Cat images.wgt/js/jquery-1.6.2.min.js" \
-	    "library/interactivities/Cat text.wgt/js/jquery-1.6.2.min.js" \
-	    "library/interactivities/Choisir.wgt/scripts/jquery-1.6.2.min.js" \
-	    "library/interactivities/Contraste.wgt/scripts/jquery-1.6.2.min.js" \
-	    "library/interactivities/Etudier.wgt/js/jquery-1.6.2.min.js" \
-	    "library/interactivities/Ordre images.wgt/js/jquery-1.6.2.min.js" \
-	    "library/interactivities/Ordre mots.wgt/scripts/jquery-1.6.2.min.js" \
-	    "library/interactivities/Ordre phrase.wgt/scripts/jquery-1.6.2.min.js" \
-	    "library/interactivities/Selectionner.wgt/js/jquery-1.6.2.min.js" \
-	    "library/interactivities/Separe phrase.wgt/scripts/jquery-1.6.2.min.js" \
-	    "library/interactivities/Separe texte.wgt/scripts/jquery-1.6.2.min.js" \
-	    "library/interactivities/Syllabes.wgt/scripts/jquery-1.6.2.min.js" \
-	    "library/search/Audio Planete.wgs/scripts/jquery-1.6.2.min.js" \
-	    "library/search/Flash Planete.wgs/scripts/jquery-1.6.2.min.js" \
-	    "library/search/Google images.wgs/scripts/jquery-1.6.2.min.js" \
-	    "library/search/Image Planete.wgs/scripts/jquery-1.6.2.min.js" \
-	    "library/search/Video Planete.wgs/scripts/jquery-1.6.2.min.js" \
+	    \"library/applications/Wikipedia.wgt/script/jquery.min.js\" \
+	    \"library/applications/Wiktionnaire.wgt/script/jquery.min.js\" \
+	    \"library/applications/Calculatrice.wgt/js/jquery-1.3.2.min.js\" \
+	    \"library/applications/GeoInfo.wgt/js/jquery-1.6.2.min.js\" \
+	    \"library/applications/Grapheur.wgt/JavaScript/jquery-1.3.2.min.js\" \
+	    \"library/applications/Minuteur.wgt/js/jquery-1.3.2.min.js\" \
+	    \"library/applications/Navigateur Web.wgt/scripts/jquery-1.3.2.min.js\" \
+	    \"library/applications/Notes.wgt/js/jquery-1.3.2.min.js\" \
+	    \"library/applications/Sel video.wgt/scripts/jquery-1.3.2.min.js\" \
+	    \"library/applications/Wikipedia.wgt/script/jquery.min.js\" \
+	    \"library/applications/Wiktionnaire.wgt/script/jquery.min.js\" \
+	    \"library/interactivities/Ass images.wgt/js/jquery-1.6.2.min.js\" \
+	    \"library/interactivities/Ass sons.wgt/js/jquery-1.6.2.min.js\" \
+	    \"library/interactivities/Cat images.wgt/js/jquery-1.6.2.min.js\" \
+	    \"library/interactivities/Cat text.wgt/js/jquery-1.6.2.min.js\" \
+	    \"library/interactivities/Choisir.wgt/scripts/jquery-1.6.2.min.js\" \
+	    \"library/interactivities/Contraste.wgt/scripts/jquery-1.6.2.min.js\" \
+	    \"library/interactivities/Etudier.wgt/js/jquery-1.6.2.min.js\" \
+	    \"library/interactivities/Ordre images.wgt/js/jquery-1.6.2.min.js\" \
+	    \"library/interactivities/Ordre mots.wgt/scripts/jquery-1.6.2.min.js\" \
+	    \"library/interactivities/Ordre phrase.wgt/scripts/jquery-1.6.2.min.js\" \
+	    \"library/interactivities/Selectionner.wgt/js/jquery-1.6.2.min.js\" \
+	    \"library/interactivities/Separe phrase.wgt/scripts/jquery-1.6.2.min.js\" \
+	    \"library/interactivities/Separe texte.wgt/scripts/jquery-1.6.2.min.js\" \
+	    \"library/interactivities/Syllabes.wgt/scripts/jquery-1.6.2.min.js\" \
+	    \"library/search/Audio Planete.wgs/scripts/jquery-1.6.2.min.js\" \
+	    \"library/search/Flash Planete.wgs/scripts/jquery-1.6.2.min.js\" \
+	    \"library/search/Google images.wgs/scripts/jquery-1.6.2.min.js\" \
+	    \"library/search/Image Planete.wgs/scripts/jquery-1.6.2.min.js\" \
+	    \"library/search/Video Planete.wgs/scripts/jquery-1.6.2.min.js\" \
 	    ; do \
 	        rm -f $fsfile; ln -s /usr/share/javascript/jquery/jquery.min.js $(CURDIR)/debian/sankore-data/usr/share/open-sankore/$$jsfile; \
 	    done
 
 	# use OpenLayers.js from Debian package libjs-openstreetmap
 	cd $(CURDIR)/debian/sankore-data/usr/share/open-sankore/ && for jsfile in \
-	    "library/applications/OpenStreetMap.wgt/api/OpenLayers.js"
+	    \"library/applications/OpenStreetMap.wgt/api/OpenLayers.js\"
 	    ; do \
 	        rm -f $fsfile; ln -s /usr/share/javascript/openlayers/OpenLayers.js $(CURDIR)/debian/sankore-data/usr/share/open-sankore/$$jsfile; \
 	    done
