@@ -34,4 +34,5 @@ usr/share/javascript/jquery/jquery.min.js usr/share/open-sankore/library/search/
 usr/share/javascript/jquery/jquery.min.js usr/share/open-sankore/library/search/Image_Planete.wgs/scripts/jquery-1.6.2.min.js
 usr/share/javascript/jquery/jquery.min.js usr/share/open-sankore/library/search/Video_Planete.wgs/scripts/jquery-1.6.2.min.js
 
+# link to /usr/share/javascript/openlayers/OpenLayers.js
 usr/share/javascript/openlayers/OpenLayers.js usr/share/open-sankore/library/applications/OpenStreetMap.wgt/api/OpenLayers.js
