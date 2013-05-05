@@ -1,2 +1,2 @@
-# this script is shipped into the package via the upstream installation process and not used on a Debian system
-sankore-data: script-not-executable usr/share/open-sankore/linux/run.sh
+# the upstream changelog is released as English/French PDF, this triggers the below lintian information message
+sankore-data: possible-documentation-but-no-doc-base-registration

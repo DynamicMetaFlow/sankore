@@ -2,3 +2,5 @@
 sankore: spelling-error-in-binary usr/lib/open-sankore/Open-Sankore.bin informations information
 # resSource is a Javascript variable, not a string that can have spelling errors
 sankore: spelling-error-in-binary usr/lib/open-sankore/Open-Sankore.bin resSource resource
+# the upstream changelog is released as English/French PDF, this triggers the below lintian information message
+sankore: possible-documentation-but-no-doc-base-registration
