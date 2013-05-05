@@ -193,8 +193,8 @@ binary-arch: install
 #	dh_installmenu -a
 	dh_installman -a
 	dh_lintian -a
-	dh_link -a
 	dh_strip -a --dbg-package=sankore-dbg
+	dh_link -a
 	dh_compress -a
 	dh_fixperms -a
 #	dh_makeshlibs -a
