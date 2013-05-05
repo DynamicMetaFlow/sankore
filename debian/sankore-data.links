@@ -1,0 +1,37 @@
+# link to /usr/share/javascript/jquery/jquery.js
+usr/share/javascript/jquery/jquery.js usr/share/open-sankore/library/applications/Editeur\ HTML.wgt/jquery.pack.js
+usr/share/javascript/jquery/jquery.js usr/share/open-sankore/library/applications/Nuancier.wgt/js/jquery.js
+
+# link to /usr/share/javascript/jquery/jquery.min.js
+usr/share/javascript/jquery/jquery.min.js usr/share/open-sankore/library/applications/Wikipedia.wgt/script/jquery.min.js
+usr/share/javascript/jquery/jquery.min.js usr/share/open-sankore/library/applications/Wiktionnaire.wgt/script/jquery.min.js
+usr/share/javascript/jquery/jquery.min.js usr/share/open-sankore/library/applications/Calculatrice.wgt/js/jquery-1.3.2.min.js
+usr/share/javascript/jquery/jquery.min.js usr/share/open-sankore/library/applications/GeoInfo.wgt/js/jquery-1.6.2.min.js
+usr/share/javascript/jquery/jquery.min.js usr/share/open-sankore/library/applications/Grapheur.wgt/JavaScript/jquery-1.3.2.min.js
+usr/share/javascript/jquery/jquery.min.js usr/share/open-sankore/library/applications/Minuteur.wgt/js/jquery-1.3.2.min.js
+usr/share/javascript/jquery/jquery.min.js usr/share/open-sankore/library/applications/Navigateur Web.wgt/scripts/jquery-1.3.2.min.js
+usr/share/javascript/jquery/jquery.min.js usr/share/open-sankore/library/applications/Notes.wgt/js/jquery-1.3.2.min.js
+usr/share/javascript/jquery/jquery.min.js usr/share/open-sankore/library/applications/Sel\ video.wgt/scripts/jquery-1.3.2.min.js
+usr/share/javascript/jquery/jquery.min.js usr/share/open-sankore/library/applications/Wikipedia.wgt/script/jquery.min.js
+usr/share/javascript/jquery/jquery.min.js usr/share/open-sankore/library/applications/Wiktionnaire.wgt/script/jquery.min.js
+usr/share/javascript/jquery/jquery.min.js usr/share/open-sankore/library/interactivities/Ass\ images.wgt/js/jquery-1.6.2.min.js
+usr/share/javascript/jquery/jquery.min.js usr/share/open-sankore/library/interactivities/Ass\ sons.wgt/js/jquery-1.6.2.min.js
+usr/share/javascript/jquery/jquery.min.js usr/share/open-sankore/library/interactivities/Cat\ images.wgt/js/jquery-1.6.2.min.js
+usr/share/javascript/jquery/jquery.min.js usr/share/open-sankore/library/interactivities/Cat\ text.wgt/js/jquery-1.6.2.min.js
+usr/share/javascript/jquery/jquery.min.js usr/share/open-sankore/library/interactivities/Choisir.wgt/scripts/jquery-1.6.2.min.js
+usr/share/javascript/jquery/jquery.min.js usr/share/open-sankore/library/interactivities/Contraste.wgt/scripts/jquery-1.6.2.min.js
+usr/share/javascript/jquery/jquery.min.js usr/share/open-sankore/library/interactivities/Etudier.wgt/js/jquery-1.6.2.min.js
+usr/share/javascript/jquery/jquery.min.js usr/share/open-sankore/library/interactivities/Ordre\ images.wgt/js/jquery-1.6.2.min.js
+usr/share/javascript/jquery/jquery.min.js usr/share/open-sankore/library/interactivities/Ordre\ mots.wgt/scripts/jquery-1.6.2.min.js
+usr/share/javascript/jquery/jquery.min.js usr/share/open-sankore/library/interactivities/Ordre\ phrase.wgt/scripts/jquery-1.6.2.min.js
+usr/share/javascript/jquery/jquery.min.js usr/share/open-sankore/library/interactivities/Selectionner.wgt/js/jquery-1.6.2.min.js
+usr/share/javascript/jquery/jquery.min.js usr/share/open-sankore/library/interactivities/Separe\ phrase.wgt/scripts/jquery-1.6.2.min.js
+usr/share/javascript/jquery/jquery.min.js usr/share/open-sankore/library/interactivities/Separe\ texte.wgt/scripts/jquery-1.6.2.min.js
+usr/share/javascript/jquery/jquery.min.js usr/share/open-sankore/library/interactivities/Syllabes.wgt/scripts/jquery-1.6.2.min.js
+usr/share/javascript/jquery/jquery.min.js usr/share/open-sankore/library/search/Audio\ Planete.wgs/scripts/jquery-1.6.2.min.js
+usr/share/javascript/jquery/jquery.min.js usr/share/open-sankore/library/search/Flash\ Planete.wgs/scripts/jquery-1.6.2.min.js
+usr/share/javascript/jquery/jquery.min.js usr/share/open-sankore/library/search/Google\ images.wgs/scripts/jquery-1.6.2.min.js
+usr/share/javascript/jquery/jquery.min.js usr/share/open-sankore/library/search/Image\ Planete.wgs/scripts/jquery-1.6.2.min.js
+usr/share/javascript/jquery/jquery.min.js usr/share/open-sankore/library/search/Video\ Planete.wgs/scripts/jquery-1.6.2.min.js
+
+usr/share/javascript/openlayers/OpenLayers.js usr/share/open-sankore/library/applications/OpenStreetMap.wgt/api/OpenLayers.js
