@@ -19,5 +19,6 @@ sankore (2.1.0+git20130505-1) UNRELEASED; urgency=low
   * Use bin:package libjs-openlayers as OpenLayers.js library provider.
   * Use bin:package gsfonts-x11 as Type1 font provider.
   * Use bin:packages fonts-ecolier* as provider for Ecolier fonts.
+  * Use bin:package fonts-sil-andika as provider for Andika Basic font.
 
  -- Miriam Ruiz <miriam@debian.org>  Wed, 06 Mar 2013 13:05:21 +0100
