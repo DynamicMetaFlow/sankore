@@ -10,8 +10,8 @@ Files:
  Sankore-3.1/src/*
  Sankore-3.1/tools/*
 Copyright:
- 2012,  Webdoc SA
-License: GPL-3+ with OpenSSL exception
+ 2010-2013, Groupement d'Intérêt Public pour l'Education Numérique en Afrique (GIP ENA)
+License: GPL-3 with OpenSSL exception
 
 Files:
  Sankore-3.1/resources/*
@@ -127,7 +127,7 @@ License: GPL-3
  License version 3 can be found in the file
  `/usr/share/common-licenses/GPL-3'.
 
-License: GPL-3+
+License: GPL-3
  This program is free software; you can redistribute it
  and/or modify it under the terms of the GNU General Public
  License as published by the Free Software Foundation; either
@@ -149,10 +149,10 @@ License: GPL-3+
  License version 3 can be found in the file
  `/usr/share/common-licenses/GPL-3'.
 
-License: GPL-3+ with OpenSSL exception
+License: GPL-3 with OpenSSL exception
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
- the Free Software Foundation, either version 2 of the License,
+ the Free Software Foundation, version 3 of the License,
  with a specific linking exception for the OpenSSL project's
  "OpenSSL" library (or with modified versions of it that use the
  same license as the "OpenSSL" library).
