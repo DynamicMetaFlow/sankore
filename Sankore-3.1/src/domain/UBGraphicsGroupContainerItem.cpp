@@ -92,9 +92,13 @@ void UBGraphicsGroupContainerItem::addToGroup(QGraphicsItem *item,bool removeAct
         if (UBGraphicsItem::isRotatable(this) && !UBGraphicsItem::isRotatable(item)) {
             Delegate()->setRotatable(false);
         }
+        if (!UBGraphicsItem::isLocked(this) && UBGraphicsItem::isLocked(item)) {
+            Delegate()->setLocked(true);
+        }
     } else {
         Delegate()->setFlippable(UBGraphicsItem::isFlippable(item));
         Delegate()->setRotatable(UBGraphicsItem::isRotatable(item));
+        Delegate()->setLocked(UBGraphicsItem::isLocked(item));
     }
 
     // COMBINE
@@ -245,7 +249,8 @@ void UBGraphicsGroupContainerItem::copyItemParameters(UBItem *copy) const
         cp->setData(UBGraphicsItemData::ItemLocked, this->data(UBGraphicsItemData::ItemLocked));
         if(Delegate()->action()){
             if(Delegate()->action()->linkType() == eLinkToAudio){
-                UBGraphicsItemPlayAudioAction* action = new UBGraphicsItemPlayAudioAction(Delegate()->action()->path());
+                UBGraphicsItemPlayAudioAction* audioAction = dynamic_cast<UBGraphicsItemPlayAudioAction*>(Delegate()->action());
+                UBGraphicsItemPlayAudioAction* action = new UBGraphicsItemPlayAudioAction(audioAction->fullPath());
                 cp->Delegate()->setAction(action);
             }
             else
@@ -346,6 +351,7 @@ void UBGraphicsGroupContainerItem::pRemoveFromGroup(QGraphicsItem *item)
         if (!UBGraphicsItem::isFlippable(item) || !UBGraphicsItem::isRotatable(item)) {
             bool flippableNow = true;
             bool rotatableNow = true;
+            bool lockedNow = false;
 
             foreach (QGraphicsItem *item, childItems()) {
                 if (!UBGraphicsItem::isFlippable(item)) {
@@ -354,12 +360,16 @@ void UBGraphicsGroupContainerItem::pRemoveFromGroup(QGraphicsItem *item)
                 if (!UBGraphicsItem::isRotatable(item)) {
                     rotatableNow = false;
                 }
-                if (!rotatableNow && !flippableNow) {
+                if(UBGraphicsItem::isLocked(item))
+                    lockedNow = true;
+
+                if (!rotatableNow && !flippableNow && lockedNow) {
                     break;
                 }
             }
             Delegate()->setFlippable(flippableNow);
             Delegate()->setRotatable(rotatableNow);
+            Delegate()->setLocked(lockedNow);
         }
     }
 

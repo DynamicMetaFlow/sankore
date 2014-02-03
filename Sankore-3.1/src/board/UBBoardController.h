@@ -52,6 +52,12 @@ class UBGraphicsItem;
 class UBDocumentNavigator;
 
 
+typedef enum{
+    eItemActionType_Default,
+    eItemActionType_Duplicate,
+    eItemActionType_Paste
+}eItemActionType;
+
 class UBBoardController : public UBDocumentContainer
 {
     Q_OBJECT
@@ -169,7 +175,7 @@ class UBBoardController : public UBDocumentContainer
 
         void moveSceneToIndex(int source, int target);
         void duplicateScene(int index);
-        UBGraphicsItem *duplicateItem(UBItem *item, bool bAsync = true);
+        UBGraphicsItem *duplicateItem(UBItem *item, bool bAsync = true, eItemActionType actionType = eItemActionType_Default);
         void deleteScene(int index);
         void regenerateThumbnails();
 
@@ -210,13 +216,14 @@ class UBBoardController : public UBDocumentContainer
         void downloadURL(const QUrl& url, QString contentSourceUrl = QString(), const QPointF& pPos = QPointF(0.0, 0.0), const QSize& pSize = QSize(), bool isBackground = false, bool internalData = false);
         UBItem *downloadFinished(bool pSuccess, QUrl sourceUrl, QUrl contentUrl, QString pHeader,
                                  QByteArray pData, QPointF pPos, QSize pSize,
-                                 bool isSyncOperation = true, bool isBackground = false, bool internalData = false);
+                                 bool isSyncOperation = true, bool isBackground = false, bool internalData = false, eItemActionType actionType = eItemActionType_Default);
         void changeBackground(bool isDark, bool isCrossed);
         void setToolCursor(int tool);
         void showMessage(const QString& message, bool showSpinningWheel = false);
         void hideMessage();
         void setDisabled(bool disable);
         void setColorIndex(int pColorIndex);
+        QColor inferOpposite(const QColor &candidate, const char tool);
         void removeTool(UBToolWidget* toolWidget);
         void hide();
         void show();
@@ -231,7 +238,7 @@ class UBBoardController : public UBDocumentContainer
         void cut();
         void copy();
         void paste();
-        void processMimeData(const QMimeData* pMimeData, const QPointF& pPos);
+        void processMimeData(const QMimeData* pMimeData, const QPointF& pPos, eItemActionType actionType = eItemActionType_Default);
         void moveGraphicsWidgetToControlView(UBGraphicsWidgetItem* graphicWidget);
         void moveToolWidgetToScene(UBToolWidget* toolWidget);
         void addItem();

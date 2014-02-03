@@ -76,12 +76,17 @@ public:
     void actionRemoved();
     QString path() {return mAudioPath;}
     void setPath(QString audioPath);
+    QString fullPath();
+
+public slots:
+    void onSourceHide();
 
 private:
     QString mAudioPath;
     Phonon::MediaObject *mMediaObject;
     Phonon::AudioOutput *mAudioOutput;
     bool mIsLoading;
+    QString mFullPath;
 };
 
 
@@ -93,6 +98,8 @@ public:
     UBGraphicsItemMoveToPageAction(eUBGraphicsItemMovePageAction actionType, int page = 0, QObject* parent = 0);
     void play();
     QStringList save();
+    int page(){return mPage;}
+    eUBGraphicsItemMovePageAction actionType(){return mActionType;}
 
 private:
     eUBGraphicsItemMovePageAction mActionType;
@@ -108,6 +115,7 @@ public:
     UBGraphicsItemLinkToWebPageAction(QString url, QObject* parent = 0);
     void play();
     QStringList save();
+    QString url(){return mUrl;}
 
 private:
     QString mUrl;
