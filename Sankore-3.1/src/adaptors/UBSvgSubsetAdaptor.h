@@ -88,7 +88,7 @@ class UBSvgSubsetAdaptor
         static const QString sFontWeightPrefix;
         static const QString sFontStylePrefix;
 
-        static QString readTeacherGuideNode(int sceneIndex);
+        static QDomDocument readTeacherGuideNode(int sceneIndex);
     private:
 
         static UBGraphicsScene* loadScene(UBDocumentProxy* proxy, const QByteArray& pArray);
@@ -167,6 +167,8 @@ class UBSvgSubsetAdaptor
                 UBDocumentProxy *mProxy;
                 QString mDocumentPath;
 
+                QHash<QString,UBGraphicsStrokesGroup*> mStrokesList;
+
                 QColor mGroupDarkBackgroundColor;
                 QColor mGroupLightBackgroundColor;
                 qreal mGroupZIndex;
@@ -175,7 +177,6 @@ class UBSvgSubsetAdaptor
                 QString mNamespaceUri;
                 UBGraphicsScene *mScene;
                 UBGraphicsItemAction* readAction();
-                QMap<QString,UBGraphicsStrokesGroup*> mStrokesGroupList;
                 QMap<QString,UBGraphicsStroke*> mStrokeList;
         };
 

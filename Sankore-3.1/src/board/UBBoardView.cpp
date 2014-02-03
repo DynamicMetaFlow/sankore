@@ -553,8 +553,6 @@ Here we determines cases when items should to get mouse press event at pressing 
     // some behavior depends on current tool.
     UBStylusTool::Enum currentTool = (UBStylusTool::Enum)UBDrawingController::drawingController()->stylusTool();
 
-    qDebug() << item->type();
-
     switch(item->type())
     {
     case UBGraphicsProtractor::Type:
@@ -603,12 +601,10 @@ Here we determines cases when items should to get mouse press event at pressing 
     case UBGraphicsGroupContainerItem::Type:
         if(currentTool == UBStylusTool::Play)
         {
-            movingItem = NULL;
             return true;
         }
         return false;
         break;
-
 
     case QGraphicsWebView::Type:
         return true;
@@ -678,14 +674,18 @@ bool UBBoardView::itemShouldBeMoved(QGraphicsItem *item)
     if (movingItem->parentItem() && UBGraphicsGroupContainerItem::Type == movingItem->parentItem()->type() && !movingItem->isSelected() && movingItem->parentItem()->isSelected())
         return false;
 
+    if (movingItem->parentItem() && UBGraphicsGroupContainerItem::Type == movingItem->parentItem()->type())
+        if(dynamic_cast<UBGraphicsGroupContainerItem*>(movingItem->parentItem())->Delegate()->isLocked())
+            return false;
+
     UBStylusTool::Enum currentTool = (UBStylusTool::Enum)UBDrawingController::drawingController()->stylusTool();
 
     switch(item->type())
     {
     case UBGraphicsCurtainItem::Type:
-    case UBGraphicsGroupContainerItem::Type:
         return true;
-
+    case UBGraphicsGroupContainerItem::Type:
+        return !dynamic_cast<UBGraphicsGroupContainerItem*>(item)->Delegate()->isLocked();
     case UBGraphicsWidgetItem::Type:
         if(currentTool == UBStylusTool::Selector && item->isSelected())
             return false;
@@ -728,12 +728,11 @@ QGraphicsItem* UBBoardView::determineItemToPress(QGraphicsItem *item)
 
         //TODO claudio
         // another chuck of very good code
-        if(item->parentItem() && UBGraphicsGroupContainerItem::Type == item->parentItem()->type()){
+        if(item->parentItem() && UBGraphicsGroupContainerItem::Type == item->parentItem()->type() && currentTool == UBStylusTool::Play){
             UBGraphicsGroupContainerItem* group = qgraphicsitem_cast<UBGraphicsGroupContainerItem*>(item->parentItem());
             if(group && group->Delegate()->action())
                 group->Delegate()->action()->play();
         }
-
     }
 
     return item;
@@ -853,7 +852,7 @@ void UBBoardView::handleItemMouseMove(QMouseEvent *event)
         // a cludge for terminate moving of w3c widgets.
         // in some cases w3c widgets catches mouse move and doesn't sends that events to web page,
         // at simple - in google map widget - mouse move events doesn't comes to web page from rectangle of wearch bar on bottom right corner of widget.
-        if (mWidgetMoved && UBGraphicsW3CWidgetItem::Type == movingItem->type())
+        if (mWidgetMoved && (UBGraphicsW3CWidgetItem::Type == movingItem->type() || UBGraphicsGroupContainerItem::Type == movingItem->type()))
             movingItem->setPos(posBeforeMove);
     }
 }
@@ -1168,6 +1167,11 @@ UBBoardView::mouseMoveEvent (QMouseEvent *event)
 
       if (bIsDesktop) {
           event->ignore();
+          return;
+      }
+
+      if(currentTool == UBStylusTool::Play && movingItem->data(UBGraphicsItemData::ItemLocked).toBool()){
+          event->accept();
           return;
       }
 

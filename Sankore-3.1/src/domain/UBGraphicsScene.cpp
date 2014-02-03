@@ -36,6 +36,7 @@
 #include "core/UBApplicationController.h"
 #include "core/UBDisplayManager.h"
 #include "core/UBPersistenceManager.h"
+#include "core/UBTextTools.h"
 
 #include "gui/UBMagnifer.h"
 #include "gui/UBMainWindow.h"
@@ -966,14 +967,18 @@ void UBGraphicsScene::recolorAllItems()
     foreach (QGraphicsItem *item, items()) {
         if (item->type() == UBGraphicsStrokesGroup::Type) {
             UBGraphicsStrokesGroup *curGroup = static_cast<UBGraphicsStrokesGroup*>(item);
-            QColor compareColor =  curGroup->color(currentIslight ? UBGraphicsStrokesGroup::colorOnDarkBackground
-                                                                  : UBGraphicsStrokesGroup::colorOnLightBackground);
+//            QColor compareColor =  curGroup->color(currentIslight ? UBGraphicsStrokesGroup::colorOnDarkBackground
+//                                                                  : UBGraphicsStrokesGroup::colorOnLightBackground);
 
-            if (curGroup->color() == compareColor) {
-                QColor newColor = curGroup->color(!currentIslight ? UBGraphicsStrokesGroup::colorOnDarkBackground
-                                                                  : UBGraphicsStrokesGroup::colorOnLightBackground);
-                curGroup->setColor(newColor);
-            }
+//            if (curGroup->color() == compareColor) {
+//                QColor newColor = curGroup->color(!currentIslight ? UBGraphicsStrokesGroup::colorOnDarkBackground
+//                                                                  : UBGraphicsStrokesGroup::colorOnLightBackground);
+//                curGroup->setColor(newColor);
+//            }
+            UBGraphicsStrokesGroup::colorType reqCol = currentIslight ? UBGraphicsStrokesGroup::colorOnLightBackground
+                                                                      : UBGraphicsStrokesGroup::colorOnDarkBackground;
+
+            curGroup->setColor(curGroup->color(reqCol));
         }
     }
 
@@ -1608,9 +1613,15 @@ UBGraphicsTextItem* UBGraphicsScene::addTextWithFont(const QString& pString, con
 
 UBGraphicsTextItem *UBGraphicsScene::addTextHtml(const QString &pString, const QPointF& pTopLeft)
 {
+    QString cleanString = UBTextTools::cleanHtml(pString);
+    if(!cleanString.length()){
+        qDebug() << "Cleaning the string leads to an empty string";
+        cleanString = pString;
+    }
     UBGraphicsTextItem *textItem = new UBGraphicsTextItem();
+
     textItem->setPlainText("");
-    textItem->setHtml(pString);
+    textItem->setHtml(cleanString);
 
     addItem(textItem);
     textItem->show();
@@ -2079,16 +2090,17 @@ QList<QUrl> UBGraphicsScene::relativeDependencies() const
 {
     QList<QUrl> relativePathes;
 
-    QListIterator<QGraphicsItem*> itItems(mFastAccessItems);
+    QListIterator<QGraphicsItem*> itItems(items());
 
     while (itItems.hasNext())
     {
         QGraphicsItem* item = itItems.next();
         UBGraphicsMediaItem *videoItem = qgraphicsitem_cast<UBGraphicsMediaItem*> (item);
 
-        if (videoItem && videoItem->mediaFileUrl().isRelative())
+        if (videoItem)
         {
-            relativePathes << videoItem->mediaFileUrl();
+            QString mediaUrl = videoItem->mediaFileUrl().toLocalFile();
+            relativePathes << mediaUrl.replace(QRegExp("\\{.*\\}"), UBGraphicsItem::getOwnUuid(videoItem).toString());
         }
 
         UBGraphicsItem* ubItem = dynamic_cast<UBGraphicsItem*>(item);
@@ -2097,7 +2109,7 @@ QList<QUrl> UBGraphicsScene::relativeDependencies() const
 
     }
 
-    qDebug() << relativePathes;
+    qDebug() << "relative pathes"<< relativePathes;
 
     return relativePathes;
 }

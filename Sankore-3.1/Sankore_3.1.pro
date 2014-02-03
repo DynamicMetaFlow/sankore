@@ -9,9 +9,9 @@ CONFIG += debug_and_release \
 
 
 VERSION_MAJ = 2
-VERSION_MIN = 1 
+VERSION_MIN = 2
 VERSION_TYPE = r # a = alpha, b = beta, r = release, other => error
-VERSION_PATCH = 0 
+VERSION_PATCH = 3
 
 VERSION = "$${VERSION_MAJ}.$${VERSION_MIN}.$${VERSION_TYPE}.$${VERSION_PATCH}"
 VERSION = $$replace(VERSION, "\\.r", "")
@@ -129,10 +129,10 @@ win32 {
 }
 
 macx {
-   LIBS += -framework Foundation 
+   LIBS += -framework Foundation
    LIBS += -lcrypto
    #commented because Sankore crashes on Java Script. It seems to backends dependencies.
-   #LIBS += -framework AppKit 
+   #LIBS += -framework AppKit
    #LIBS += -framework WebKit
 
    CONFIG(release, debug|release):CONFIG += x86
@@ -370,6 +370,18 @@ macx {
        TRANSLATION_eu.path = "$$RESOURCES_DIR/eu.lproj"
        QMAKE_BUNDLE_DATA += TRANSLATION_eu
    }
+   exists(resources/i18n/sankore_bm.qm) {
+       TRANSLATION_bm.files = resources/i18n/sankore_bm.qm \
+           resources/i18n/localizable.strings
+       TRANSLATION_bm.path = "$$RESOURCES_DIR/bm.lproj"
+       QMAKE_BUNDLE_DATA += TRANSLATION_bm
+   }
+   exists(resources/i18n/sankore_gl.qm) {
+       TRANSLATION_gl.files = resources/i18n/sankore_gl.qm \
+           resources/i18n/localizable.strings
+       TRANSLATION_gl.path = "$$RESOURCES_DIR/gl.lproj"
+       QMAKE_BUNDLE_DATA += TRANSLATION_gl
+   }
 
    QMAKE_BUNDLE_DATA += UB_ETC \
        UB_LIBRARY \
@@ -447,10 +459,19 @@ TRANSLATIONS = resources/i18n/sankore_en.ts \
    resources/i18n/sankore_mg.ts \
    resources/i18n/sankore_hi.ts \
    resources/i18n/sankore_co.ts \
-   resources/i18n/sankore_eu.ts
+   resources/i18n/sankore_eu.ts \
+   resources/i18n/sankore_bm.ts \
+   resources/i18n/sankore_gl.ts
 
 INSTALLS = UB_ETC \
    UB_I18N \
    UB_LIBRARY \
    UB_THIRDPARTY_INTERACTIVE
+
+OTHER_FILES += \
+    resources/library/shape/fleche blanche.svg \
+    resources/library/shape/fleche bleue.svg \
+    resources/library/shape/fleche grise.svg \
+    resources/library/shape/fleche rouge.svg \
+    resources/library/shape/fleche vide.svg
 

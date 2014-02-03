@@ -67,6 +67,8 @@
 #include "board/UBFeaturesController.h"
 #include "domain/UBGraphicsStrokesGroup.h"
 
+#include "customWidgets/UBGraphicsItemAction.h"
+
 #include "gui/UBFeaturesWidget.h"
 
 #include "tools/UBToolsManager.h"
@@ -552,7 +554,7 @@ void UBBoardController::duplicateScene()
     duplicateScene(mActiveSceneIndex);
 }
 
-UBGraphicsItem *UBBoardController::duplicateItem(UBItem *item, bool bAsync)
+UBGraphicsItem *UBBoardController::duplicateItem(UBItem *item, bool bAsync, eItemActionType actionType)
 {
     if (!item)
         return NULL;
@@ -653,12 +655,39 @@ UBGraphicsItem *UBBoardController::duplicateItem(UBItem *item, bool bAsync)
         foreach(QGraphicsItem* pIt, children){
             UBItem* pItem = dynamic_cast<UBItem*>(pIt);
             if(pItem){ // we diong sync duplication of all childs.
-                QGraphicsItem * itemToGroup = dynamic_cast<QGraphicsItem *>(duplicateItem(pItem, false));
+                QGraphicsItem * itemToGroup = dynamic_cast<QGraphicsItem *>(duplicateItem(pItem, false, actionType));
                 if (itemToGroup)
                     duplicatedItems.append(itemToGroup);
             }
         }
         duplicatedGroup = mActiveScene->createGroup(duplicatedItems);
+        UBGraphicsItemAction * pAction = groupItem->Delegate()->action();
+        if(NULL != pAction){
+            UBGraphicsItemAction* pNewAction = NULL;
+            switch(pAction->linkType()){
+                case eLinkToAudio:
+                {
+                    pNewAction = new UBGraphicsItemPlayAudioAction(pAction->path(), true);
+                }
+                    break;
+                case eLinkToPage:
+                {
+                    UBGraphicsItemMoveToPageAction* pLinkAct = dynamic_cast<UBGraphicsItemMoveToPageAction*>(pAction);
+                    if(NULL != pLinkAct)
+                        pNewAction = new UBGraphicsItemMoveToPageAction(pLinkAct->actionType(), pLinkAct->page());
+                }
+                    break;
+                case eLinkToWebUrl:
+                {
+                    UBGraphicsItemLinkToWebPageAction* pWebAction = dynamic_cast<UBGraphicsItemLinkToWebPageAction*>(pAction);
+                    if(NULL != pWebAction)
+                        pNewAction = new UBGraphicsItemLinkToWebPageAction(pWebAction->url());
+                }
+                    break;
+            }
+            duplicatedGroup->Delegate()->setAction(pNewAction);
+        }
+
         duplicatedGroup->setTransform(groupItem->transform());
         groupItem->setSelected(false);
 
@@ -697,7 +726,7 @@ UBGraphicsItem *UBBoardController::duplicateItem(UBItem *item, bool bAsync)
         return retItem;
     }
 
-    UBItem *createdItem = downloadFinished(true, sourceUrl, srcFile, contentTypeHeader, pData, itemPos, QSize(itemSize.width(), itemSize.height()));
+    UBItem *createdItem = downloadFinished(true, sourceUrl, srcFile, contentTypeHeader, pData, itemPos, QSize(itemSize.width(), itemSize.height()), true, false, false, actionType);
     if (createdItem)
     {
         createdItem->setSourceUrl(item->sourceUrl());
@@ -1134,7 +1163,7 @@ void UBBoardController::addLinkToPage(QString sourceUrl, QSize size, QPointF pos
     }
 }
 
-UBItem *UBBoardController::downloadFinished(bool pSuccess, QUrl sourceUrl, QUrl contentUrl, QString pContentTypeHeader, QByteArray pData, QPointF pPos, QSize pSize, bool isSyncOperation, bool isBackground, bool internalData)
+UBItem *UBBoardController::downloadFinished(bool pSuccess, QUrl sourceUrl, QUrl contentUrl, QString pContentTypeHeader, QByteArray pData, QPointF pPos, QSize pSize, bool isSyncOperation, bool isBackground, bool internalData, eItemActionType actionType)
 {
     Q_ASSERT(pSuccess);
 
@@ -1157,15 +1186,44 @@ UBItem *UBBoardController::downloadFinished(bool pSuccess, QUrl sourceUrl, QUrl 
 
     if (!pSuccess)
     {
-        showMessage(tr("Downloading content %1 failed").arg(sourceUrl.toString()));
+        QString msg = "";
+        switch(actionType){
+            case eItemActionType_Duplicate:
+                msg = tr("Failed to duplicate %1").arg(sourceUrl.toString());
+                // Note: It has been decided to not show this message for this mode
+            break;
+            case eItemActionType_Paste:
+                msg = tr("Failed to paste %1").arg(sourceUrl.toString());
+                // Note: It has been decided to not show this message for this mode
+            break;
+            default:
+                msg = tr("Downloading content %1 failed").arg(sourceUrl.toString());
+                 showMessage(msg);
+            break;
+        }
         return NULL;
     }
 
 
     mActiveScene->deselectAllItems();
 
-    if (!sourceUrl.toString().startsWith("file://") && !sourceUrl.toString().startsWith("uniboardTool://"))
-        showMessage(tr("Download finished"));
+    if (!sourceUrl.toString().startsWith("file://") && !sourceUrl.toString().startsWith("uniboardTool://")){
+        QString msg = "";
+        switch(actionType){
+            case eItemActionType_Duplicate:
+                msg = tr("Duplication successful");
+                // Note: It has been decided to not show this message for this mode
+                break;
+            case eItemActionType_Paste:
+                msg = tr("Paste successful");
+                // Note: It has been decided to not show this message for this mode
+                break;
+            default:
+                msg = tr("Download finished");
+                showMessage(msg);
+                break;
+        }
+    }
 
 
     if (UBMimeType::RasterImage == itemMimeType)
@@ -1198,7 +1256,7 @@ UBItem *UBBoardController::downloadFinished(bool pSuccess, QUrl sourceUrl, QUrl 
     }
     else if (UBMimeType::VectorImage == itemMimeType)
     {
-        qDebug() << "accepting mime type" << mimeType << "as vecto image";
+        qDebug() << "accepting mime type" << mimeType << "as vector image";
 
         UBGraphicsSvgItem* svgItem = mActiveScene->addSvg(sourceUrl, pPos, pData);
         svgItem->setSourceUrl(sourceUrl);
@@ -1731,8 +1789,10 @@ void UBBoardController::adjustDisplayViews()
 {
     if (UBApplication::applicationController)
     {
-        UBApplication::applicationController->adjustDisplayView();
-        UBApplication::applicationController->adjustPreviousViews(mActiveSceneIndex, selectedDocument());
+        mControlView->centerOn(0,0);
+
+//        UBApplication::applicationController->adjustDisplayView();
+//        UBApplication::applicationController->adjustPreviousViews(mActiveSceneIndex, selectedDocument());
     }
 }
 
@@ -1934,6 +1994,51 @@ void UBBoardController::setColorIndex(int pColorIndex)
     }
 }
 
+static bool sameRGB(const QColor &lcol, const QColor &rcol)
+{
+    return lcol.red() == rcol.red()
+            && lcol.green() == rcol.green()
+            && lcol.blue() == rcol.blue();
+}
+
+QColor UBBoardController::inferOpposite(const QColor &candidate, const char tool)
+{
+    qDebug() << "!!!!!!!!!!!HACK!!!!!!!!!!!HACK!!!!!!!!!!!HACK!!!!!!!!!!!HACK!!!!!!!!!!!HACK!!!!!!!!!!!";
+
+    //looking for existing index
+    //Tool 'm': marker
+    //     'p': pen
+    QList<QColor> (UBSettings::*fn)(bool) = NULL;
+
+    switch (tool) {
+    case 'p': {
+        fn = &UBSettings::penColors;
+    } break;
+    case 'm': {
+        fn = &UBSettings::markerColors;
+    } break;
+    }
+
+    int count = qMin((UBSettings::settings()->*fn)(true).count(), (UBSettings::settings()->*fn)(false).count());
+    for (int i=0; i<count; i++) {
+        QColor dark = (UBSettings::settings()->*fn)(true).at(i);
+        QColor light = (UBSettings::settings()->*fn)(false).at(i);
+        if (sameRGB(candidate, dark)) {
+            return light;
+        } else if (sameRGB(candidate, light)) {
+            return dark;
+        }
+    }
+
+    //If there is no color stored just change the value to the opposite
+    QColor retColor = QColor::fromRgb(255 - candidate.red()
+                                      , 255 - candidate.green()
+                                      , 255 - candidate.blue()
+                                      , candidate.alpha());
+
+    return retColor;
+}
+
 void UBBoardController::colorPaletteChanged()
 {
     mPenColorOnDarkBackground = UBSettings::settings()->penColor(true);
@@ -1974,7 +2079,7 @@ void UBBoardController::persistCurrentScene(UBDocumentProxy *pProxy)
             && selectedDocument() && mActiveScene && mActiveSceneIndex != mDeletingSceneIndex
             && (mActiveSceneIndex >= 0) && mActiveSceneIndex != mMovingSceneIndex
             && (mActiveScene->isModified() || (UBApplication::boardController->paletteManager()->teacherGuideDockWidget() && UBApplication::boardController->paletteManager()->teacherGuideDockWidget()->teacherGuideWidget()->isModified())))
-    {        
+    {
         UBPersistenceManager::persistenceManager()->persistDocumentScene(pProxy ? pProxy : selectedDocument(), mActiveScene, mActiveSceneIndex);
         updatePage(mActiveSceneIndex);
     }
@@ -2330,7 +2435,6 @@ void UBBoardController::cut()
     //---------------------------------------------------------//
 }
 
-
 void UBBoardController::copy()
 {
     QList<UBItem*> selected;
@@ -2338,7 +2442,6 @@ void UBBoardController::copy()
     foreach(QGraphicsItem* gi, mActiveScene->selectedItems())
     {
         UBItem* ubItem = dynamic_cast<UBItem*>(gi);
-
         if (ubItem && !mActiveScene->tools().contains(gi))
             selected << ubItem;
     }
@@ -2359,14 +2462,17 @@ void UBBoardController::copy()
 void UBBoardController::paste()
 {
     QClipboard *clipboard = QApplication::clipboard();
-    QPointF pos(0, 0);
-    processMimeData(clipboard->mimeData(), pos);
+    //avoiding the to paste two objects exaclty at the same position
+    qreal xPosition = ((qreal)qrand()/(qreal)RAND_MAX) * 400;
+    qreal yPosition = ((qreal)qrand()/(qreal)RAND_MAX) * 200;
+    QPointF pos(xPosition -200 , yPosition - 100);
+    processMimeData(clipboard->mimeData(), pos, eItemActionType_Paste);
 
     selectedDocument()->setMetaData(UBSettings::documentUpdatedAt, UBStringUtils::toUtcIsoDateTime(QDateTime::currentDateTime()));
 }
 
 
-void UBBoardController::processMimeData(const QMimeData* pMimeData, const QPointF& pPos)
+void UBBoardController::processMimeData(const QMimeData* pMimeData, const QPointF& pPos, eItemActionType actionType)
 {
     if (pMimeData->hasFormat(UBApplication::mimeTypeUniboardPage))
     {
@@ -2399,7 +2505,7 @@ void UBBoardController::processMimeData(const QMimeData* pMimeData, const QPoint
             {
                 QGraphicsItem* pItem = dynamic_cast<QGraphicsItem*>(item);
                 if(NULL != pItem){
-                    duplicateItem(item);
+                    duplicateItem(item, true, actionType);
                 }
             }
 
@@ -2456,14 +2562,19 @@ void UBBoardController::processMimeData(const QMimeData* pMimeData, const QPoint
 
     if (pMimeData->hasText())
     {
-        if("" != pMimeData->text()){
+        if(pMimeData->text().length()){
             // Sometimes, it is possible to have an URL as text. we check here if it is the case
             QString qsTmp = pMimeData->text().remove(QRegExp("[\\0]"));
             if(qsTmp.startsWith("http")){
                 downloadURL(QUrl(qsTmp), QString(), pPos);
             }
             else{
-                mActiveScene->addTextHtml(pMimeData->html(), pPos);
+                if(eItemActionType_Paste == actionType && mActiveScene->selectedItems().at(0)->type() == UBGraphicsItemType::TextItemType){
+                    dynamic_cast<UBGraphicsTextItem*>(mActiveScene->selectedItems().at(0))->setHtml(pMimeData->text());
+                }
+                else{
+                    mActiveScene->addTextHtml(pMimeData->text(), pPos);
+                }
             }
         }
         else{
@@ -2594,14 +2705,28 @@ void UBBoardController::freezeW3CWidgets(bool freeze)
         QList<QGraphicsItem *> list = UBApplication::boardController->activeScene()->getFastAccessItems();
         foreach(QGraphicsItem *item, list)
         {
-            freezeW3CWidget(item, freeze);
+            if(item != NULL){
+                freezeW3CWidget(item, freeze);
+                //TODO Claudio remove this hack
+                // this is not a good place to make this check as isn't the good place to do the previous check.
+                // try to detect hide event of the qgraphicsitem
+                UBGraphicsItem* graphicsItem = dynamic_cast<UBGraphicsItem*>(item);
+                if(graphicsItem){
+                    UBGraphicsItemDelegate* delegate = graphicsItem->Delegate();
+                    if(delegate && delegate->action() && delegate->action()->linkType() == eLinkToAudio)
+                        dynamic_cast<UBGraphicsItemPlayAudioAction*>(delegate->action())->onSourceHide();
+                }
+            }
+            else{
+                qDebug() << "wrong place";
+            }
         }
     }
 }
 
 void UBBoardController::freezeW3CWidget(QGraphicsItem *item, bool freeze)
 {
-    if(item->type() == UBGraphicsW3CWidgetItem::Type)
+    if(item && item->type() == UBGraphicsW3CWidgetItem::Type)
     {
         UBGraphicsW3CWidgetItem* item_casted = dynamic_cast<UBGraphicsW3CWidgetItem*>(item);
         if (0 == item_casted)

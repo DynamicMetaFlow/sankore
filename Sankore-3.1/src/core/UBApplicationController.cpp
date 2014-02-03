@@ -19,8 +19,6 @@
  * along with Open-Sankoré.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
-
 #include "UBApplicationController.h"
 
 #include "frameworks/UBPlatformUtils.h"
@@ -444,7 +442,7 @@ void UBApplicationController::showDocument()
     {
         if (UBApplication::boardController->activeScene()->isModified() || (UBApplication::boardController->paletteManager()->teacherGuideDockWidget() && UBApplication::boardController->paletteManager()->teacherGuideDockWidget()->teacherGuideWidget()->isModified()))
         {
-            UBApplication::boardController->activeScene()->setRenderingContext(UBGraphicsScene::NonScreen);
+//            UBApplication::boardController->activeScene()->setRenderingContext(UBGraphicsScene::NonScreen);
             UBApplication::boardController->persistCurrentScene();
         }
         UBApplication::boardController->hide();
