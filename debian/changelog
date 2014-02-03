@@ -1,10 +1,10 @@
-sankore (2.1.0+git20130505-1) UNRELEASED; urgency=low
+sankore (2.3.0RC2+git20140203+dfsg-1) UNRELEASED; urgency=low
 
   [ Miriam Ruiz ]
   * New upstream release, obtained from git, corresponding to commits:
   * Initial release (closes: #673322), obtained from git,
     corresponding to commits:
-    + Sankore-3.1:        a114c931415d8ae84d3948130d8b358a753cd1f2 
+    + Sankore-3.1:        bd94a67753b20270ae8341f8089ed689924322a6
     + Sankore-ThirdParty: 735e68f1b75c5ece90f5c1d50798e1d07eca51a9
   * Add patches:
     + 001_build_opts.patch
@@ -20,5 +20,9 @@ sankore (2.1.0+git20130505-1) UNRELEASED; urgency=low
   * Use bin:package gsfonts-x11 as Type1 font provider.
   * Use bin:packages fonts-ecolier* as provider for Ecolier fonts.
   * Use bin:package fonts-sil-andika as provider for Andika Basic font.
+
+  [ Andrea Colangelo ]
+  * Repack Sankore-3.1 to drop non-free fonts in
+    Sankore-3.1/resources/customizations/fonts.
 
  -- Miriam Ruiz <miriam@debian.org>  Wed, 06 Mar 2013 13:05:21 +0100
